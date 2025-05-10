@@ -13,12 +13,14 @@ import { useSearchParams } from "next/navigation"
 import { ArrowRight, ChromeIcon as Google } from "lucide-react"
 import { Checkbox } from "@/components/ui/checkbox"
 import { motion, AnimatePresence } from "framer-motion"
+import { ForgotPasswordModal } from "@/components/forgot-password-modal"
 
 export default function SignIn() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [isRedirecting, setIsRedirecting] = useState(false)
+  const [forgotOpen, setForgotOpen] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
   const redirectedFrom = searchParams.get("redirectedFrom")
@@ -115,7 +117,7 @@ export default function SignIn() {
         )}
       </AnimatePresence>
       {/* Left side - Background with Logo (desktop only) */}
-      <div className="relative hidden w-1/2 bg-blue-500 md:block">
+      <div className="relative hidden w-1/2 bg-primary md:block">
         <div className="absolute top-8 left-8">
           <a href="/">
             <span className="sr-only">Home</span>
@@ -124,32 +126,58 @@ export default function SignIn() {
         </div>
         <div className="flex h-full items-center justify-center">
           <div className="relative h-full w-full">
-            <div className="flex h-full flex-col items-center justify-center px-8 text-center text-white">
+            <motion.div
+              className="flex h-full flex-col items-center justify-center px-8 text-center text-white"
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.32 }}
+            >
               <h2 className="text-3xl font-bold">Discover Amazing Features</h2>
               <p className="mt-4 max-w-md text-lg">
                 Sign in to access your personalized dashboard and explore all our platform has to offer.
               </p>
-            </div>
+            </motion.div>
           </div>
         </div>
       </div>
 
       {/* Right side - Form */}
       <div className="flex w-full flex-col justify-center px-4 py-12 md:w-1/2 md:px-8 lg:px-12 xl:px-20">
-        <div className="mx-auto w-full max-w-md">
-          {/* Logo for mobile only */}
-          <div className="mb-6 flex justify-center md:hidden">
+        <motion.div
+          className="mx-auto w-full max-w-md"
+          initial="hidden"
+          animate="visible"
+          variants={{
+            hidden: {},
+            visible: { transition: { staggerChildren: 0.05 } },
+          }}
+        >
+          <motion.div
+            className="mb-6 flex justify-center md:hidden"
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.32 }}
+          >
             <a href="/">
               <span className="sr-only">Home</span>
               <svg xmlns="http://www.w3.org/2000/svg" width="176" height="40" fill="none" viewBox="0 0 176 40"><path fill="#283841" fill-rule="evenodd" d="M15 28a5 5 0 0 1-5-5V0H0v23c0 8.284 6.716 15 15 15h11V28H15ZM45 10a9 9 0 1 0 0 18 9 9 0 0 0 0-18Zm-19 9C26 8.507 34.507 0 45 0s19 8.507 19 19-8.507 19-19 19-19-8.507-19-19ZM153 10a9 9 0 0 0-9 9 9 9 0 0 0 9 9 9 9 0 0 0 9-9 9 9 0 0 0-9-9Zm-19 9c0-10.493 8.507-19 19-19s19 8.507 19 19-8.507 19-19 19-19-8.507-19-19ZM85 0C74.507 0 66 8.507 66 19s8.507 19 19 19h28c1.969 0 3.868-.3 5.654-.856L124 40l5.768-10.804A19.007 19.007 0 0 0 132 20.261V19c0-10.493-8.507-19-19-19H85Zm37 19a9 9 0 0 0-9-9H85a9 9 0 1 0 0 18h28a9 9 0 0 0 9-8.93V19Z" clip-rule="evenodd"></path><path fill="#283841" d="M176 2.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Z"></path></svg>
             </a>
-          </div>
-          <div className="flex flex-col space-y-2 text-center">
+          </motion.div>
+          <motion.div
+            className="flex flex-col space-y-2 text-center"
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.32, delay: 0.05 }}
+          >
             <h1 className="text-3xl font-bold tracking-tight">Welcome back</h1>
             <p className="text-sm text-muted-foreground">Enter your credentials to sign in to your account</p>
-          </div>
-
-          <div className="mt-8 grid gap-6">
+          </motion.div>
+          <motion.div
+            className="mt-8 grid gap-6"
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.32, delay: 0.10 }}
+          >
             <form onSubmit={handleSubmit} className="grid gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="email">Email</Label>
@@ -166,9 +194,13 @@ export default function SignIn() {
               <div className="grid gap-2">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="password">Password</Label>
-                  <Link href="#" className="text-sm text-primary hover:underline">
+                  <button
+                    type="button"
+                    className="text-sm text-black hover:underline focus:outline-none"
+                    onClick={() => setForgotOpen(true)}
+                  >
                     Forgot password?
-                  </Link>
+                  </button>
                 </div>
                 <Input
                   id="password"
@@ -185,12 +217,11 @@ export default function SignIn() {
                   Remember me
                 </Label>
               </div>
-              <Button type="submit" className="mt-2" disabled={isLoading}>
+              <Button type="submit" className="mt-2 py-5" disabled={isLoading}>
                 {isLoading ? "Signing in..." : "Sign in"}
-                <ArrowRight className="ml-2 h-4 w-4" />
+                <ArrowRight className="h-4 w-4" />
               </Button>
             </form>
-
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
                 <span className="w-full border-t" />
@@ -199,23 +230,22 @@ export default function SignIn() {
                 <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
               </div>
             </div>
-
             <div className="grid gap-4">
-              <Button variant="outline" className="w-full" onClick={handleGoogleSignIn} disabled={isLoading}>
+              <Button variant="outline" className="w-full py-5" onClick={handleGoogleSignIn}>
                 <Google className="mr-2 h-4 w-4" />
                 Google
               </Button>
             </div>
-          </div>
-
-          <div className="mt-4 text-center text-sm">
-            Don&apos;t have an account?{" "}
-            <Link href="/sign-up" className="text-primary hover:underline">
-              Sign up
-            </Link>
-          </div>
-        </div>
+            <div className="mt-4 text-center text-sm">
+              Don&apos;t have an account?{" "}
+              <Link href="/sign-up" className="text-primary hover:underline">
+                Sign up
+              </Link>
+            </div>
+          </motion.div>
+        </motion.div>
       </div>
+      <ForgotPasswordModal isOpen={forgotOpen} onClose={() => setForgotOpen(false)} />
     </div>
   )
 }

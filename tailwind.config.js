@@ -10,16 +10,10 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        brand: {
-          white: '#F2F3F4', // Anti-Flash White
-          midnight: '#020035', // Midnight Blue
-          lace: '#EBEAED', // Lace Cap
-          kimchi: '#ED4B00', // Kimchi
-          royalty: '#02066F', // Dark Royalty
-          deepsea: '#2000B1', // Deep Sea Exploration
+          'orange': '#fa7f14', // Primary Orange
+          'orangeLight': '#ffe5cc', // Light/bright Orange
         },
-      },
-    },
+    }
   },
   plugins: [heroui()],
 } 
