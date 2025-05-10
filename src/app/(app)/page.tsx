@@ -3,11 +3,11 @@
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
 
-export default function SignUpPage() {
+export default function AppPage() {
   const router = useRouter()
 
   useEffect(() => {
-    router.replace("/auth?mode=signup")
+    router.push("/dashboard")
   }, [router])
 
   return null

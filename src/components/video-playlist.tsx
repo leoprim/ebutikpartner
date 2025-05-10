@@ -2,16 +2,14 @@
 
 import Image from "next/image"
 import { Check, Play } from "lucide-react"
-import { useEffect, useState } from "react"
 
-export interface Video {
+interface Video {
   id: number
   title: string
-  description: string
   duration: string
-  thumbnail?: string
-  src: string
+  thumbnail: string
   progress: number
+  isCompleted: boolean
 }
 
 interface VideoPlaylistProps {
@@ -22,56 +20,28 @@ interface VideoPlaylistProps {
 }
 
 export default function VideoPlaylist({ videos, currentVideoId, progress, onVideoSelect }: VideoPlaylistProps) {
-  const [thumbnails, setThumbnails] = useState<Record<number, string>>({})
-
-  useEffect(() => {
-    videos.forEach((video) => {
-      if (!video.thumbnail && !thumbnails[video.id]) {
-        const videoEl = document.createElement("video")
-        videoEl.src = video.src
-        videoEl.crossOrigin = "anonymous"
-        videoEl.currentTime = 0
-        videoEl.muted = true
-        videoEl.playsInline = true
-        videoEl.addEventListener("loadeddata", () => {
-          const canvas = document.createElement("canvas")
-          canvas.width = videoEl.videoWidth
-          canvas.height = videoEl.videoHeight
-          const ctx = canvas.getContext("2d")
-          if (ctx) {
-            ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height)
-            const dataUrl = canvas.toDataURL("image/png")
-            setThumbnails((prev) => ({ ...prev, [video.id]: dataUrl }))
-          }
-        }, { once: true })
-      }
-    })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [videos])
-
   return (
     <div className="space-y-3">
       {videos.map((video) => {
         const isActive = video.id === currentVideoId
         const currentProgress = progress[video.id] || 0
-        const isCompleted = currentProgress === 100
-        const thumbSrc = video.thumbnail || thumbnails[video.id] || "/placeholder.svg"
+        const isCompleted = video.isCompleted || currentProgress === 100
 
         return (
           <div
             key={video.id}
             className={`flex gap-3 p-2 rounded-md cursor-pointer transition-colors ${
-              isCompleted ? "bg-green-100" : isActive ? "bg-muted" : "hover:bg-muted/50"
+              isActive ? "bg-muted" : "hover:bg-muted/50"
             }`}
             onClick={() => onVideoSelect(video)}
           >
             <div className="relative flex-shrink-0">
               <Image
-                src={thumbSrc}
+                src={video.thumbnail || "/placeholder.svg"}
                 alt={video.title}
                 width={90}
                 height={50}
-                className="rounded-md object-cover w-[90px] h-[50px]"
+                className="rounded-md object-cover w-[90px] h-[51px]"
               />
 
               {/* Play indicator for current video */}
@@ -83,7 +53,7 @@ export default function VideoPlaylist({ videos, currentVideoId, progress, onVide
 
               {/* Progress bar */}
               {currentProgress > 0 && currentProgress < 100 && (
-                <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-200 rounded-full overflow-hidden">
+                <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-200 rounded-full overflow-hidden m-1">
                   <div className="h-full bg-green-500" style={{ width: `${currentProgress}%` }} />
                 </div>
               )}

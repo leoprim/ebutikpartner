@@ -2,7 +2,7 @@ import "./globals.css"
 import { Toaster } from "sonner"
 import { Inter } from "next/font/google"
 
-const inter = Inter({ subsets: ["latin"], weight: ["400", "700"] })
+const inter = Inter({ subsets: ["latin"], weight: ["400", "500", "700"] })
 
 export const metadata = {
   title: "Your App Title",
@@ -16,7 +16,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={inter.className}>
-      <body className="font-sans bg-background text-foreground">
+      <body className="font-sans font-medium bg-background text-foreground">
         <Toaster />
         {children}
       </body>

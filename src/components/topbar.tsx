@@ -12,18 +12,23 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
+import { createBrowserClient } from "@supabase/ssr"
 import type { User as SupabaseUser } from "@supabase/supabase-js"
 import { Skeleton } from "@/components/ui/skeleton"
-import { useRouter } from "next/navigation"
-import { toast } from "sonner"
+import { useRouter, usePathname } from "next/navigation"
+import SettingsModal from "@/components/settings-modal"
 
 export function TopBar() {
   const [user, setUser] = useState<SupabaseUser | null | undefined>(undefined)
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const router = useRouter()
+  const pathname = usePathname()
 
   useEffect(() => {
-    const supabase = createClientComponentClient()
+    const supabase = createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
     supabase.auth.getUser().then(({ data }) => {
       setUser(data.user ?? null)
     })
@@ -41,21 +46,32 @@ export function TopBar() {
   const avatarUrl = (user?.user_metadata?.avatar_url as string | undefined) || undefined
 
   const handleSignOut = async () => {
-    const supabase = createClientComponentClient()
-    const { error } = await supabase.auth.signOut()
-    if (error) {
-      toast.error("Error signing out: " + error.message)
-      return
-    }
-    toast.success("Signed out successfully")
-    router.push("/sign-in")
+    const supabase = createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
+    await supabase.auth.signOut()
+    router.push("/auth")
     router.refresh()
   }
 
+  const getPageTitle = () => {
+    switch (pathname) {
+      case "/dashboard":
+        return "Dashboard"
+      case "/guides-library":
+        return "Guides Library"
+      case "/community":
+        return "Community"
+      default:
+        return "StorePartner"
+    }
+  }
+
   return (
-    <header className="flex h-16 shrink-0 items-center justify-between border-b px-4 md:px-6">
-      <div className="flex-1">
-        <h1 className="text-lg font-semibold">Dashboard</h1>
+    <header className="flex h-16 shrink-0 items-center justify-between border-b px-6 w-full">
+      <div className="flex items-center gap-4">
+        <h1 className="text-lg font-medium">{getPageTitle()}</h1>
       </div>
       <div className="flex items-center gap-4">
         <div className="hidden md:flex md:items-center md:gap-2">
@@ -65,25 +81,31 @@ export function TopBar() {
               <Skeleton className="h-3 w-32 rounded" />
             </>
           ) : (
-            <>
-              <span className="text-sm font-medium">{name}</span>
+            <div className="flex flex-col items-end">
+              <span className="text-sm font-semibold">{name}</span>
               <span className="text-xs text-muted-foreground">{email}</span>
-            </>
+            </div>
           )}
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="rounded-full">
-              <Avatar className="h-8 w-8">
-                {isLoading ? (
-                  <Skeleton className="h-8 w-8 rounded-full" />
-                ) : (
-                  <>
-                    <AvatarImage src={avatarUrl} alt={name} />
-                    <AvatarFallback>{initials}</AvatarFallback>
-                  </>
-                )}
-              </Avatar>
+              <div className="relative h-8 w-8 overflow-hidden rounded-full">
+                <Avatar className="h-full w-full">
+                  {isLoading ? (
+                    <Skeleton className="h-8 w-8 rounded-full" />
+                  ) : (
+                    <>
+                      <AvatarImage 
+                        src={avatarUrl} 
+                        alt={name}
+                        className="object-cover"
+                      />
+                      <AvatarFallback>{initials}</AvatarFallback>
+                    </>
+                  )}
+                </Avatar>
+              </div>
               <span className="sr-only">User menu</span>
             </Button>
           </DropdownMenuTrigger>
@@ -95,7 +117,7 @@ export function TopBar() {
                 <User className="mr-2 h-4 w-4" />
                 <span>Profile</span>
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setIsSettingsOpen(true)}>
                 <Settings className="mr-2 h-4 w-4" />
                 <span>Settings</span>
               </DropdownMenuItem>
@@ -108,6 +130,7 @@ export function TopBar() {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+      <SettingsModal open={isSettingsOpen} onOpenChange={setIsSettingsOpen} />
     </header>
   )
 }
