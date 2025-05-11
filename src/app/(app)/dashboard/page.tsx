@@ -1,55 +1,154 @@
 "use client"
 
+import { useState, useEffect } from "react"
+import { motion } from "framer-motion"
+import { ArrowRight, BarChart3, ShoppingBag, Store, Users } from "lucide-react"
+
 import { Button } from "@/components/ui/button"
-import { Separator } from "@/components/ui/separator"
-import { LogOut } from "lucide-react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+}
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.5,
+      ease: "easeOut"
+    }
+  }
+}
 
 export default function DashboardPage() {
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false)
+    }, 100)
+    return () => clearTimeout(timer)
+  }, [])
+
+  if (isLoading) {
+    return null
+  }
+
   return (
-    <div className="w-full p-6">
-      <p className="mt-2 text-muted-foreground">
-        Welcome back! Here's an overview of your store.
-      </p>
-      <Separator className="my-6" />
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-lg border bg-card p-6 shadow-sm">
-          <div className="flex flex-col gap-1">
-            <h3 className="text-sm font-medium text-muted-foreground">Total Revenue</h3>
-            <div className="text-2xl font-bold">$45,231.89</div>
-          </div>
+    <div className="flex-1 p-6">
+      <motion.div 
+        className="flex items-center justify-between mb-6"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <div>
+          <p className="text-muted-foreground">Welcome back! Here's an overview of your store.</p>
         </div>
-        <div className="rounded-lg border bg-card p-6 shadow-sm">
-          <div className="flex flex-col gap-1">
-            <h3 className="text-sm font-medium text-muted-foreground">Subscriptions</h3>
-            <div className="text-2xl font-bold">+2350</div>
-          </div>
-        </div>
-        <div className="rounded-lg border bg-card p-6 shadow-sm">
-          <div className="flex flex-col gap-1">
-            <h3 className="text-sm font-medium text-muted-foreground">Sales</h3>
-            <div className="text-2xl font-bold">+12,234</div>
-          </div>
-        </div>
-        <div className="rounded-lg border bg-card p-6 shadow-sm">
-          <div className="flex flex-col gap-1">
-            <h3 className="text-sm font-medium text-muted-foreground">Active Users</h3>
-            <div className="text-2xl font-bold">+573</div>
-          </div>
-        </div>
-      </div>
-      <div className="mt-6 rounded-lg border bg-card p-6 shadow-sm">
-        <h3 className="text-lg font-medium">Dashboard Content</h3>
-        <Separator className="my-4" />
-        <p className="text-muted-foreground">
-          This is the main content area of your dashboard. Add your charts, tables, and other components here.
-        </p>
-      </div>
-      <div className="mt-4 flex justify-end">
-        <Button variant="outline" className="flex items-center gap-2">
-          <LogOut className="h-4 w-4" />
-          Sign Out
-        </Button>
-      </div>
+      </motion.div>
+
+      <motion.div 
+        className="grid gap-4 md:grid-cols-2 lg:grid-cols-3"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        <motion.div variants={itemVariants}>
+          <Card>
+            <CardHeader>
+              <CardTitle className="font-medium text-lg">Store Overview</CardTitle>
+              <CardDescription className="font-normal">Track your store's progress and performance</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <Store className="mr-2 h-4 w-4 text-muted-foreground" />
+                    <span>Store Status</span>
+                  </div>
+                  <span className="text-sm font-medium">In Progress</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <ShoppingBag className="mr-2 h-4 w-4 text-muted-foreground" />
+                    <span>Products</span>
+                  </div>
+                  <span className="text-sm font-medium">24/30</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <Users className="mr-2 h-4 w-4 text-muted-foreground" />
+                    <span>Support Hours</span>
+                  </div>
+                  <span className="text-sm font-medium">8 hours left</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        <motion.div variants={itemVariants}>
+          <Card>
+            <CardHeader>
+              <CardTitle className="font-medium text-lg">Quick Actions</CardTitle>
+              <CardDescription className="font-normal">Common tasks and shortcuts</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <Button variant="outline" className="w-full justify-start">
+                  <Store className="mr-2 h-4 w-4" />
+                  View Store
+                  <ArrowRight className="ml-auto h-4 w-4" />
+                </Button>
+                <Button variant="outline" className="w-full justify-start">
+                  <ShoppingBag className="mr-2 h-4 w-4" />
+                  Manage Products
+                  <ArrowRight className="ml-auto h-4 w-4" />
+                </Button>
+                <Button variant="outline" className="w-full justify-start">
+                  <BarChart3 className="mr-2 h-4 w-4" />
+                  View Analytics
+                  <ArrowRight className="ml-auto h-4 w-4" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        <motion.div variants={itemVariants}>
+          <Card>
+            <CardHeader>
+              <CardTitle className="font-medium text-lg">Recent Updates</CardTitle>
+              <CardDescription className="font-normal">Latest changes and notifications</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="space-y-1">
+                  <p className="text-sm font-medium">Theme Customization</p>
+                  <p className="text-xs text-muted-foreground">Due in 3 days</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm font-medium">Payment Gateway Setup</p>
+                  <p className="text-xs text-muted-foreground">Due in 5 days</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm font-medium">Final Review</p>
+                  <p className="text-xs text-muted-foreground">Due in 7 days</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </motion.div>
     </div>
   )
-} 
+}

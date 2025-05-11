@@ -63,6 +63,8 @@ export function TopBar() {
         return "Guides Library"
       case "/community":
         return "Community"
+      case "/store":
+        return "Store"
       default:
         return "StorePartner"
     }

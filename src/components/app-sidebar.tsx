@@ -7,6 +7,7 @@ import { usePathname, useRouter } from "next/navigation"
 import Image from 'next/image'
 import { toast } from "sonner"
 import { createBrowserClient } from "@supabase/ssr"
+import SubscriptionModal from "./subscription-modal"
 
 import {
   Sidebar,
@@ -73,6 +74,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname();
   const router = useRouter();
   const [isPremium, setIsPremium] = React.useState(false);
+  const [showSubscriptionModal, setShowSubscriptionModal] = React.useState(false);
 
   React.useEffect(() => {
     const checkPremiumStatus = async () => {
@@ -108,7 +110,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <button
               onClick={() => {
                 toast.dismiss(t);
-                router.push("/premium");
+                setShowSubscriptionModal(true);
               }}
               className="mt-2 bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90transition-colors"
             >
@@ -123,109 +125,112 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   };
 
   return (
-    <Sidebar {...props}>
-      <SidebarHeader className="p-4 pt-8 pb-4">
-        <a href="/">
-          <span className="sr-only">Home</span>
-          <Image
-            src="/Logo_BlackOrange.svg"
-            width={180}
-            height={40}
-            alt="StorePartner logo"
-            priority
-            style={{ height: 'auto' }}
-          />
-        </a>
-      </SidebarHeader>
-      <SidebarContent className="p-2">
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {navItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    asChild
-                    size="default"
-                    isActive={pathname === item.href}
-                    className="data-[active=true]:bg-[oklch(0.646_0.222_41.116/10%)] py-5 pl-4"
-                  >
-                    <Link href={item.href} className="flex items-center gap-2">
-                      <div className={pathname === item.href ? "text-[oklch(0.646_0.222_41.116)]" : ""}>
-                        <item.icon className="size-4.5" />
-                      </div>
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-        <SidebarGroup>
-          <SidebarGroupLabel className="p-2">Premium</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {premiumNavItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    asChild
-                    size="default"
-                    isActive={pathname === item.href}
-                    className="data-[active=true]:bg-[oklch(0.646_0.222_41.116/10%)] py-5 pl-4"
-                  >
-                    <div 
-                      onClick={() => handlePremiumClick(item.href)}
-                      className="flex items-center justify-between w-full cursor-pointer"
+    <>
+      <Sidebar {...props}>
+        <SidebarHeader className="p-4 pt-8 pb-4">
+          <a href="/">
+            <span className="sr-only">Home</span>
+            <Image
+              src="/Logo_BlackOrange.svg"
+              width={180}
+              height={40}
+              alt="StorePartner logo"
+              priority
+              style={{ height: 'auto' }}
+            />
+          </a>
+        </SidebarHeader>
+        <SidebarContent className="p-2">
+          <SidebarGroup>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {navItems.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton
+                      asChild
+                      size="default"
+                      isActive={pathname === item.href}
+                      className="data-[active=true]:bg-[oklch(0.646_0.222_41.116/10%)] py-5 pl-4"
                     >
-                      <div className="flex items-center gap-2">
+                      <Link href={item.href} className="flex items-center gap-2">
                         <div className={pathname === item.href ? "text-[oklch(0.646_0.222_41.116)]" : ""}>
                           <item.icon className="size-4.5" />
                         </div>
                         <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+          <SidebarGroup>
+            <SidebarGroupLabel className="p-2">Premium</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {premiumNavItems.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton
+                      asChild
+                      size="default"
+                      isActive={pathname === item.href}
+                      className="data-[active=true]:bg-[oklch(0.646_0.222_41.116/10%)] py-5 pl-4"
+                    >
+                      <div 
+                        onClick={() => handlePremiumClick(item.href)}
+                        className="flex items-center justify-between w-full cursor-pointer"
+                      >
+                        <div className="flex items-center gap-2">
+                          <div className={pathname === item.href ? "text-[oklch(0.646_0.222_41.116)]" : ""}>
+                            <item.icon className="size-4.5" />
+                          </div>
+                          <span>{item.title}</span>
+                        </div>
+                        {item.isPremium && !isPremium && (
+                          <Lock className="size-3 text-muted-foreground" />
+                        )}
                       </div>
-                      {item.isPremium && (
-                        <Lock className="size-3 text-muted-foreground" />
-                      )}
-                    </div>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
-      <SidebarFooter>
-        <div className="p-2">
-          <Card className="bg-muted/75">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm">Upgrade to Premium</CardTitle>
-              <CardDescription className="text-xs">Unlock all features and benefits</CardDescription>
-            </CardHeader>
-            <CardContent className="pb-2 text-xs">
-              <ul className="space-y-1">
-                <li className="flex items-center gap-1">
-                  <Star className="size-3 text-amber-500" />
-                  <span>Access to AI-tools</span>
-                </li>
-                <li className="flex items-center gap-1">
-                  <Star className="size-3 text-amber-500" />
-                  <span>Priority support</span>
-                </li>
-                <li className="flex items-center gap-1">
-                  <Star className="size-3 text-amber-500" />
-                  <span>Community access</span>
-                </li>
-              </ul>
-            </CardContent>
-            <CardFooter>
-              <Button size="lg" className="w-full">
-                Upgrade Now
-              </Button>
-            </CardFooter>
-          </Card>
-        </div>
-      </SidebarFooter>
-      <SidebarRail />
-    </Sidebar>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </SidebarContent>
+        <SidebarFooter>
+          <div className="p-2">
+            <Card className="bg-muted/75">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm">Upgrade to Premium</CardTitle>
+                <CardDescription className="text-xs">Unlock all features and benefits</CardDescription>
+              </CardHeader>
+              <CardContent className="pb-2 text-xs">
+                <ul className="space-y-1">
+                  <li className="flex items-center gap-1">
+                    <Star className="size-3 text-amber-500" />
+                    <span>Access to AI-tools</span>
+                  </li>
+                  <li className="flex items-center gap-1">
+                    <Star className="size-3 text-amber-500" />
+                    <span>Priority support</span>
+                  </li>
+                  <li className="flex items-center gap-1">
+                    <Star className="size-3 text-amber-500" />
+                    <span>Community access</span>
+                  </li>
+                </ul>
+              </CardContent>
+              <CardFooter>
+                <Button size="lg" className="w-full" onClick={() => setShowSubscriptionModal(true)}>
+                  Upgrade Now
+                </Button>
+              </CardFooter>
+            </Card>
+          </div>
+        </SidebarFooter>
+        <SidebarRail />
+      </Sidebar>
+      <SubscriptionModal open={showSubscriptionModal} onOpenChange={setShowSubscriptionModal} />
+    </>
   );
 } 

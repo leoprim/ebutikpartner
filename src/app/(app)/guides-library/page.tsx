@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { motion } from "framer-motion"
 import { Card, CardContent } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import VideoPlayer from "@/components/video-player"
@@ -32,7 +33,30 @@ interface PlaylistVideo {
   isCompleted: boolean
 }
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+}
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.5,
+      ease: "easeOut"
+    }
+  }
+}
+
 export default function Page() {
+  const [isLoading, setIsLoading] = useState(true)
   const [videos, setVideos] = useState<Video[]>([])
   const [currentVideo, setCurrentVideo] = useState<Video | null>(null)
   const [videoProgress, setVideoProgress] = useState<Record<string, number>>({})
@@ -42,6 +66,13 @@ export default function Page() {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   )
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false)
+    }, 100)
+    return () => clearTimeout(timer)
+  }, [])
 
   useEffect(() => {
     fetchVideos()
@@ -103,11 +134,20 @@ export default function Page() {
     }))
   }
 
+  if (isLoading) {
+    return null
+  }
+
   if (!currentVideo) {
     return (
       <div className="w-full p-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-4">
+        <motion.div 
+          className="grid grid-cols-1 lg:grid-cols-3 gap-6"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          <motion.div variants={itemVariants} className="lg:col-span-2 space-y-4">
             <div className="rounded-lg overflow-hidden bg-muted">
               <div className="aspect-video">
                 <Skeleton className="w-full h-full" />
@@ -119,9 +159,9 @@ export default function Page() {
               <Skeleton className="h-4 w-full" />
               <Skeleton className="h-4 w-2/3" />
             </div>
-          </div>
+          </motion.div>
 
-          <div className="lg:col-span-1">
+          <motion.div variants={itemVariants} className="lg:col-span-1">
             <Card>
               <CardContent className="p-4">
                 <Skeleton className="h-6 w-24 mb-6" />
@@ -140,8 +180,8 @@ export default function Page() {
                 </div>
               </CardContent>
             </Card>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </div>
     )
   }
@@ -157,8 +197,13 @@ export default function Page() {
 
   return (
     <div className="w-full p-6">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-4">
+      <motion.div 
+        className="grid grid-cols-1 lg:grid-cols-3 gap-6"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        <motion.div variants={itemVariants} className="lg:col-span-2 space-y-4">
           <div className="rounded-lg overflow-hidden bg-black">
             <VideoPlayer
               src={currentVideo.src}
@@ -173,9 +218,9 @@ export default function Page() {
             <h2 className="text-xl font-semibold">{currentVideo.title}</h2>
             <p className="text-muted-foreground">{currentVideo.description}</p>
           </div>
-        </div>
+        </motion.div>
 
-        <div className="lg:col-span-1">
+        <motion.div variants={itemVariants} className="lg:col-span-1">
           <Card>
             <CardContent className="p-4">
               <h3 className="font-medium mb-6">Tutorials</h3>
@@ -191,8 +236,8 @@ export default function Page() {
               </ScrollArea>
             </CardContent>
           </Card>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
       <VideoUploadDialog
         open={isUploadDialogOpen}
         onOpenChange={setIsUploadDialogOpen}

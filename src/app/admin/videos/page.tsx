@@ -10,9 +10,6 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { VideoUploadDialog } from "@/components/video-upload-dialog"
 import { VideoEditDialog } from "@/components/video-edit-dialog"
-import { AppSidebar } from "@/components/app-sidebar"
-import { TopBar } from "@/components/topbar"
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import { useAdmin } from "@/hooks/use-admin"
 
 interface Video {
@@ -38,7 +35,10 @@ export default function AdminVideosPage() {
   const supabase = createClientComponentClient()
 
   useEffect(() => {
+    console.log('AdminVideosPage - Admin status:', { isAdmin, isAdminLoading })
+    
     if (!isAdminLoading && !isAdmin) {
+      console.log('AdminVideosPage - Not an admin, redirecting to home')
       toast.error("You must be an admin to access this page")
       router.push("/")
     }
@@ -46,6 +46,7 @@ export default function AdminVideosPage() {
 
   useEffect(() => {
     if (isAdmin) {
+      console.log('AdminVideosPage - Fetching videos')
       fetchVideos()
     }
   }, [isAdmin])
@@ -156,100 +157,98 @@ export default function AdminVideosPage() {
     }
   }
 
-  if (isAdminLoading || !isAdmin) {
+  if (isAdminLoading) {
+    return <div>Loading...</div>
+  }
+
+  if (!isAdmin) {
     return null
   }
 
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset>
-        <TopBar />
-        <div className="flex-1 p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold">Video Management</h1>
-            <Button onClick={() => setIsUploadDialogOpen(true)}>
-              <Plus className="w-4 h-4 mr-2" />
-              Upload Video
-            </Button>
-          </div>
+    <div className="p-6">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">Video Management</h1>
+        <Button onClick={() => setIsUploadDialogOpen(true)}>
+          <Plus className="w-4 h-4 mr-2" />
+          Upload Video
+        </Button>
+      </div>
 
-          <div className="grid gap-4">
-            {videos.map((video) => (
-              <Card key={video.id}>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-lg font-medium">{video.title}</CardTitle>
-                  <div className="flex items-center space-x-2">
-                    <div className="flex items-center text-sm text-muted-foreground mr-2">
-                      <BarChart2 className="w-4 h-4 mr-1" />
-                      {video.view_count || 0} views
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleTogglePublish(video.id, video.is_published)}
-                    >
-                      {video.is_published ? (
-                        <Eye className="w-4 h-4" />
-                      ) : (
-                        <EyeOff className="w-4 h-4" />
-                      )}
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setEditingVideo(video)}
-                    >
-                      <Edit className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleDelete(video.id)}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">
-                    {video.description || "No description"}
-                  </p>
-                  <div className="mt-2 text-sm text-muted-foreground">
-                    Duration: {video.duration || "Unknown"}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
+      <div className="grid gap-4">
+        {videos.map((video) => (
+          <Card key={video.id}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-lg font-medium">{video.title}</CardTitle>
+              <div className="flex items-center space-x-2">
+                <div className="flex items-center text-sm text-muted-foreground mr-2">
+                  <BarChart2 className="w-4 h-4 mr-1" />
+                  {video.view_count || 0} views
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => handleTogglePublish(video.id, video.is_published)}
+                >
+                  {video.is_published ? (
+                    <Eye className="w-4 h-4" />
+                  ) : (
+                    <EyeOff className="w-4 h-4" />
+                  )}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setEditingVideo(video)}
+                >
+                  <Edit className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => handleDelete(video.id)}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                {video.description || "No description"}
+              </p>
+              <div className="mt-2 text-sm text-muted-foreground">
+                Duration: {video.duration || "Unknown"}
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
 
-        <VideoUploadDialog
-          open={isUploadDialogOpen}
-          onOpenChange={setIsUploadDialogOpen}
-          onSuccess={() => {
+      <VideoUploadDialog
+        open={isUploadDialogOpen}
+        onOpenChange={setIsUploadDialogOpen}
+        onSuccess={() => {
+          fetchVideos()
+          setIsUploadDialogOpen(false)
+        }}
+      />
+
+      {editingVideo && (
+        <VideoEditDialog
+          video={{
+            id: editingVideo.id,
+            title: editingVideo.title,
+            description: editingVideo.description || "",
+            thumbnail_url: editingVideo.thumbnail_url
+          }}
+          open={!!editingVideo}
+          onOpenChange={(open) => !open && setEditingVideo(null)}
+          onEditComplete={() => {
             fetchVideos()
-            setIsUploadDialogOpen(false)
+            setEditingVideo(null)
           }}
         />
-
-        {editingVideo && (
-          <VideoEditDialog
-            video={{
-              id: editingVideo.id,
-              title: editingVideo.title,
-              description: editingVideo.description || "",
-              thumbnail_url: editingVideo.thumbnail_url
-            }}
-            open={!!editingVideo}
-            onOpenChange={(open) => !open && setEditingVideo(null)}
-            onEditComplete={() => {
-              fetchVideos()
-              setEditingVideo(null)
-            }}
-          />
-        )}
-      </SidebarInset>
-    </SidebarProvider>
+      )}
+    </div>
   )
 } 

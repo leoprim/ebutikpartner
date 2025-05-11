@@ -13,6 +13,13 @@ module.exports = {
           'orange': '#fa7f14', // Primary Orange
           'orangeLight': '#ffe5cc', // Light/bright Orange
         },
+      fontSize: {
+        base: '14px',
+      },
+      fontWeight: {
+        normal: '400',
+        medium: '500',
+      },
     }
   },
   plugins: [heroui()],
