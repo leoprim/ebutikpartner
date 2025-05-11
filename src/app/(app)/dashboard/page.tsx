@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { motion } from "framer-motion"
 import { ArrowRight, BarChart3, ShoppingBag, Store, Users } from "lucide-react"
 
@@ -30,14 +30,7 @@ const itemVariants = {
 }
 
 export default function DashboardPage() {
-  const [isLoading, setIsLoading] = useState(true)
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false)
-    }, 100)
-    return () => clearTimeout(timer)
-  }, [])
+  const [isLoading, setIsLoading] = useState(false)
 
   if (isLoading) {
     return null
@@ -80,16 +73,16 @@ export default function DashboardPage() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
                     <ShoppingBag className="mr-2 h-4 w-4 text-muted-foreground" />
-                    <span>Products</span>
+                    <span>Niche</span>
                   </div>
-                  <span className="text-sm font-medium">24/30</span>
+                  <span className="text-sm font-medium">Health & Beauty</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
                     <Users className="mr-2 h-4 w-4 text-muted-foreground" />
                     <span>Support Hours</span>
                   </div>
-                  <span className="text-sm font-medium">8 hours left</span>
+                  <span className="text-sm font-medium">1 hours left</span>
                 </div>
               </div>
             </CardContent>

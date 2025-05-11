@@ -1,0 +1,119 @@
+"use client"
+
+import * as React from "react"
+import { LayoutDashboard, Users, Settings, Store, LibraryBig, Bell, Shield } from "lucide-react"
+import Link from "next/link"
+import { usePathname, useRouter } from "next/navigation"
+import Image from 'next/image'
+import { useTransition } from "react"
+import { cn } from "@/lib/utils"
+
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarRail,
+} from "@/components/ui/sidebar"
+
+// Admin navigation items
+const adminNavItems = [
+  {
+    title: "Admin Dashboard",
+    icon: LayoutDashboard,
+    href: "/admin/dashboard",
+  },
+  {
+    title: "Users",
+    icon: Users,
+    href: "/admin/users",
+  },
+  {
+    title: "Stores",
+    icon: Store,
+    href: "/admin/stores",
+  },
+  {
+    title: "Videos",
+    icon: LibraryBig,
+    href: "/admin/videos",
+  },
+  {
+    title: "Admin Community",
+    icon: Bell,
+    href: "/admin/community",
+  },
+  {
+    title: "Admin Settings",
+    icon: Shield,
+    href: "/admin/settings",
+  },
+]
+
+export function AdminSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const pathname = usePathname();
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+
+  const handleNavigation = (href: string) => {
+    startTransition(() => {
+      router.push(href);
+    });
+  };
+
+  return (
+    <Sidebar {...props}>
+      <SidebarHeader className="p-4 pt-8 pb-4">
+        <button onClick={() => handleNavigation("/admin")} className="hover:opacity-80 transition-opacity">
+          <span className="sr-only">Admin Dashboard</span>
+          <Image
+            src="/Logo_BlackOrange.svg"
+            width={180}
+            height={40}
+            alt="StorePartner Admin"
+            priority
+            style={{ height: 'auto' }}
+          />
+        </button>
+      </SidebarHeader>
+      <SidebarContent className="p-2">
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {adminNavItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton
+                    asChild
+                    size="default"
+                    isActive={pathname === item.href}
+                    className={cn(
+                      "data-[active=true]:bg-[oklch(0.646_0.222_41.116/10%)] py-5 pl-4",
+                      isPending && "opacity-50 pointer-events-none"
+                    )}
+                  >
+                    <button
+                      onClick={() => handleNavigation(item.href)}
+                      className="flex items-center gap-2 w-full"
+                    >
+                      <div className={pathname === item.href ? "text-[oklch(0.646_0.222_41.116)]" : ""}>
+                        <item.icon className="size-4.5" />
+                      </div>
+                      <span>{item.title}</span>
+                    </button>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </SidebarContent>
+      <SidebarRail />
+    </Sidebar>
+  )
+} 

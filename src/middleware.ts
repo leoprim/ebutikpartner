@@ -1,6 +1,6 @@
-import { createServerClient } from "@supabase/ssr"
-import { NextResponse } from "next/server"
-import type { NextRequest } from "next/server"
+import { createServerClient } from '@supabase/ssr'
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
 
 export async function middleware(req: NextRequest) {
   // Skip middleware for static files and public assets
@@ -26,72 +26,37 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next()
   }
 
-  // Create a response object that we can modify
   const res = NextResponse.next()
-  
-  try {
-    // Create a Supabase client configured to use cookies
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          get(name: string) {
-            return req.cookies.get(name)?.value
-          },
-          set(name: string, value: string, options: any) {
-            res.cookies.set({
-              name,
-              value,
-              ...options,
-            })
-          },
-          remove(name: string, options: any) {
-            res.cookies.set({
-              name,
-              value: '',
-              ...options,
-            })
-          },
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return req.cookies.get(name)?.value
         },
-      }
-    )
-
-    // Refresh session if expired - required for Server Components
-    const { data: { user }, error } = await supabase.auth.getUser()
-
-    if (error) {
-      console.error('Middleware session error:', error)
-      return res
+        set(name: string, value: string, options: any) {
+          res.cookies.set({
+            name,
+            value,
+            ...options,
+          })
+        },
+        remove(name: string, options: any) {
+          res.cookies.set({
+            name,
+            value: '',
+            ...options,
+          })
+        },
+      },
     }
+  )
 
-    // Get the pathname of the request
-    const path = req.nextUrl.pathname
+  // Refresh session if expired - required for Server Components
+  await supabase.auth.getSession()
 
-    // Define protected routes that require authentication
-    const protectedRoutes = [
-      '/dashboard',
-      '/admin',
-      '/guides-library',
-      '/api/video-progress'
-    ]
-
-    // Check if the current path is a protected route
-    const isProtectedRoute = protectedRoutes.some(route => path.startsWith(route))
-
-    // If it's a protected route and there's no user, redirect to sign-in
-    if (isProtectedRoute && !user) {
-      const redirectUrl = new URL('/auth', req.url)
-      redirectUrl.searchParams.set('redirectedFrom', path)
-      return NextResponse.redirect(redirectUrl)
-    }
-
-    // Return the response with the modified cookies
-    return res
-  } catch (error) {
-    console.error('Middleware error:', error)
-    return res
-  }
+  return res
 }
 
 // Specify which routes this middleware should run on
@@ -102,8 +67,8 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
-     * - public folder
+     * Feel free to modify this pattern to include more paths.
      */
-    '/((?!_next/static|_next/image|favicon.ico|public).*)',
+    '/((?!_next/static|_next/image|favicon.ico).*)',
   ],
 } 

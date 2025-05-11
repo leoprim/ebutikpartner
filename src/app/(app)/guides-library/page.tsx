@@ -215,8 +215,8 @@ export default function Page() {
           </div>
 
           <div className="space-y-2">
-            <h2 className="text-xl font-semibold">{currentVideo.title}</h2>
-            <p className="text-muted-foreground">{currentVideo.description}</p>
+            <h2 className="text-xl font-medium">{currentVideo.title}</h2>
+            <p className="text-muted-foreground font-normal">{currentVideo.description}</p>
           </div>
         </motion.div>
 

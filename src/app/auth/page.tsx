@@ -96,7 +96,7 @@ export default function AuthPage() {
           const redirectPath = redirectedFrom || "/dashboard"
           router.push(redirectPath)
           router.refresh()
-        }, 1200)
+        }, 300)
         return
       }
     } catch (error) {

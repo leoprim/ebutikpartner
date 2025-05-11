@@ -1,9 +1,11 @@
 import { createServerClient } from "@supabase/ssr"
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
-import { AppSidebar } from "@/components/app-sidebar"
+import { AdminSidebar } from "@/components/admin-sidebar"
 import { TopBar } from "@/components/topbar"
 import { SidebarProvider } from "@/components/ui/sidebar"
+import { Suspense } from "react"
+import { LoadingSpinner } from "@/components/ui/loading-spinner"
 
 export const dynamic = 'force-dynamic'
 
@@ -55,11 +57,13 @@ export default async function AdminLayout({
   return (
     <SidebarProvider>
       <div className="flex h-screen w-full">
-        <AppSidebar />
+        <AdminSidebar />
         <div className="flex-1 flex flex-col w-full">
           <TopBar />
           <main className="flex-1 overflow-y-auto w-full">
-            {children}
+            <Suspense fallback={<div className="flex items-center justify-center h-full"><LoadingSpinner /></div>}>
+              {children}
+            </Suspense>
           </main>
         </div>
       </div>

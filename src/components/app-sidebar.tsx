@@ -150,9 +150,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                       asChild
                       size="default"
                       isActive={pathname === item.href}
-                      className="data-[active=true]:bg-[oklch(0.646_0.222_41.116/10%)] py-5 pl-4"
+                      className="data-[active=true]:bg-[oklch(0.646_0.222_41.116/5%)] py-5 pl-4"
                     >
-                      <Link href={item.href} className="flex items-center gap-2">
+                      <Link href={item.href} prefetch={true} className="flex items-center gap-2">
                         <div className={pathname === item.href ? "text-[oklch(0.646_0.222_41.116)]" : ""}>
                           <item.icon className="size-4.5" />
                         </div>
@@ -199,7 +199,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarContent>
         <SidebarFooter>
           <div className="p-2">
-            <Card className="bg-muted/75">
+            <Card className="bg-muted/75 relative overflow-hidden group">
+              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-all duration-300">
+                <div className="absolute inset-0 border-2 rounded-lg animate-border-rotate animate-border-glow" />
+              </div>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm">Upgrade to Premium</CardTitle>
                 <CardDescription className="text-xs">Unlock all features and benefits</CardDescription>
@@ -221,7 +224,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 </ul>
               </CardContent>
               <CardFooter>
-                <Button size="lg" className="w-full" onClick={() => setShowSubscriptionModal(true)}>
+                <Button 
+                  size="lg" 
+                  className="w-full relative z-10" 
+                  onClick={() => {
+                    console.log('Button clicked');
+                    setShowSubscriptionModal(true);
+                  }}
+                >
                   Upgrade Now
                 </Button>
               </CardFooter>
@@ -230,7 +240,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarFooter>
         <SidebarRail />
       </Sidebar>
-      <SubscriptionModal open={showSubscriptionModal} onOpenChange={setShowSubscriptionModal} />
+      <SubscriptionModal 
+        open={showSubscriptionModal} 
+        onOpenChange={setShowSubscriptionModal} 
+      />
     </>
   );
 } 

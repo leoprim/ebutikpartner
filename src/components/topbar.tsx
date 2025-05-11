@@ -65,6 +65,10 @@ export function TopBar() {
         return "Community"
       case "/store":
         return "Store"
+      case "/admin/videos":
+        return "Video Management"
+      case "/admin/dashboard":
+        return "Admin Dashboard"
       default:
         return "StorePartner"
     }
