@@ -120,7 +120,7 @@ export default function StorePageClient({ user }: StorePageClientProps) {
     return () => {
       mounted = false
     }
-  }, [user.id])
+  }, [user.id, supabase])
 
   if (isLoading) {
     return (
@@ -158,7 +158,7 @@ export default function StorePageClient({ user }: StorePageClientProps) {
           <CardHeader>
             <CardTitle>No Store Order Found</CardTitle>
             <CardDescription>
-              You haven't placed any store orders yet. If you've already placed an order, please make sure you're signed in with the correct account.
+              You haven&apos;t placed any store orders yet. If you&apos;ve already placed an order, please make sure you&apos;re signed in with the correct account.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -166,9 +166,9 @@ export default function StorePageClient({ user }: StorePageClientProps) {
               If you believe you should see your store order here, please check that:
             </p>
             <ul className="mt-2 list-disc list-inside text-sm text-muted-foreground">
-              <li>You're signed in with the email address you used to place the order</li>
+              <li>You&apos;re signed in with the email address you used to place the order</li>
               <li>Your order was successfully placed and confirmed</li>
-              <li>You haven't accidentally signed in with a different account</li>
+              <li>You haven&apos;t accidentally signed in with a different account</li>
             </ul>
             <p className="mt-4 text-sm text-muted-foreground">
               If you need assistance, please contact our support team.

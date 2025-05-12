@@ -102,7 +102,7 @@ export default function VideoPlayer({ src, onProgressUpdate, initialProgress, vi
     return () => {
       isMounted = false
     }
-  }, [videoId])
+  }, [videoId, supabase, onComplete])
 
   // Save progress periodically during playback
   useEffect(() => {
@@ -116,7 +116,7 @@ export default function VideoPlayer({ src, onProgressUpdate, initialProgress, vi
     }, 5000) // Save every 5 seconds during playback
 
     return () => clearInterval(interval)
-  }, [videoId, isPlaying])
+  }, [videoId, isPlaying, supabase])
 
   // Save progress (debounced)
   const saveProgress = async (progress: number, completed: boolean = false) => {
@@ -167,7 +167,7 @@ export default function VideoPlayer({ src, onProgressUpdate, initialProgress, vi
         saveProgress(currentProgress)
       }
     }
-  }, [videoId, duration])
+  }, [videoId, duration, supabase])
 
   // Save progress when navigating away
   useEffect(() => {
@@ -195,101 +195,83 @@ export default function VideoPlayer({ src, onProgressUpdate, initialProgress, vi
       window.removeEventListener('beforeunload', handleBeforeUnload)
       window.removeEventListener('popstate', handleRouteChange)
     }
-  }, [videoId, duration])
+  }, [videoId, duration, supabase])
 
   useEffect(() => {
-    const video = videoRef.current
-    if (!video) return
+    if (!videoRef.current) return
 
     const handleTimeUpdate = () => {
-      setCurrentTime(video.currentTime)
-      const progressPercent = Math.floor((video.currentTime / video.duration) * 100)
-      onProgressUpdate(progressPercent)
-      // Debounced save
-      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current)
-      saveTimeoutRef.current = setTimeout(() => {
-        saveProgress(progressPercent)
-      }, 1000)
+      if (!videoRef.current) return
+      const currentProgress = (videoRef.current.currentTime / videoRef.current.duration) * 100
+      setCurrentTime(videoRef.current.currentTime)
+      setProgress(currentProgress)
+      onProgressUpdate(currentProgress)
     }
 
     const handleLoadedMetadata = () => {
-      console.log('Video metadata loaded, duration:', video.duration)
-      setDuration(video.duration)
-      // Only set initial progress if we haven't loaded saved progress
-      if (!progressLoaded && initialProgress > 0 && initialProgress < 100) {
-        const timeToSet = (initialProgress / 100) * video.duration
-        console.log('Setting initial time to:', timeToSet)
-        video.currentTime = timeToSet
+      if (!videoRef.current) return
+      setDuration(videoRef.current.duration)
+      if (initialProgress > 0 && !progressLoaded) {
+        videoRef.current.currentTime = (initialProgress / 100) * videoRef.current.duration
+        setProgress(initialProgress)
       }
     }
 
-    video.addEventListener("timeupdate", handleTimeUpdate)
-    video.addEventListener("loadedmetadata", handleLoadedMetadata)
+    videoRef.current.addEventListener('timeupdate', handleTimeUpdate)
+    videoRef.current.addEventListener('loadedmetadata', handleLoadedMetadata)
 
     return () => {
-      video.removeEventListener("timeupdate", handleTimeUpdate)
-      video.removeEventListener("loadedmetadata", handleLoadedMetadata)
-      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current)
+      if (videoRef.current) {
+        videoRef.current.removeEventListener('timeupdate', handleTimeUpdate)
+        videoRef.current.removeEventListener('loadedmetadata', handleLoadedMetadata)
+      }
     }
-  }, [onProgressUpdate, initialProgress, videoId, progressLoaded])
-
-  useEffect(() => {
-    const video = videoRef.current
-    if (!video) return
-
-    if (isPlaying) {
-      video.play().catch(() => setIsPlaying(false))
-    } else {
-      video.pause()
-    }
-  }, [isPlaying])
-
-  useEffect(() => {
-    const video = videoRef.current
-    if (!video) return
-    video.volume = volume
-    video.muted = isMuted
-  }, [volume, isMuted])
+  }, [initialProgress, progressLoaded, onProgressUpdate])
 
   const handlePlayPause = () => {
+    if (!videoRef.current) return
+    if (isPlaying) {
+      videoRef.current.pause()
+    } else {
+      videoRef.current.play()
+    }
     setIsPlaying(!isPlaying)
   }
 
   const handleVolumeChange = (value: number[]) => {
-    setVolume(value[0])
-    if (value[0] === 0) {
-      setIsMuted(true)
-    } else if (isMuted) {
-      setIsMuted(false)
-    }
+    if (!videoRef.current) return
+    const newVolume = value[0]
+    videoRef.current.volume = newVolume
+    setVolume(newVolume)
+    setIsMuted(newVolume === 0)
   }
 
   const handleMuteToggle = () => {
+    if (!videoRef.current) return
+    videoRef.current.muted = !isMuted
     setIsMuted(!isMuted)
   }
 
   const handleSeek = (value: number[]) => {
-    const video = videoRef.current
-    if (!video) return
+    if (!videoRef.current) return
     const newTime = (value[0] / 100) * duration
-    video.currentTime = newTime
+    videoRef.current.currentTime = newTime
     setCurrentTime(newTime)
   }
 
   const handleFullscreen = () => {
-    const video = videoRef.current
-    if (!video) return
+    if (!videoRef.current) return
     if (document.fullscreenElement) {
       document.exitFullscreen()
     } else {
-      video.requestFullscreen()
+      videoRef.current.requestFullscreen()
     }
   }
 
   const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60)
-    const secs = Math.floor(seconds % 60)
-    return `${mins}:${secs < 10 ? "0" : ""}${secs}`
+    const minutes = Math.floor(seconds / 60)
+    const remainingSeconds = Math.floor(seconds % 60)
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`
   }
 
   const handleMouseMove = () => {
@@ -298,108 +280,93 @@ export default function VideoPlayer({ src, onProgressUpdate, initialProgress, vi
       clearTimeout(controlsTimeoutRef.current)
     }
     controlsTimeoutRef.current = setTimeout(() => {
-      if (isPlaying) {
-        setShowControls(false)
-      }
+      setShowControls(false)
     }, 3000)
   }
 
-  // Save progress on pause or end
   const handlePause = () => {
     setIsPlaying(false)
-    if (videoRef.current && videoId) {
-      const progressPercent = Math.floor((videoRef.current.currentTime / duration) * 100)
-      saveProgress(progressPercent)
-    }
   }
+
   const handleEnded = () => {
     setIsPlaying(false)
     setIsCompleted(true)
     if (videoId) {
       saveProgress(100, true)
     }
-    onProgressUpdate(100)
     onComplete?.()
   }
 
   return (
-    <div
-      className="relative group w-full aspect-video bg-black"
-      onMouseMove={handleMouseMove}
-      onMouseLeave={() => isPlaying && setShowControls(false)}
-    >
+    <div className="relative w-full aspect-video bg-black" onMouseMove={handleMouseMove}>
       <video
         ref={videoRef}
         src={src}
         className="w-full h-full"
-        onClick={handlePlayPause}
         onPause={handlePause}
         onEnded={handleEnded}
       />
-
-      {/* Play button overlay when paused */}
-      {!isPlaying && (
-        <div className="absolute inset-0 flex items-center justify-center">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="w-16 h-16 rounded-full bg-black/50 text-white hover:bg-black/70"
-            onClick={handlePlayPause}
-          >
-            <Play className="w-8 h-8 fill-white" />
-          </Button>
-        </div>
-      )}
-
-      {/* Controls */}
-      <div
-        className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 transition-opacity duration-300 ${
-          showControls || !isPlaying ? "opacity-100" : "opacity-0"
-        }`}
-      >
-        <div className="space-y-2">
-          <Slider
-            value={[currentTime ? (currentTime / duration) * 100 : 0]}
-            onValueChange={handleSeek}
-            className="w-full [&>span:first-child]:h-1.5 [&>span:first-child]:bg-white/30 [&_[role=slider]]:bg-white [&_[role=slider]]:w-3 [&_[role=slider]]:h-3 [&_[role=slider]]:border-0 [&>span:first-child_span]:bg-white"
-          />
-
-          <div className="flex items-center gap-3 text-white">
-            <Button size="icon" variant="ghost" className="text-white hover:bg-white/10" onClick={handlePlayPause}>
-              {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
-            </Button>
-
+      {showControls && (
+        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <Slider
+              value={[progress]}
+              onValueChange={handleSeek}
+              max={100}
+              step={1}
+              className="flex-1"
+            />
+          </div>
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Button size="icon" variant="ghost" className="text-white hover:bg-white/10" onClick={handleMuteToggle}>
-                {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-white hover:text-white/80"
+                onClick={handlePlayPause}
+              >
+                {isPlaying ? (
+                  <Pause className="h-5 w-5" />
+                ) : (
+                  <Play className="h-5 w-5" />
+                )}
               </Button>
-              <div className="w-20">
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-white hover:text-white/80"
+                  onClick={handleMuteToggle}
+                >
+                  {isMuted ? (
+                    <VolumeX className="h-5 w-5" />
+                  ) : (
+                    <Volume2 className="h-5 w-5" />
+                  )}
+                </Button>
                 <Slider
-                  value={[isMuted ? 0 : volume]}
-                  min={0}
-                  max={1}
-                  step={0.1}
+                  value={[volume * 100]}
                   onValueChange={handleVolumeChange}
-                  className="[&>span:first-child]:h-1 [&>span:first-child]:bg-white/30 [&_[role=slider]]:bg-white [&_[role=slider]]:w-2.5 [&_[role=slider]]:h-2.5 [&_[role=slider]]:border-0 [&>span:first-child_span]:bg-white"
+                  max={100}
+                  step={1}
+                  className="w-24"
                 />
               </div>
+              <span className="text-white text-sm">
+                {formatTime(currentTime)} / {formatTime(duration)}
+              </span>
             </div>
-
-            <div className="text-xs ml-2">
-              {formatTime(currentTime)} / {formatTime(duration)}
-            </div>
-
             <Button
-              size="icon"
               variant="ghost"
-              className="text-white hover:bg-white/10 ml-auto"
+              size="icon"
+              className="text-white hover:text-white/80"
               onClick={handleFullscreen}
             >
-              <Maximize className="w-5 h-5" />
+              <Maximize className="h-5 w-5" />
             </Button>
           </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }

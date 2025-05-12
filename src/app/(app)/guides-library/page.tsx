@@ -8,8 +8,6 @@ import VideoPlayer from "@/components/video-player"
 import VideoPlaylist from "@/components/video-playlist"
 import { createBrowserClient } from "@supabase/ssr"
 import { VideoUploadDialog } from "@/components/video-upload-dialog"
-import { Button } from "@/components/ui/button"
-import { Plus } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 
 interface Video {
@@ -76,7 +74,7 @@ export default function Page() {
 
   useEffect(() => {
     fetchVideos()
-  }, [])
+  }, [supabase])
 
   const fetchVideos = async () => {
     try {
@@ -204,7 +202,7 @@ export default function Page() {
         animate="visible"
       >
         <motion.div variants={itemVariants} className="lg:col-span-2 space-y-4">
-          <div className="rounded-lg overflow-hidden bg-black">
+          <div className="rounded-lg overflow-hidden bg-muted">
             <VideoPlayer
               src={currentVideo.src}
               onProgressUpdate={(progress) => handleProgressUpdate(currentVideo.id, progress)}
@@ -215,16 +213,16 @@ export default function Page() {
           </div>
 
           <div className="space-y-2">
-            <h2 className="text-xl font-medium">{currentVideo.title}</h2>
-            <p className="text-muted-foreground font-normal">{currentVideo.description}</p>
+            <h1 className="text-2xl font-bold">{currentVideo.title}</h1>
+            <p className="text-muted-foreground">{currentVideo.description}</p>
           </div>
         </motion.div>
 
         <motion.div variants={itemVariants} className="lg:col-span-1">
           <Card>
             <CardContent className="p-4">
-              <h3 className="font-medium mb-6">Tutorials</h3>
-              <ScrollArea className="h-[500px] pr-4">
+              <h2 className="text-lg font-semibold mb-4">Video Playlist</h2>
+              <ScrollArea className="h-[calc(100vh-12rem)]">
                 <VideoPlaylist
                   videos={playlistVideos}
                   currentVideoId={parseInt(currentVideo.id)}
@@ -238,6 +236,7 @@ export default function Page() {
           </Card>
         </motion.div>
       </motion.div>
+
       <VideoUploadDialog
         open={isUploadDialogOpen}
         onOpenChange={setIsUploadDialogOpen}

@@ -2,7 +2,6 @@
 
 import { useState } from "react"
 import { CheckCircle2, Circle, Clock } from "lucide-react"
-
 import { Progress } from "@/components/ui/progress"
 
 interface Task {
@@ -13,7 +12,7 @@ interface Task {
 }
 
 export function StoreSetupTasks() {
-  const [tasks, setTasks] = useState<Task[]>([
+  const [tasks] = useState<Task[]>([
     {
       id: "1",
       title: "Store setup",

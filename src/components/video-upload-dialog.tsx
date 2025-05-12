@@ -204,9 +204,9 @@ export function VideoUploadDialog({
                       setThumbnailFile(null)
                       setThumbnailPreview(null)
                     }}
-                    className="absolute -top-2 -right-2 p-1 bg-destructive text-destructive-foreground rounded-full"
+                    className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
                   >
-                    <X className="h-4 w-4" />
+                    <X className="w-4 h-4" />
                   </button>
                 </div>
               )}
@@ -215,7 +215,9 @@ export function VideoUploadDialog({
           {isUploading && (
             <div className="space-y-2">
               <Progress value={uploadProgress} />
-              <p className="text-sm text-muted-foreground">Uploading...</p>
+              <p className="text-sm text-muted-foreground text-center">
+                Uploading... {uploadProgress}%
+              </p>
             </div>
           )}
           <div className="flex justify-end gap-2">
@@ -228,7 +230,7 @@ export function VideoUploadDialog({
               Cancel
             </Button>
             <Button type="submit" disabled={isUploading}>
-              {isUploading ? "Uploading..." : "Upload"}
+              Upload
             </Button>
           </div>
         </form>

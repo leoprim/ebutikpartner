@@ -45,7 +45,7 @@ export default function DashboardPage() {
         transition={{ duration: 0.5 }}
       >
         <div>
-          <p className="text-muted-foreground">Welcome back! Here's an overview of your store.</p>
+          <p className="text-muted-foreground">Welcome back! Here&apos;s an overview of your store.</p>
         </div>
       </motion.div>
 
@@ -59,7 +59,7 @@ export default function DashboardPage() {
           <Card>
             <CardHeader>
               <CardTitle className="font-medium text-lg">Store Overview</CardTitle>
-              <CardDescription className="font-normal">Track your store's progress and performance</CardDescription>
+              <CardDescription className="font-normal">Track your store&apos;s progress and performance</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
