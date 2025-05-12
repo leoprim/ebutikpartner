@@ -103,7 +103,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       toast.custom((t) => (
         <div className="bg-background border rounded-lg p-4 shadow-lg">
           <div className="flex flex-col gap-2">
-            <h3 className="text-[oklch(0.646_0.222_41.116)] font-medium">Premium Required</h3>
+            <h3 className="text-[#1e4841] font-medium">Premium Required</h3>
             <p className="text-muted-foreground text-sm">
               This feature is only available for premium users. Upgrade your account to access it.
             </p>
@@ -112,7 +112,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 toast.dismiss(t);
                 setShowSubscriptionModal(true);
               }}
-              className="mt-2 bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90transition-colors"
+              className="mt-2 bg-[#1e4841] text-white px-4 py-2 rounded-md hover:bg-[#1e4841]/90 transition-colors"
             >
               Upgrade
             </button>
@@ -131,8 +131,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <a href="/">
             <span className="sr-only">Home</span>
             <Image
-              src="/Logo_BlackOrange.svg"
-              width={180}
+              src="/LogoRemake_DarkGreen.svg"
+              width={140}
               height={40}
               alt="StorePartner logo"
               priority
@@ -150,13 +150,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                       asChild
                       size="default"
                       isActive={pathname === item.href}
-                      className="data-[active=true]:bg-[oklch(0.646_0.222_41.116/5%)] py-5 pl-4"
+                      className="data-[active=true]:bg-[#bbf49c] hover:bg-[#bbf49c]/30 active:bg-[#bbf49c] py-5 pl-4 transition-all duration-200 ease-in-out group focus-visible:ring-[#1e4841] focus-visible:ring-offset-0"
                     >
                       <Link href={item.href} prefetch={true} className="flex items-center gap-2">
-                        <div className={pathname === item.href ? "text-[oklch(0.646_0.222_41.116)]" : ""}>
-                          <item.icon className="size-4.5" />
+                        <div className="transition-colors duration-200 ease-in-out">
+                          <item.icon className={`size-4.5 ${pathname === item.href ? "text-[#1e4841]" : "text-foreground group-hover:text-[#1e4841]"}`} />
                         </div>
-                        <span>{item.title}</span>
+                        <span className="transition-colors duration-200 ease-in-out group-hover:text-[#1e4841]">{item.title}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -174,17 +174,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                       asChild
                       size="default"
                       isActive={pathname === item.href}
-                      className="data-[active=true]:bg-[oklch(0.646_0.222_41.116/10%)] py-5 pl-4"
+                      className="data-[active=true]:bg-[#bbf49c] hover:bg-[#bbf49c]/30 active:bg-[#bbf49c] py-5 pl-4 transition-all duration-200 ease-in-out group focus-visible:ring-[#1e4841] focus-visible:ring-offset-0"
                     >
                       <div 
                         onClick={() => handlePremiumClick(item.href)}
                         className="flex items-center justify-between w-full cursor-pointer"
                       >
                         <div className="flex items-center gap-2">
-                          <div className={pathname === item.href ? "text-[oklch(0.646_0.222_41.116)]" : ""}>
-                            <item.icon className="size-4.5" />
+                          <div className="transition-colors duration-200 ease-in-out">
+                            <item.icon className={`size-4.5 ${pathname === item.href ? "text-[#1e4841]" : "text-foreground group-hover:text-[#1e4841]"}`} />
                           </div>
-                          <span>{item.title}</span>
+                          <span className="transition-colors duration-200 ease-in-out group-hover:text-[#1e4841]">{item.title}</span>
                         </div>
                         {item.isPremium && !isPremium && (
                           <Lock className="size-3 text-muted-foreground" />
@@ -226,7 +226,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               <CardFooter>
                 <Button 
                   size="lg" 
-                  className="w-full relative z-10" 
+                  className="w-full relative z-10 bg-[#1e4841] hover:bg-[#1e4841]/90" 
                   onClick={() => {
                     console.log('Button clicked');
                     setShowSubscriptionModal(true);

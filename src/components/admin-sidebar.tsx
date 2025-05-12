@@ -73,8 +73,8 @@ export function AdminSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
         <button onClick={() => handleNavigation("/admin")} className="hover:opacity-80 transition-opacity">
           <span className="sr-only">Admin Dashboard</span>
           <Image
-            src="/Logo_BlackOrange.svg"
-            width={180}
+            src="/LogoRemake_DarkGreen.svg"
+            width={140}
             height={40}
             alt="StorePartner Admin"
             priority

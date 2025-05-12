@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
 import { toast } from "sonner"
 import { motion, AnimatePresence } from "framer-motion"
@@ -14,6 +14,7 @@ import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { RecentActivity } from "../dashboard/recent-activity"
 import { StoreSetupTasks } from "./store-setup-tasks"
+import { Skeleton } from "@/components/ui/skeleton"
 
 interface StoreOrder {
   id: string
@@ -46,41 +47,127 @@ const itemVariants = {
   }
 }
 
+// Cache key for store order
+const STORE_ORDER_CACHE_KEY = 'store_order_cache'
+
 export default function StorePage() {
   const [isLoading, setIsLoading] = useState(true)
   const [storeOrder, setStoreOrder] = useState<StoreOrder | null>(null)
   const supabase = createClientComponentClient()
 
-  useEffect(() => {
-    const fetchStoreOrder = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('store_orders')
-          .select('*')
-          .order('order_date', { ascending: false })
-          .limit(1)
-          .single()
-
-        if (error) {
-          console.error('Fetch store order - Error:', error)
-          throw error
+  const fetchStoreOrder = useCallback(async () => {
+    try {
+      // Check cache first
+      const cachedData = sessionStorage.getItem(STORE_ORDER_CACHE_KEY)
+      if (cachedData) {
+        const { data, timestamp } = JSON.parse(cachedData)
+        // Cache is valid for 5 minutes
+        if (Date.now() - timestamp < 5 * 60 * 1000) {
+          setStoreOrder(data)
+          setIsLoading(false)
+          return
         }
-
-        console.log('Fetch store order - Data:', data)
-        setStoreOrder(data)
-      } catch (error) {
-        console.error('Error fetching store order:', error)
-        toast.error('Failed to load store information')
-      } finally {
-        setIsLoading(false)
       }
-    }
 
+      const { data, error } = await supabase
+        .from('store_orders')
+        .select('*')
+        .order('order_date', { ascending: false })
+        .limit(1)
+        .single()
+
+      if (error) {
+        console.error('Fetch store order - Error:', error)
+        throw error
+      }
+
+      // Update cache
+      sessionStorage.setItem(STORE_ORDER_CACHE_KEY, JSON.stringify({
+        data,
+        timestamp: Date.now()
+      }))
+
+      setStoreOrder(data)
+    } catch (error) {
+      console.error('Error fetching store order:', error)
+      toast.error('Failed to load store information')
+    } finally {
+      setIsLoading(false)
+    }
+  }, [supabase])
+
+  useEffect(() => {
     fetchStoreOrder()
-  }, [])
+
+    // Set up real-time subscription for store order updates
+    const channel = supabase
+      .channel('store_order_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'store_orders'
+        },
+        (payload) => {
+          // Refresh data when changes occur
+          fetchStoreOrder()
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [fetchStoreOrder, supabase])
 
   if (isLoading) {
-    return <div>Loading...</div>
+    return (
+      <div className="flex-1 p-6">
+        <div className="space-y-4">
+          <Card>
+            <CardHeader className="pb-2">
+              <div className="flex items-center justify-between">
+                <Skeleton className="h-6 w-32" />
+                <Skeleton className="h-6 w-24" />
+              </div>
+              <Skeleton className="mt-2 h-4 w-48" />
+            </CardHeader>
+            <CardContent>
+              <div className="mt-2 space-y-2">
+                <Skeleton className="h-2 w-full" />
+                <div className="flex justify-between">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-4 w-24" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-6 w-32" />
+              <Skeleton className="mt-2 h-4 w-48" />
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex space-x-2">
+                  <Skeleton className="h-10 w-24" />
+                  <Skeleton className="h-10 w-24" />
+                </div>
+                <div className="space-y-4">
+                  <Skeleton className="h-20 w-full" />
+                  <Skeleton className="h-20 w-full" />
+                  <Skeleton className="h-20 w-full" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    )
   }
 
   if (!storeOrder) {

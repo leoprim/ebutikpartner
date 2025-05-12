@@ -9,6 +9,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { motion, AnimatePresence } from "framer-motion"
 import { Loader2 } from "lucide-react"
 import { createBrowserClient } from "@supabase/ssr"
+import { toast } from "@/components/ui/use-toast"
 
 interface MessageInputProps {
   onSendMessage: (content: string, attachments?: { type: string; url: string }[]) => void
@@ -71,35 +72,46 @@ export function MessageInput({ onSendMessage }: MessageInputProps) {
     if (message.trim() || attachments.length > 0) {
       setIsSending(true)
       try {
-        // Upload files first
+        // Upload files concurrently with better error handling
         const uploadedAttachments = await Promise.all(
           attachments.map(async (attachment) => {
             if (attachment.file.type.startsWith("image/")) {
               try {
-                // Upload the file to your storage
                 const fileExt = attachment.file.name.split('.').pop()
                 const fileName = `${Math.random()}.${fileExt}`
-                const { data, error } = await supabase.storage
+                
+                // Start the upload
+                const uploadPromise = supabase.storage
                   .from('attachments')
                   .upload(fileName, attachment.file)
 
-                if (error) {
-                  console.error('Error uploading file:', error)
-                  throw error
-                }
-
-                // Get the public URL
-                const { data: { publicUrl } } = supabase.storage
+                // Get the public URL in parallel
+                const urlPromise = supabase.storage
                   .from('attachments')
                   .getPublicUrl(fileName)
 
+                // Wait for both operations to complete
+                const [uploadResult, urlResult] = await Promise.all([
+                  uploadPromise,
+                  urlPromise
+                ])
+
+                if (uploadResult.error) {
+                  throw uploadResult.error
+                }
+
                 return {
-                  type: attachment.file.type, // Use the actual MIME type
-                  url: publicUrl
+                  type: attachment.file.type,
+                  url: urlResult.data.publicUrl
                 }
               } catch (error) {
                 console.error('Error processing file:', error)
-                throw error
+                toast({
+                  variant: "destructive",
+                  title: "Upload Failed",
+                  description: `Failed to upload ${attachment.file.name}`
+                })
+                return null
               }
             }
             return {
@@ -109,12 +121,22 @@ export function MessageInput({ onSendMessage }: MessageInputProps) {
           })
         )
 
+        // Filter out failed uploads
+        const successfulUploads = uploadedAttachments.filter((attachment): attachment is { type: string; url: string } => 
+          attachment !== null
+        )
+
         // Send message with uploaded file URLs
-        await onSendMessage(message, uploadedAttachments)
+        await onSendMessage(message, successfulUploads)
         setMessage("")
         setAttachments([])
       } catch (error) {
         console.error('Error sending message:', error)
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to send message"
+        })
       } finally {
         setIsSending(false)
       }

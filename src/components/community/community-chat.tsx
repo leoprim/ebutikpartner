@@ -149,6 +149,30 @@ export function CommunityChat({ initialMessages = [] }: CommunityChatProps) {
         filter: `channel_id=eq.${activeChannel.id}`
       }, async (payload) => {
         const newMessage = payload.new
+        
+        // Check if we already have this message (from optimistic update)
+        const existingMessage = messages.find(msg => 
+          msg.id === newMessage.id || 
+          (msg.id.startsWith('temp-') && msg.content === newMessage.content && msg.user_id === newMessage.user_id)
+        )
+        
+        if (existingMessage) {
+          // If it's our optimistic message, replace it with the real one
+          if (existingMessage.id.startsWith('temp-')) {
+            setMessages(prev => prev.map(msg => 
+              msg.id === existingMessage.id ? {
+                id: newMessage.id,
+                content: newMessage.content,
+                created_at: newMessage.created_at,
+                user_id: newMessage.user_id,
+                profiles: existingMessage.profiles,
+                attachments: newMessage.attachments || []
+              } : msg
+            ))
+          }
+          return // Skip adding duplicate message
+        }
+
         if (newMessage.user_id === currentUser?.id) {
           // For current user, use their metadata
           const { data: { user } } = await supabase.auth.getUser()
@@ -197,7 +221,7 @@ export function CommunityChat({ initialMessages = [] }: CommunityChatProps) {
     return () => {
       subscription.unsubscribe()
     }
-  }, [activeChannel, currentUser])
+  }, [activeChannel, currentUser, messages])
 
   const handleSendMessage = async (content: string, attachments?: { type: string; url: string }[]) => {
     if (!isPremium) {
@@ -214,27 +238,53 @@ export function CommunityChat({ initialMessages = [] }: CommunityChatProps) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
-    console.log('Sending message to channel:', activeChannel?.id)
-    console.log('Attachments:', attachments)
+    // Create optimistic message
+    const optimisticMessage: Message = {
+      id: `temp-${Date.now()}`,
+      content,
+      created_at: new Date().toISOString(),
+      user_id: user.id,
+      profiles: {
+        full_name: user?.user_metadata?.full_name || 
+                  user?.user_metadata?.name || 
+                  user?.email?.split('@')[0] || 
+                  'Anonymous',
+        avatar_url: user?.user_metadata?.avatar_url || '/placeholder.svg'
+      },
+      attachments: attachments?.map(attachment => ({
+        id: `temp-${Date.now()}-${Math.random()}`,
+        type: attachment.type,
+        url: attachment.url
+      })) || []
+    }
 
-    // Ensure attachments have proper type and URL
-    const processedAttachments = attachments?.map(attachment => ({
-      ...attachment,
-      type: attachment.type || 'application/octet-stream',
-      url: attachment.url
-    })) || []
+    // Optimistically update UI
+    setMessages(prev => [...prev, optimisticMessage])
 
-    const { error } = await supabase
-      .from('messages')
-      .insert({
-        channel_id: activeChannel?.id,
-        user_id: user.id,
-        content,
-        attachments: processedAttachments,
-        created_at: new Date().toISOString()
-      })
+    try {
+      const { error } = await supabase
+        .from('messages')
+        .insert({
+          channel_id: activeChannel?.id,
+          user_id: user.id,
+          content,
+          attachments: attachments?.map(attachment => ({
+            id: `temp-${Date.now()}-${Math.random()}`,
+            type: attachment.type,
+            url: attachment.url
+          })) || [],
+          created_at: new Date().toISOString()
+        })
 
-    if (error) {
+      if (error) {
+        // Remove optimistic message on error
+        setMessages(prev => prev.filter(msg => msg.id !== optimisticMessage.id))
+        console.error('Error sending message:', error)
+        toast.error('Failed to send message')
+      }
+    } catch (error) {
+      // Remove optimistic message on error
+      setMessages(prev => prev.filter(msg => msg.id !== optimisticMessage.id))
       console.error('Error sending message:', error)
       toast.error('Failed to send message')
     }

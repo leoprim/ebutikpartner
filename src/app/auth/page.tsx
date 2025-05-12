@@ -223,12 +223,12 @@ export default function AuthPage() {
       </AnimatePresence>
 
       {/* Left side - Background with Logo (desktop only) */}
-      <div className="relative hidden w-1/2 bg-[url(/901419_OAWRX80.jpg)] bg-cover md:block rounded-2xl">
+      <div className="relative hidden w-1/2 bg-[url(/3149495.jpg)] bg-cover md:block rounded-2xl">
         <div className="absolute top-8 left-8">
           <a href="/">
             <span className="sr-only">Home</span>
             <Image
-              src="/Logo_White.svg"
+              src="/LogoRemake_DarkGreen.svg"
               width={220}
               height={40}
               alt="StorePartner white logo"
@@ -241,7 +241,7 @@ export default function AuthPage() {
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentSlide}
-                className="flex h-full flex-col justify-end px-8 pb-12 text-left text-white"
+                className="flex h-full flex-col justify-end px-8 pb-12 text-left text-primary"
                 initial={{ opacity: 0, x: 50 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -50 }}
@@ -260,14 +260,14 @@ export default function AuthPage() {
             <div className="absolute bottom-8 right-8 flex items-center gap-2">
               <button
                 onClick={handlePrevSlide}
-                className="rounded-full bg-white/10 p-2 text-white backdrop-blur-sm transition-colors hover:bg-white/20"
+                className="rounded-full bg-white/10 p-2 text-primary backdrop-blur-sm transition-colors hover:bg-white/20"
                 aria-label="Previous slide"
               >
                 <ChevronLeft className="h-6 w-6" />
               </button>
               <button
                 onClick={handleNextSlide}
-                className="rounded-full bg-white/10 p-2 text-white backdrop-blur-sm transition-colors hover:bg-white/20"
+                className="rounded-full bg-white/10 p-2 text-primary backdrop-blur-sm transition-colors hover:bg-white/20"
                 aria-label="Next slide"
               >
                 <ChevronRight className="h-6 w-6" />
