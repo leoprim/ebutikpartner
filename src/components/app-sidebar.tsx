@@ -74,10 +74,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname();
   const router = useRouter();
   const [isPremium, setIsPremium] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(true);
   const [showSubscriptionModal, setShowSubscriptionModal] = React.useState(false);
 
   React.useEffect(() => {
     const checkPremiumStatus = async () => {
+      setIsLoading(true);
       const supabase = createBrowserClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -93,6 +95,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         
         setIsPremium(profile?.is_premium || false);
       }
+      setIsLoading(false);
     };
 
     checkPremiumStatus();
@@ -186,7 +189,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                           </div>
                           <span className="transition-colors duration-200 ease-in-out group-hover:text-[#1e4841]">{item.title}</span>
                         </div>
-                        {item.isPremium && !isPremium && (
+                        {item.isPremium && !isPremium && !isLoading && (
                           <Lock className="size-3 text-muted-foreground" />
                         )}
                       </div>

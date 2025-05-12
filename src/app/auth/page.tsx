@@ -13,6 +13,7 @@ import Image from "next/image"
 
 import { Checkbox } from "@/components/ui/checkbox"
 import { ForgotPasswordModal } from "@/components/forgot-password-modal"
+import { AnimatedInput } from "@/components/ui/animated-input"
 
 const sliderTexts = [
   {
@@ -229,7 +230,7 @@ export default function AuthPage() {
             <span className="sr-only">Home</span>
             <Image
               src="/LogoRemake_DarkGreen.svg"
-              width={220}
+              width={170}
               height={40}
               alt="StorePartner white logo"
               priority
@@ -289,7 +290,7 @@ export default function AuthPage() {
             <span className="sr-only">Home</span>
             <Image
               src="/Logo_BlackOrange.svg"
-              width={176}
+              width={136}
               height={40}
               alt="StorePartner logo"
               priority
@@ -349,75 +350,69 @@ export default function AuthPage() {
                   <form onSubmit={isSignIn ? handleSignIn : handleSignUp} className="grid gap-4">
                     {!isSignIn && (
                       <div className="grid gap-2">
-                        <Label htmlFor="fullName">Full Name</Label>
-                        <Input
+                        <AnimatedInput
                           id="fullName"
                           name="fullName"
                           type="text"
-                          placeholder="John Doe"
+                          label="Full Name"
                           value={fullName}
                           onChange={(e) => setFullName(e.target.value)}
                         />
                       </div>
                     )}
                     <div className="grid gap-2">
-                      <Label htmlFor="email">Email</Label>
-                      <Input
+                      <AnimatedInput
                         id="email"
                         name="email"
                         type="email"
-                        placeholder="name@example.com"
+                        label="Email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         required
                       />
                     </div>
                     <div className="grid gap-2">
-                      <div className="flex items-center justify-between">
-                        <Label htmlFor="password">Password</Label>
-                        {isSignIn && (
-                          <button
-                            type="button"
-                            className="text-sm text-black hover:underline focus:outline-none"
-                            onClick={() => setForgotOpen(true)}
-                          >
-                            Forgot password?
-                          </button>
-                        )}
-                      </div>
-                      <Input
+                      <AnimatedInput
                         id="password"
                         name="password"
                         type="password"
+                        label="Password"
                         value={password}
-                        placeholder="********"
                         onChange={(e) => setPassword(e.target.value)}
                         required
                       />
                     </div>
+                    {isSignIn && (
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <Checkbox id="remember" />
+                          <Label htmlFor="remember" className="text-sm font-normal">
+                            Remember me
+                          </Label>
+                        </div>
+                        <button
+                          type="button"
+                          className="text-sm text-black hover:underline focus:outline-none"
+                          onClick={() => setForgotOpen(true)}
+                        >
+                          Forgot password?
+                        </button>
+                      </div>
+                    )}
                     {!isSignIn && (
                       <div className="grid gap-2">
-                        <Label htmlFor="confirmPassword">Confirm Password</Label>
-                        <Input
+                        <AnimatedInput
                           id="confirmPassword"
                           name="confirmPassword"
                           type="password"
+                          label="Confirm Password"
                           value={confirmPassword}
-                          placeholder="********"
                           onChange={(e) => setConfirmPassword(e.target.value)}
                           required
                         />
                       </div>
                     )}
-                    {isSignIn && (
-                      <div className="flex items-center space-x-2">
-                        <Checkbox id="remember" />
-                        <Label htmlFor="remember" className="text-sm font-normal">
-                          Remember me
-                        </Label>
-                      </div>
-                    )}
-                    <Button type="submit" className="mt-2 py-5" disabled={isLoading}>
+                    <Button type="submit" className="mt-2 h-12" disabled={isLoading}>
                       {isLoading
                         ? isSignIn
                           ? "Signing in..."

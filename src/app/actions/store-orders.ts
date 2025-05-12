@@ -74,19 +74,25 @@ export async function createStoreOrder(formData: FormData) {
 
     if (isAdmin) {
       // If admin, look up the client user by email using RPC function
+      console.log('Looking up client user by email:', data.client_email)
       const { data: userId, error: clientError } = await supabase
         .rpc('get_user_by_email', { user_email: data.client_email })
 
-      if (clientError || !userId) {
+      if (clientError) {
         console.error('Error looking up client:', clientError)
-        throw new Error('Client not found')
+        throw new Error(`Client not found: ${clientError.message}`)
+      }
+
+      if (!userId) {
+        console.error('No user ID returned for client email:', data.client_email)
+        throw new Error('Client not found: No user ID returned')
       }
 
       data.user_id = userId
       data.created_by = user.id
-      console.log('Admin creating order for client:', data.user_id)
+      console.log('Admin creating order for client:', { client_id: data.user_id, admin_id: user.id })
     } else {
-      console.log('User creating their own order:', data.user_id)
+      console.log('User creating their own order:', { user_id: data.user_id, email: user.email })
     }
 
     // Use regular client for all users

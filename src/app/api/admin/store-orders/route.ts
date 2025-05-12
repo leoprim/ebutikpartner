@@ -42,26 +42,28 @@ export async function POST(request: Request) {
     const data = await request.json()
     console.log('Received store order data:', { ...data, requirements: data.requirements?.length })
 
-    // Look up the client user by email
-    const { data: clientUser, error: clientError } = await supabase
-      .from('users')
-      .select('id')
-      .eq('email', data.client_email)
-      .single()
+    // Look up the client user by email using RPC function
+    const { data: userId, error: clientError } = await supabase
+      .rpc('get_user_by_email', { user_email: data.client_email })
 
     if (clientError) {
       console.error('Error looking up client:', clientError)
       return NextResponse.json({ error: 'Client not found' }, { status: 404 })
     }
 
-    console.log('Found client user:', clientUser.id)
+    if (!userId) {
+      console.error('No user ID returned for client email:', data.client_email)
+      return NextResponse.json({ error: 'Client not found: No user ID returned' }, { status: 404 })
+    }
+
+    console.log('Found client user:', userId)
 
     // Create store order with client user ID
     const { error: insertError } = await supabase
       .from('store_orders')
       .insert([{
         ...data,
-        user_id: clientUser.id, // Link to the client user
+        user_id: userId, // Link to the client user
         created_by: user.id, // Track which admin created the order
       }])
 

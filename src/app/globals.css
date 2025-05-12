@@ -219,3 +219,12 @@
 .animate-border-glow {
   animation: border-glow 2s ease-in-out infinite;
 }
+
+input,
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 50px rgba(255, 255, 255, 0) inset !important;
+  background-color: transparent !important;
+  background-clip: text;
+}

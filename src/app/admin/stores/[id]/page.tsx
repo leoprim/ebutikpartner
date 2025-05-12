@@ -287,7 +287,12 @@ export default function StoreDetailsPage({ params }: { params: { id: string } })
                 <CardDescription>Change the status and progress of this store order</CardDescription>
               </CardHeader>
               <CardContent>
-                <UpdateStoreForm storeId={storeDetails.id} currentStatus={storeDetails.status} onUpdate={fetchStoreDetails} />
+                <UpdateStoreForm 
+                  storeId={storeDetails.id} 
+                  currentStatus={storeDetails.status} 
+                  currentProgress={storeDetails.progress}
+                  onUpdate={fetchStoreDetails} 
+                />
               </CardContent>
             </Card>
           </TabsContent>

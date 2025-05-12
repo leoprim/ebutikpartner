@@ -4,6 +4,7 @@ import { createServerClient } from "@supabase/ssr"
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 import { SidebarProvider } from "@/components/ui/sidebar"
+import { SupabaseProvider } from "@/components/supabase-provider"
 
 export const dynamic = 'force-dynamic'
 
@@ -38,16 +39,18 @@ export default async function AppLayout({
   }
 
   return (
-    <SidebarProvider>
-      <div className="flex h-screen w-full">
-        <AppSidebar />
-        <div className="flex-1 flex flex-col w-full">
-          <TopBar />
-          <main className="flex-1 overflow-y-auto w-full">
-            {children}
-          </main>
+    <SupabaseProvider>
+      <SidebarProvider>
+        <div className="flex h-screen w-full">
+          <AppSidebar />
+          <div className="flex-1 flex flex-col w-full">
+            <TopBar />
+            <main className="flex-1 overflow-y-auto w-full">
+              {children}
+            </main>
+          </div>
         </div>
-      </div>
-    </SidebarProvider>
+      </SidebarProvider>
+    </SupabaseProvider>
   )
 } 

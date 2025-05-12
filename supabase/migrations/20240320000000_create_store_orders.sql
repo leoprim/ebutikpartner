@@ -79,6 +79,10 @@ BEGIN
     FROM auth.users
     WHERE email = user_email;
     
+    IF user_id IS NULL THEN
+        RAISE EXCEPTION 'User with email % not found', user_email;
+    END IF;
+    
     RETURN user_id;
 END;
 $$;

@@ -14,12 +14,13 @@ import { Textarea } from "@/components/ui/textarea"
 interface UpdateStoreFormProps {
   storeId: string
   currentStatus: 'pending' | 'in-progress' | 'review' | 'delivered'
+  currentProgress: number
   onUpdate: () => void
 }
 
-export function UpdateStoreForm({ storeId, currentStatus, onUpdate }: UpdateStoreFormProps) {
+export function UpdateStoreForm({ storeId, currentStatus, currentProgress, onUpdate }: UpdateStoreFormProps) {
   const [status, setStatus] = useState(currentStatus)
-  const [progress, setProgress] = useState(0)
+  const [progress, setProgress] = useState(currentProgress)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const supabase = createClientComponentClient()
 
@@ -30,7 +31,10 @@ export function UpdateStoreForm({ storeId, currentStatus, onUpdate }: UpdateStor
     try {
       const { error } = await supabase
         .from('store_orders')
-        .update({ status, progress })
+        .update({
+          status,
+          progress,
+        })
         .eq('id', storeId)
 
       if (error) throw error
