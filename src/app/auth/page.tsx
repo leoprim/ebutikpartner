@@ -214,7 +214,7 @@ export default function AuthPage() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 20 }}
               transition={{ duration: 0.5 }}
-              className="text-2xl font-bold text-brand-deepsea"
+              className="text-2xl font-medium text-black"
             >
               Success! Redirecting you to your dashboard...
             </motion.div>
@@ -247,10 +247,10 @@ export default function AuthPage() {
                 exit={{ opacity: 0, x: -50 }}
                 transition={{ duration: 0.5 }}
               >
-                <h2 className="text-3xl font-bold">
+                <h2 className="text-3xl font-medium">
                   {sliderTexts[currentSlide].title}
                 </h2>
-                <p className="mt-4 max-w-md text-lg">
+                <p className="mt-4 max-w-md text-lg font-normal">
                   {sliderTexts[currentSlide].description}
                 </p>
               </motion.div>
@@ -330,10 +330,10 @@ export default function AuthPage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.32, delay: 0.05 }}
                 >
-                  <h1 className="text-3xl font-bold tracking-tight">
+                  <h1 className="text-3xl font-medium tracking-tight">
                     {isSignIn ? "Welcome back!" : "Create an account"}
                   </h1>
-                  <p className="text-sm text-muted-foreground py-2">
+                  <p className="text-sm text-muted-foreground py-2 font-normal">
                     {isSignIn
                       ? "Enter your credentials to sign in to your account"
                       : "Enter your information to create your account"}

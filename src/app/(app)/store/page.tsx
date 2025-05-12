@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { RecentActivity } from "../dashboard/recent-activity"
-import { StoreSetupTasks } from "../dashboard/store-setup-tasks"
+import { StoreSetupTasks } from "./store-setup-tasks"
 
 interface StoreOrder {
   id: string
@@ -52,32 +52,32 @@ export default function StorePage() {
   const supabase = createClientComponentClient()
 
   useEffect(() => {
+    const fetchStoreOrder = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('store_orders')
+          .select('*')
+          .order('order_date', { ascending: false })
+          .limit(1)
+          .single()
+
+        if (error) {
+          console.error('Fetch store order - Error:', error)
+          throw error
+        }
+
+        console.log('Fetch store order - Data:', data)
+        setStoreOrder(data)
+      } catch (error) {
+        console.error('Error fetching store order:', error)
+        toast.error('Failed to load store information')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
     fetchStoreOrder()
   }, [])
-
-  const fetchStoreOrder = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('No user found')
-
-      const { data, error } = await supabase
-        .from('store_orders')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('order_date', { ascending: false })
-        .limit(1)
-        .single()
-
-      if (error) throw error
-
-      setStoreOrder(data)
-    } catch (error) {
-      console.error('Error fetching store order:', error)
-      toast.error('Failed to load store information')
-    } finally {
-      setIsLoading(false)
-    }
-  }
 
   if (isLoading) {
     return <div>Loading...</div>

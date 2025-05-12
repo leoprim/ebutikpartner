@@ -64,4 +64,24 @@ CREATE POLICY "Users can update their own orders"
 
 CREATE POLICY "Users can delete their own orders"
     ON store_orders FOR DELETE
-    USING (auth.uid() = user_id); 
+    USING (auth.uid() = user_id);
+
+-- Create function to get user ID by email
+CREATE OR REPLACE FUNCTION get_user_by_email(user_email TEXT)
+RETURNS UUID
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+    user_id UUID;
+BEGIN
+    SELECT id INTO user_id
+    FROM auth.users
+    WHERE email = user_email;
+    
+    RETURN user_id;
+END;
+$$;
+
+-- Grant execute permission to authenticated users
+GRANT EXECUTE ON FUNCTION get_user_by_email(TEXT) TO authenticated; 
