@@ -1,6 +1,8 @@
 "use client"
 
-import { CheckCircle2, Circle } from "lucide-react"
+import { useState } from "react"
+import { CheckCircle2, Circle, Clock } from "lucide-react"
+import { Progress } from "@/components/ui/progress"
 
 interface StoreSetupTasksProps {
   requirements: string[]

@@ -22,11 +22,11 @@ interface StoreOrder {
 interface DebugInfo {
   userId: string
   isAdmin: boolean | null
-  adminError: any
-  storeOrderData: any
-  storeOrderError: any
+  adminError: unknown
+  storeOrderData: unknown
+  storeOrderError: unknown
   timestamp: string
-  catchError?: any
+  catchError?: unknown
 }
 
 interface StorePageClientProps {
@@ -209,7 +209,7 @@ export default function StorePageClient({ user }: StorePageClientProps) {
             </Badge>
           </div>
           <CardDescription className="text-sm font-normal">
-            Your store "{storeOrder.store_name}" is {storeOrder.progress}% complete
+            Your store &quot;{storeOrder.store_name}&quot; is {storeOrder.progress}% complete
           </CardDescription>
         </CardHeader>
         <CardContent>

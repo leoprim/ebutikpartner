@@ -23,10 +23,8 @@ export default function VideoPlayer({ src, onProgressUpdate, initialProgress, vi
   const [isMuted, setIsMuted] = useState(false)
   const [showControls, setShowControls] = useState(true)
   const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const [progressLoaded, setProgressLoaded] = useState(false)
   const [progress, setProgress] = useState(0)
-  const [isCompleted, setIsCompleted] = useState(false)
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -87,7 +85,6 @@ export default function VideoPlayer({ src, onProgressUpdate, initialProgress, vi
           setProgress(data.progress)
           setProgressLoaded(true)
           // Always set isCompleted based on the database value
-          setIsCompleted(data.is_completed || false)
           if (data.is_completed) {
             onComplete?.()
           }
@@ -290,7 +287,6 @@ export default function VideoPlayer({ src, onProgressUpdate, initialProgress, vi
 
   const handleEnded = () => {
     setIsPlaying(false)
-    setIsCompleted(true)
     if (videoId) {
       saveProgress(100, true)
     }

@@ -60,6 +60,7 @@ export default function Page() {
   const [videoProgress, setVideoProgress] = useState<Record<string, number>>({})
   const [completedVideos, setCompletedVideos] = useState<Record<string, boolean>>({})
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false)
+  const [reloadKey, setReloadKey] = useState(0)
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -73,43 +74,42 @@ export default function Page() {
   }, [])
 
   useEffect(() => {
-    fetchVideos()
-  }, [supabase])
+    const fetchVideos = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('videos')
+          .select('*')
+          .eq('is_published', true)
+          .order('order_index', { ascending: true })
 
-  const fetchVideos = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('videos')
-        .select('*')
-        .eq('is_published', true)
-        .order('order_index', { ascending: true })
+        if (error) throw error
 
-      if (error) throw error
-
-      if (data && data.length > 0) {
-        const formattedVideos = await Promise.all(
-          data.map(async video => {
-            // Get the public URL for the video file
-            const { data: publicUrlData } = supabase.storage.from('videos').getPublicUrl(video.video_url)
-            return {
-              ...video,
-              src: publicUrlData?.publicUrl || '',
-            }
-          })
-        )
-        setVideos(formattedVideos)
-        setCurrentVideo(formattedVideos[0])
-        setVideoProgress(
-          Object.fromEntries(formattedVideos.map((video) => [video.id, 0]))
-        )
-        setCompletedVideos(
-          Object.fromEntries(formattedVideos.map((video) => [video.id, false]))
-        )
+        if (data && data.length > 0) {
+          const formattedVideos = await Promise.all(
+            data.map(async video => {
+              // Get the public URL for the video file
+              const { data: publicUrlData } = supabase.storage.from('videos').getPublicUrl(video.video_url)
+              return {
+                ...video,
+                src: publicUrlData?.publicUrl || '',
+              }
+            })
+          )
+          setVideos(formattedVideos)
+          setCurrentVideo(formattedVideos[0])
+          setVideoProgress(
+            Object.fromEntries(formattedVideos.map((video) => [video.id, 0]))
+          )
+          setCompletedVideos(
+            Object.fromEntries(formattedVideos.map((video) => [video.id, false]))
+          )
+        }
+      } catch (error) {
+        console.error('Error fetching videos:', error)
       }
-    } catch (error) {
-      console.error('Error fetching videos:', error)
     }
-  }
+    fetchVideos()
+  }, [supabase, reloadKey])
 
   const handleVideoSelect = (video: PlaylistVideo) => {
     const selectedVideo = videos.find(v => v.id === video.id.toString())
@@ -240,7 +240,7 @@ export default function Page() {
       <VideoUploadDialog
         open={isUploadDialogOpen}
         onOpenChange={setIsUploadDialogOpen}
-        onSuccess={fetchVideos}
+        onSuccess={() => setReloadKey((k) => k + 1)}
       />
     </div>
   )

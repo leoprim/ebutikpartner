@@ -11,6 +11,7 @@ import { X } from "lucide-react"
 import { toast } from "sonner"
 import { Progress } from "@/components/ui/progress"
 import { getVideoDuration, formatDuration } from "@/lib/video-utils"
+import Image from "next/image"
 
 interface VideoUploadDialogProps {
   open: boolean
@@ -193,9 +194,10 @@ export function VideoUploadDialog({
               />
               {thumbnailPreview && (
                 <div className="relative w-20 h-20">
-                  <img
+                  <Image
                     src={thumbnailPreview}
                     alt="Thumbnail preview"
+                    fill
                     className="w-full h-full object-cover rounded"
                   />
                   <button

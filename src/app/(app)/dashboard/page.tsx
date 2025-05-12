@@ -30,7 +30,7 @@ const itemVariants = {
 }
 
 export default function DashboardPage() {
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading] = useState(false)
 
   if (isLoading) {
     return null
