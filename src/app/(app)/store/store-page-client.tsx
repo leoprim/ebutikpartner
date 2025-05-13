@@ -1,13 +1,15 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import { Skeleton } from "@/components/ui/skeleton"
-import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { motion, AnimatePresence } from "framer-motion"
 import type { User } from "@supabase/supabase-js"
+import { createBrowserClient } from "@supabase/ssr"
+import { Skeleton } from "@/components/ui/skeleton"
+import { CalendarDays, Clock, AlertCircle, CheckCircle2, Settings, Palette, Package, Truck } from "lucide-react"
+import { Slider } from "@/components/ui/slider"
 
 interface StoreOrder {
   id: string
@@ -17,207 +19,254 @@ interface StoreOrder {
   order_date: string
   description: string
   requirements: string[]
+  estimated_completion?: string
+  last_updated?: string
+  current_step?: 'setup' | 'design' | 'content' | 'deliver'
 }
 
-interface DebugInfo {
-  userId: string
-  isAdmin: boolean | null
-  adminError: unknown
-  storeOrderData: unknown
-  storeOrderError: unknown
-  timestamp: string
-  catchError?: unknown
-}
+const STEPS = [
+  { id: 'setup', label: 'Setup', icon: Settings, value: 0 },
+  { id: 'design', label: 'Store Design', icon: Palette, value: 33 },
+  { id: 'content', label: 'Product & Content', icon: Package, value: 66 },
+  { id: 'deliver', label: 'Deliver', icon: Truck, value: 100 }
+] as const
 
-interface StorePageClientProps {
-  user: User
-}
-
-export default function StorePageClient({ user }: StorePageClientProps) {
-  const [isLoading, setIsLoading] = useState(true)
+export default function StorePageClient() {
   const [storeOrder, setStoreOrder] = useState<StoreOrder | null>(null)
-  const [debugInfo, setDebugInfo] = useState<DebugInfo | null>(null)
-  const supabase = createClientComponentClient()
-
-  const handleSignOut = async () => {
-    await supabase.auth.signOut()
-    window.location.href = '/login'
-  }
+  const [isLoading, setIsLoading] = useState(true)
+  const [user, setUser] = useState<User | null>(null)
+  const [progress, setProgress] = useState(0)
 
   useEffect(() => {
-    let mounted = true
+    const supabase = createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
 
-    const fetchOrder = async (userId: string) => {
-      if (!mounted) return
-
+    const fetchData = async () => {
       try {
-        console.log('Fetching order for user:', userId)
+        const { data: { user } } = await supabase.auth.getUser()
+        setUser(user)
 
-        // Check if user is admin
-        const { data: isAdmin, error: adminError } = await supabase
-          .rpc('is_admin', { user_id: userId })
-        
-        console.log('Admin check:', { isAdmin, adminError })
+        if (user) {
+          const { data, error } = await supabase
+            .from('store_orders')
+            .select('*')
+            .eq('user_id', user.id)
+            .single()
 
-        // Now fetch the store order with more detailed logging
-        console.log('Querying store_orders table for user_id:', userId)
-        const { data, error } = await supabase
-          .from('store_orders')
-          .select('*')
-          .eq('user_id', userId)
-          .single()
-
-        console.log('Store order query result:', { 
-          data, 
-          error,
-          queryDetails: {
-            table: 'store_orders',
-            user_id: userId,
-            error_code: error?.code,
-            error_message: error?.message,
-            error_details: error?.details
+          if (error) {
+            console.error('Error fetching store order:', error)
+            return
           }
-        })
-        
-        if (!mounted) return
 
-        // Store debug info
-        setDebugInfo({
-          userId,
-          isAdmin,
-          adminError,
-          storeOrderData: data,
-          storeOrderError: error,
-          timestamp: new Date().toISOString()
-        })
-
-        if (error) {
-          console.error('Error fetching order:', error)
-          setStoreOrder(null)
-          return
+          setStoreOrder(data)
+          setProgress(data.progress)
         }
-
-        setStoreOrder(data)
       } catch (error) {
-        console.error('Error:', error)
-        if (!mounted) return
-        setDebugInfo(prev => prev ? {
-          ...prev,
-          catchError: error,
-          timestamp: new Date().toISOString()
-        } : null)
+        console.error('Error in fetchData:', error)
       } finally {
-        if (mounted) {
-          setIsLoading(false)
-        }
+        setIsLoading(false)
       }
     }
 
-    // Initial fetch
-    fetchOrder(user.id)
+    fetchData()
 
-    // Cleanup
-    return () => {
-      mounted = false
+    // Set up real-time subscription
+    if (user?.id) {
+      const channel = supabase
+        .channel(`store_order_${user.id}`)
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'store_orders',
+            filter: `user_id=eq.${user.id}`
+          },
+          (payload) => {
+            console.log('Real-time update received:', payload)
+            const newData = payload.new as StoreOrder
+            setStoreOrder(newData)
+            setProgress(newData.progress)
+          }
+        )
+        .subscribe()
+
+      return () => {
+        supabase.removeChannel(channel)
+      }
     }
-  }, [user.id, supabase])
+  }, [user?.id])
 
-  if (isLoading) {
-    return (
-      <div className="flex-1 p-6">
-        <div className="space-y-4">
-          <Card>
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <Skeleton className="h-6 w-32" />
-                <Skeleton className="h-6 w-24" />
-              </div>
-              <Skeleton className="mt-2 h-4 w-48" />
-            </CardHeader>
-            <CardContent>
-              <div className="mt-2 space-y-2">
-                <Skeleton className="h-2 w-full" />
-                <div className="flex justify-between">
-                  <Skeleton className="h-4 w-24" />
-                  <Skeleton className="h-4 w-24" />
-                  <Skeleton className="h-4 w-24" />
-                  <Skeleton className="h-4 w-24" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    )
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'in-progress':
+        return 'bg-blue-100 text-blue-800 hover:bg-blue-100'
+      case 'review':
+        return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-100'
+      case 'delivered':
+        return 'bg-green-100 text-green-800 hover:bg-green-100'
+      default:
+        return 'bg-gray-100 text-gray-800 hover:bg-gray-100'
+    }
   }
 
-  if (!storeOrder) {
-    return (
-      <div className="flex-1 p-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>No Store Order Found</CardTitle>
-            <CardDescription>
-              You haven&apos;t placed any store orders yet. If you&apos;ve already placed an order, please make sure you&apos;re signed in with the correct account.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              If you believe you should see your store order here, please check that:
-            </p>
-            <ul className="mt-2 list-disc list-inside text-sm text-muted-foreground">
-              <li>You&apos;re signed in with the email address you used to place the order</li>
-              <li>Your order was successfully placed and confirmed</li>
-              <li>You haven&apos;t accidentally signed in with a different account</li>
-            </ul>
-            <p className="mt-4 text-sm text-muted-foreground">
-              If you need assistance, please contact our support team.
-            </p>
-            <div className="mt-4 flex justify-end">
-              <Button variant="outline" onClick={handleSignOut}>
-                Sign Out
-              </Button>
-            </div>
-            {debugInfo && (
-              <div className="mt-4 p-4 bg-gray-100 rounded-md">
-                <h3 className="font-medium mb-2">Debug Information:</h3>
-                <pre className="text-xs overflow-auto">
-                  {JSON.stringify(debugInfo, null, 2)}
-                </pre>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-    )
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'in-progress':
+        return <Clock className="w-4 h-4" />
+      case 'review':
+        return <AlertCircle className="w-4 h-4" />
+      case 'delivered':
+        return <CheckCircle2 className="w-4 h-4" />
+      default:
+        return <CalendarDays className="w-4 h-4" />
+    }
+  }
+
+  const getCurrentStepIndex = (currentStep?: string) => {
+    return STEPS.findIndex(step => step.id === currentStep)
+  }
+
+  const getCurrentStep = (progress: number) => {
+    if (progress >= 100) return STEPS[3]
+    if (progress >= 66) return STEPS[2]
+    if (progress >= 33) return STEPS[1]
+    return STEPS[0]
   }
 
   return (
-    <div className="flex-1 p-6">
-      <Card>
-        <CardHeader className="pb-2">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-lg font-medium">Store Progress</CardTitle>
-            <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
-              {storeOrder.status === "in-progress"
-                ? "In Progress"
-                : storeOrder.status === "review"
-                  ? "Ready for Review"
-                  : storeOrder.status === "delivered"
-                    ? "Delivered"
-                    : "Pending"}
-            </Badge>
-          </div>
-          <CardDescription className="text-sm font-normal">
-            Your store &quot;{storeOrder.store_name}&quot; is {storeOrder.progress}% complete
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="mt-2 space-y-2">
-            <Progress value={storeOrder.progress} className="h-2" />
-          </div>
-        </CardContent>
-      </Card>
+    <div className="w-full p-6">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+      >
+        <Card className="w-full">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-lg font-medium">Store Setup Progress</CardTitle>
+                <CardDescription className="text-sm font-normal">Track your store setup progress</CardDescription>
+              </div>
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.3, delay: 0.2 }}
+              >
+                <Badge className={storeOrder?.status === "in-progress" ? "bg-blue-100 text-blue-800" : 
+                                storeOrder?.status === "review" ? "bg-yellow-100 text-yellow-800" :
+                                storeOrder?.status === "delivered" ? "bg-green-100 text-green-800" :
+                                "bg-gray-100 text-gray-800"}>
+                  {storeOrder?.status || 'pending'}
+                </Badge>
+              </motion.div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <motion.div 
+              className="relative"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3, delay: 0.3 }}
+            >
+              <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                <div className="w-full border-t border-gray-200" />
+              </div>
+              <div className="relative flex justify-between">
+                {STEPS.map((step, index) => {
+                  const Icon = step.icon
+                  const isActive = step.value <= progress
+                  const isCurrentStep = step.value === progress
+                  return (
+                    <div
+                      key={step.id}
+                      className={`flex flex-col items-center ${isActive ? 'text-primary' : 'text-muted-foreground'} group`}
+                    >
+                      <div className="relative">
+                        <div 
+                          className={`flex h-8 w-8 items-center justify-center rounded-full border-1 border-primary/10 ${
+                            isActive 
+                              ? 'border-primary text-primary-foreground' 
+                              : 'border-gray-200'
+                          }`}
+                        >
+                          <div
+                            className={`absolute inset-0 rounded-full overflow-hidden ${
+                              isActive ? 'bg-primary' : 'bg-transparent'
+                            }`}
+                            style={{
+                              transition: 'background-color 0.8s ease-in-out'
+                            }}
+                          />
+                          <Icon className="h-4 w-4 relative z-10" />
+                        </div>
+                        {isCurrentStep && (
+                          <div 
+                            className="absolute inset-0 rounded-full ring-3 ring-primary/20 animate-pulse"
+                          />
+                        )}
+                      </div>
+                      <span className="mt-2 text-xs font-medium">
+                        {step.label}
+                      </span>
+                    </div>
+                  )
+                })}
+              </div>
+            </motion.div>
+
+            <motion.div 
+              className="space-y-4 px-2"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3, delay: 0.6 }}
+            >
+              <motion.div
+                className="relative h-2 bg-primary/20 rounded-full overflow-hidden"
+                initial={{ width: 0 }}
+                animate={{ width: "100%" }}
+                transition={{ duration: 0.8, ease: "easeInOut" }}
+              >
+                <motion.div
+                  className="absolute top-0 left-0 h-full bg-primary"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${progress}%` }}
+                  transition={{ duration: 0.8, ease: "easeInOut" }}
+                />
+              </motion.div>
+              <div className="flex justify-between items-center">
+                <motion.span
+                  key={progress}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="text-sm text-muted-foreground"
+                >
+                  Current Step: {getCurrentStep(progress).label}
+                </motion.span>
+              </div>
+            </motion.div>
+
+            <motion.div 
+              className="grid grid-cols-2 gap-4 text-sm"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3, delay: 0.7 }}
+            >
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <CalendarDays className="w-4 h-4" />
+                <span>Ordered: {storeOrder?.order_date ? new Date(storeOrder.order_date).toLocaleDateString() : 'N/A'}</span>
+              </div>
+              <div className="flex items-center justify-end gap-2 text-muted-foreground">
+                <Clock className="w-4 h-4" />
+                <span>Est. Delivery: {storeOrder?.estimated_completion ? new Date(storeOrder.estimated_completion).toLocaleDateString() : 'TBD'}</span>
+              </div>
+            </motion.div>
+          </CardContent>
+        </Card>
+      </motion.div>
     </div>
   )
 } 

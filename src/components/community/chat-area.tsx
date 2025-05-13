@@ -278,7 +278,7 @@ export function ChatArea({ channel, messages, setMessages, isLoading }: ChatArea
                   <motion.div
                     key={message.id}
                     ref={index === 0 ? oldestMessageRef : null}
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={message.id.startsWith('temp-') ? false : { opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3 }}
                     className={cn(
@@ -289,40 +289,28 @@ export function ChatArea({ channel, messages, setMessages, isLoading }: ChatArea
                     )}
                   >
                     {isFirstInGroup && (
-                      <motion.div
-                        initial={{ scale: 0.8, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        transition={{ duration: 0.2 }}
-                      >
-                        <Avatar className="h-8 w-8">
-                          <AvatarImage
-                            src={message.profiles?.avatar_url}
-                            alt={message.profiles?.full_name || "User"}
-                          />
-                          <AvatarFallback>
-                            {message.profiles?.full_name
-                              ?.split(" ")
-                              .map((n) => n[0])
-                              .join("") || "U"}
-                          </AvatarFallback>
-                        </Avatar>
-                      </motion.div>
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage
+                          src={message.profiles?.avatar_url}
+                          alt={message.profiles?.full_name || "User"}
+                        />
+                        <AvatarFallback>
+                          {message.profiles?.full_name
+                            ?.split(" ")
+                            .map((n) => n[0])
+                            .join("") || "U"}
+                        </AvatarFallback>
+                      </Avatar>
                     )}
                     {!isFirstInGroup && <div className="w-8" />}
-                    <motion.div
-                      initial={{ scale: 0.95, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      transition={{ duration: 0.2 }}
+                    <div
                       className={cn(
                         "flex max-w-[80%] flex-col",
                         isCurrentUser && "items-end"
                       )}
                     >
                       {isFirstInGroup && (
-                        <motion.div
-                          initial={{ y: -10, opacity: 0 }}
-                          animate={{ y: 0, opacity: 1 }}
-                          transition={{ duration: 0.2 }}
+                        <div
                           className={cn(
                             "mb-1 flex items-center gap-2",
                             isCurrentUser && "flex-row-reverse"
@@ -350,12 +338,9 @@ export function ChatArea({ channel, messages, setMessages, isLoading }: ChatArea
                               {new Date(message.created_at).toLocaleString()}
                             </TooltipContent>
                           </Tooltip>
-                        </motion.div>
+                        </div>
                       )}
-                      <motion.div
-                        initial={{ scale: 0.95, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        transition={{ duration: 0.2 }}
+                      <div
                         className={cn(
                           "rounded-lg px-4 py-2",
                           isCurrentUser
@@ -366,7 +351,7 @@ export function ChatArea({ channel, messages, setMessages, isLoading }: ChatArea
                         <p className="whitespace-pre-wrap break-words">
                           {message.content}
                         </p>
-                      </motion.div>
+                      </div>
                       {message.attachments && message.attachments.length > 0 && (
                         <div className={cn(
                           "mt-2",
@@ -444,7 +429,7 @@ export function ChatArea({ channel, messages, setMessages, isLoading }: ChatArea
                           </div>
                         </div>
                       )}
-                    </motion.div>
+                    </div>
                   </motion.div>
                 )
               })

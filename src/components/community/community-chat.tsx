@@ -157,22 +157,20 @@ export function CommunityChat({ initialMessages = [] }: CommunityChatProps) {
         )
         
         if (existingMessage) {
-          // If it's our optimistic message, replace it with the real one
+          // If it's our optimistic message, update it silently without triggering a re-render
           if (existingMessage.id.startsWith('temp-')) {
             setMessages(prev => prev.map(msg => 
               msg.id === existingMessage.id ? {
-                id: newMessage.id,
-                content: newMessage.content,
-                created_at: newMessage.created_at,
-                user_id: newMessage.user_id,
-                profiles: existingMessage.profiles,
-                attachments: newMessage.attachments || []
+                ...msg,  // Keep the existing message data
+                id: newMessage.id,  // Only update the ID
+                created_at: newMessage.created_at  // Update the timestamp
               } : msg
             ))
           }
           return // Skip adding duplicate message
         }
 
+        // For new messages from other users
         if (newMessage.user_id === currentUser?.id) {
           // For current user, use their metadata
           const { data: { user } } = await supabase.auth.getUser()

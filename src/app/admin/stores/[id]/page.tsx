@@ -4,15 +4,23 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
 import { toast } from "sonner"
-import { ArrowLeft, Calendar, Clock, DollarSign, Mail, Package, ShoppingBag, Tag, User } from "lucide-react"
+import { ArrowLeft, Calendar, Clock, DollarSign, Mail, Package, ShoppingBag, Tag, User, Settings, Palette, Truck } from "lucide-react"
 import Link from "next/link"
-
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { UpdateStoreForm } from "./update-store-form"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Slider } from "@/components/ui/slider"
+import { motion } from "framer-motion"
+
+const STEPS = [
+  { id: 'setup', label: 'Setup', icon: Settings, value: 0 },
+  { id: 'design', label: 'Store Design', icon: Palette, value: 33 },
+  { id: 'content', label: 'Product & Content', icon: Package, value: 66 },
+  { id: 'deliver', label: 'Deliver', icon: Truck, value: 100 }
+] as const
 
 interface StoreOrder {
   id: string
@@ -31,6 +39,7 @@ interface StoreOrder {
     event: string
     completed: boolean
   }[]
+  current_step?: 'setup' | 'design' | 'content' | 'deliver'
 }
 
 export default function StoreDetailsPage({ params }: { params: { id: string } }) {
@@ -38,17 +47,29 @@ export default function StoreDetailsPage({ params }: { params: { id: string } })
   const supabase = createClientComponentClient()
   const [storeDetails, setStoreDetails] = useState<StoreOrder | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [progress, setProgress] = useState(0)
+  const [storeId, setStoreId] = useState<string | null>(null)
 
   useEffect(() => {
-    fetchStoreDetails()
-  }, [params.id])
+    if (params?.id) {
+      setStoreId(params.id)
+    }
+  }, [params])
+
+  useEffect(() => {
+    if (storeId) {
+      fetchStoreDetails()
+    }
+  }, [storeId])
 
   const fetchStoreDetails = async () => {
+    if (!storeId) return
+
     try {
       const { data, error } = await supabase
         .from('store_orders')
         .select('*')
-        .eq('id', params.id)
+        .eq('id', storeId)
         .single()
 
       if (error) throw error
@@ -64,6 +85,7 @@ export default function StoreDetailsPage({ params }: { params: { id: string } })
       ]
 
       setStoreDetails({ ...data, timeline })
+      setProgress(data.progress)
     } catch (error) {
       console.error('Error fetching store details:', error)
       toast.error('Failed to load store details')
@@ -89,6 +111,64 @@ export default function StoreDetailsPage({ params }: { params: { id: string } })
     } catch (error) {
       console.error('Error delivering store:', error)
       toast.error('Failed to update store status')
+    }
+  }
+
+  const getCurrentStep = (progress: number) => {
+    return STEPS.find(step => step.value >= progress) || STEPS[0]
+  }
+
+  const handleProgressChange = async (value: number[]) => {
+    if (!storeId) return
+
+    const newProgress = value[0]
+    const currentStep = getCurrentStep(newProgress)
+    
+    try {
+      const { data, error } = await supabase
+        .from('store_orders')
+        .update({
+          progress: currentStep.value,
+          status: currentStep.id === 'deliver' ? 'delivered' : 'in-progress',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', storeId)
+
+      if (error) {
+        console.error('Error updating progress:', error)
+        toast.error('Failed to update progress')
+        return
+      }
+
+      // Fetch the updated record
+      const { data: updatedData, error: fetchError } = await supabase
+        .from('store_orders')
+        .select('*')
+        .eq('id', storeId)
+        .single()
+
+      if (fetchError) {
+        console.error('Error fetching updated data:', fetchError)
+        return
+      }
+
+      toast.success('Progress updated successfully')
+      setProgress(currentStep.value)
+      setStoreDetails(prev => prev ? {
+        ...prev,
+        progress: currentStep.value,
+        status: currentStep.id === 'deliver' ? 'delivered' : 'in-progress'
+      } : null)
+    } catch (error) {
+      console.error('Error in handleProgressChange:', error)
+      toast.error('Failed to update progress')
+    }
+  }
+
+  const handleNextStep = () => {
+    const currentStepIndex = STEPS.findIndex(step => step.value === progress)
+    if (currentStepIndex < STEPS.length - 1) {
+      handleProgressChange([STEPS[currentStepIndex + 1].value])
     }
   }
 
@@ -203,22 +283,63 @@ export default function StoreDetailsPage({ params }: { params: { id: string } })
               <CardTitle className="text-base">Progress</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium">Overall Completion</p>
-                  <p className="text-sm font-medium">{storeDetails.progress}%</p>
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                  <div className="w-full border-t border-gray-200" />
                 </div>
-                <Progress value={storeDetails.progress} className="h-2" />
+                <div className="relative flex justify-between">
+                  {STEPS.map((step) => {
+                    const Icon = step.icon
+                    const isActive = step.value <= progress
+                    return (
+                      <div
+                        key={step.id}
+                        className={`flex flex-col items-center ${isActive ? 'text-primary' : 'text-muted-foreground'}`}
+                      >
+                        <div className={`flex h-8 w-8 items-center justify-center rounded-full border-2 ${
+                          isActive ? 'border-primary bg-primary text-primary-foreground' : 'border-gray-200'
+                        }`}>
+                          <Icon className="h-4 w-4" />
+                        </div>
+                        <span className="mt-2 text-xs font-medium">{step.label}</span>
+                      </div>
+                    )
+                  })}
+                </div>
               </div>
-              <div className="space-y-2">
-                <p className="text-sm font-medium">Estimated Delivery</p>
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-muted-foreground" />
-                  <p className="text-sm">
-                    {storeDetails.status === 'delivered'
-                      ? 'Delivered'
-                      : new Date(storeDetails.order_date).toLocaleDateString()}
-                  </p>
+
+              <div className="space-y-4">
+                <Slider
+                  value={[progress]}
+                  onValueChange={handleProgressChange}
+                  max={100}
+                  step={33}
+                  className="w-full"
+                />
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">
+                    Current Step: {getCurrentStep(progress).label}
+                  </span>
+                  <Button
+                    onClick={handleNextStep}
+                    disabled={progress >= 100}
+                  >
+                    Next Step
+                  </Button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <span>Ordered: {new Date(storeDetails.order_date).toLocaleDateString()}</span>
+                </div>
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Badge className={storeDetails.status === "in-progress" ? "bg-blue-100 text-blue-800" : 
+                                  storeDetails.status === "review" ? "bg-yellow-100 text-yellow-800" :
+                                  storeDetails.status === "delivered" ? "bg-green-100 text-green-800" :
+                                  "bg-gray-100 text-gray-800"}>
+                    {storeDetails.status}
+                  </Badge>
                 </div>
               </div>
             </CardContent>

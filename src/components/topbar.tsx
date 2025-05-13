@@ -88,8 +88,8 @@ export function TopBar() {
             </>
           ) : (
             <div className="flex flex-col items-end">
-              <span className="text-sm font-semibold">{name}</span>
-              <span className="text-xs text-muted-foreground">{email}</span>
+              <span className="text-sm font-medium">{name}</span>
+              <span className="text-xs text-muted-foreground font-normal">{email}</span>
             </div>
           )}
         </div>

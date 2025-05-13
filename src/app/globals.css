@@ -152,7 +152,7 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground text-[14px] font-normal;
+    @apply bg-background text-foreground text-base font-normal;
   }
   h1, h2, h3, h4, h5, h6, .sidebar-menu-item {
     @apply font-medium;

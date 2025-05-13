@@ -72,8 +72,8 @@ export function ForgotPasswordModal({ isOpen, onClose }: ForgotPasswordModalProp
               </button>
 
               <div className="p-6">
-                <h2 className="text-xl font-semibold mb-1">Reset your password</h2>
-                <p className="text-gray-500 text-sm mb-6">
+                <h2 className="text-xl font-medium mb-1">Reset your password</h2>
+                <p className="text-gray-500 text-sm mb-6 font-normal">
                   Enter your email address and we'll send you a link to reset your password.
                 </p>
 

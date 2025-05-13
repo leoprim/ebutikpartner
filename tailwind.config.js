@@ -14,12 +14,28 @@ module.exports = {
           'orangeLight': '#ffe5cc', // Light/bright Orange
         },
       fontSize: {
-        base: '14px',
+        base: '16px',
       },
       fontWeight: {
         normal: '400',
         medium: '500',
+        semibold: '600',
       },
+      animation: {
+        'pulse': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+      },
+      keyframes: {
+        pulse: {
+          '0%, 100%': { 
+            opacity: '0.2',
+            transform: 'scale(1)'
+          },
+          '50%': { 
+            opacity: '0.4',
+            transform: 'scale(1.1)'
+          }
+        }
+      }
     }
   },
   plugins: [heroui()],
