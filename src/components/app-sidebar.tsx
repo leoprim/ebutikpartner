@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Bell, LayoutDashboard, Settings, Star, UsersRound, Lock, Store, LibraryBig } from "lucide-react"
+import { Bell, LayoutDashboard, Settings, Star, UsersRound, Lock, Store, LibraryBig, Crown} from "lucide-react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import Image from 'next/image'
@@ -153,7 +153,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                       asChild
                       size="default"
                       isActive={pathname === item.href}
-                      className="data-[active=true]:bg-[#bbf49c] hover:bg-[#bbf49c]/30 active:bg-[#bbf49c] py-5 pl-4 transition-all duration-200 ease-in-out group focus-visible:ring-[#1e4841] focus-visible:ring-offset-0"
+                      className="data-[active=true]:bg-[#bbf49c] hover:bg-[#bbf49c]/30 active:bg-[#bbf49c] py-5 pl-4 transition-all duration-200 ease-in-out group focus-visible:ring-[#1e4841] focus-visible:ring-offset-0 font-medium"
                     >
                       <Link href={item.href} prefetch={true} className="flex items-center gap-2">
                         <div className="transition-colors duration-200 ease-in-out">
@@ -202,43 +202,46 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarContent>
         <SidebarFooter>
           <div className="p-2">
-            <Card className="bg-muted/75 relative overflow-hidden group">
-              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-all duration-300">
-                <div className="absolute inset-0 border-2 rounded-lg animate-border-rotate animate-border-glow" />
-              </div>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm">Upgrade to Premium</CardTitle>
-                <CardDescription className="text-xs">Unlock all features and benefits</CardDescription>
-              </CardHeader>
-              <CardContent className="pb-2 text-xs">
-                <ul className="space-y-1">
-                  <li className="flex items-center gap-1">
-                    <Star className="size-3 text-amber-500" />
-                    <span>Access to AI-tools</span>
-                  </li>
-                  <li className="flex items-center gap-1">
-                    <Star className="size-3 text-amber-500" />
-                    <span>Priority support</span>
-                  </li>
-                  <li className="flex items-center gap-1">
-                    <Star className="size-3 text-amber-500" />
-                    <span>Community access</span>
-                  </li>
-                </ul>
-              </CardContent>
-              <CardFooter>
-                <Button 
-                  size="lg" 
-                  className="w-full relative z-10 bg-[#1e4841] hover:bg-[#1e4841]/90" 
-                  onClick={() => {
-                    console.log('Button clicked');
-                    setShowSubscriptionModal(true);
-                  }}
-                >
-                  Upgrade Now
-                </Button>
-              </CardFooter>
-            </Card>
+            {!isPremium && !isLoading && (
+              <Card className="bg-[url(/3149495.jpg)] bg-cover bg-center relative overflow-hidden group border-none shadow-none flex flex-col mt-4 pb-0">
+                <div className="absolute inset-0 opacity-0 transition-all duration-300">
+                  <div className="absolute inset-0 rounded-lg" />
+                </div>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-[15px] font-medium">Upgrade to Premium</CardTitle>
+                  <CardDescription className="text-xs font-normal text-primary/70">Unlock all features and benefits</CardDescription>
+                </CardHeader>
+                <CardContent className="pb-2 text-xs">
+                  <ul className="space-y-1">
+                    <li className="flex items-center gap-1">
+                      <Crown className="size-3 text-primary" />
+                      <span>Access to AI-tools</span>
+                    </li>
+                    <li className="flex items-center gap-1">
+                      <Crown className="size-3 text-primary" />
+                      <span>Priority support</span>
+                    </li>
+                    <li className="flex items-center gap-1">
+                      <Crown className="size-3 text-primary" />
+                      <span>Community access</span>
+                    </li>
+                  </ul>
+                </CardContent>
+                <CardFooter className="relative flex items-center justify-center p-4 m-0 mt-auto">
+                  <div className="absolute inset-0 bg-white/30 backdrop-blur-sm" />
+                  <Button 
+                    size="lg" 
+                    className="w-full relative z-10 bg-[#1e4841] hover:bg-[#1e4841]/90" 
+                    onClick={() => {
+                      console.log('Button clicked');
+                      setShowSubscriptionModal(true);
+                    }}
+                  >
+                    Upgrade Now
+                  </Button>
+                </CardFooter>
+              </Card>
+            )}
           </div>
         </SidebarFooter>
         <SidebarRail />

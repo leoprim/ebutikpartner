@@ -213,7 +213,7 @@ export default function Page() {
           </div>
 
           <div className="space-y-2">
-            <h1 className="text-2xl font-bold">{currentVideo.title}</h1>
+            <h1 className="text-2xl font-medium">{currentVideo.title}</h1>
             <p className="text-muted-foreground">{currentVideo.description}</p>
           </div>
         </motion.div>
@@ -221,7 +221,7 @@ export default function Page() {
         <motion.div variants={itemVariants} className="lg:col-span-1">
           <Card>
             <CardContent className="p-4">
-              <h2 className="text-lg font-semibold mb-4">Video Playlist</h2>
+              <h2 className="text-lg font-medium mb-4">Library</h2>
               <ScrollArea className="h-[calc(100vh-12rem)]">
                 <VideoPlaylist
                   videos={playlistVideos}

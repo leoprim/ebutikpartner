@@ -241,7 +241,7 @@ export function ChatArea({ channel, messages, setMessages, isLoading }: ChatArea
       <div className="sticky top-0 z-10 border-b bg-background p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <h2 className="text-lg font-semibold">#{channel.name}</h2>
+            <h2 className="text-lg font-medium">#{channel.name}</h2>
             <span className="text-sm text-muted-foreground">
               {channel.description}
             </span>
@@ -344,8 +344,8 @@ export function ChatArea({ channel, messages, setMessages, isLoading }: ChatArea
                         className={cn(
                           "rounded-lg px-4 py-2",
                           isCurrentUser
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-muted"
+                            ? "bg-primary text-white font-normal text-sm"
+                            : "bg-muted font-normal text-sm"
                         )}
                       >
                         <p className="whitespace-pre-wrap break-words">

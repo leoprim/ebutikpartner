@@ -152,10 +152,20 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground text-base font-normal;
+    @apply bg-background text-foreground text-[14px] font-normal;
   }
-  h1, h2, h3, h4, h5, h6, .sidebar-menu-item {
+  h1, h2, h3, h4, h5, h6 {
     @apply font-medium;
+  }
+  [data-slot="sidebar-menu-item"],
+  [data-slot="sidebar-menu-button"] {
+    @apply font-[500];
+  }
+  [data-slot="sidebar-menu-button"] {
+    @apply font-medium;
+  }
+  p, span, div {
+    @apply font-normal;
   }
 }
 

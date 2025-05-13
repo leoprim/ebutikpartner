@@ -143,28 +143,34 @@ export default function StorePageClient() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
       >
-        <Card className="w-full">
-          <CardHeader>
-            <div className="flex items-center justify-between">
+        <Card className="w-full overflow-hidden">
+          <CardHeader className="relative">
+            <div className="absolute inset-0" />
+            <div className="relative flex items-center justify-between">
               <div>
-                <CardTitle className="text-lg font-medium">Store Setup Progress</CardTitle>
-                <CardDescription className="text-sm font-normal">Track your store setup progress</CardDescription>
+                <CardTitle className="text-xl font-medium">Store Setup Progress</CardTitle>
+                <CardDescription className="text-sm font-normal mt-1">Follow the journey of your store being handcrafted by our team.</CardDescription>
               </div>
               <motion.div
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.3, delay: 0.2 }}
               >
-                <Badge className={storeOrder?.status === "in-progress" ? "bg-blue-100 text-blue-800" : 
-                                storeOrder?.status === "review" ? "bg-yellow-100 text-yellow-800" :
-                                storeOrder?.status === "delivered" ? "bg-green-100 text-green-800" :
-                                "bg-gray-100 text-gray-800"}>
-                  {storeOrder?.status || 'pending'}
+                <Badge className={`px-3 py-1.5 text-sm font-medium ${
+                  storeOrder?.status === "in-progress" ? "bg-blue-100 text-blue-800" : 
+                  storeOrder?.status === "review" ? "bg-yellow-100 text-yellow-800" :
+                  storeOrder?.status === "delivered" ? "bg-green-100 text-green-800" :
+                  "bg-gray-100 text-gray-800"
+                }`}>
+                  <span className="flex items-center gap-1.5">
+                    {getStatusIcon(storeOrder?.status || 'pending')}
+                    {storeOrder?.status || 'pending'}
+                  </span>
                 </Badge>
               </motion.div>
             </div>
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-6 pt-6">
             <motion.div 
               className="relative"
               initial={{ opacity: 0 }}
@@ -180,13 +186,15 @@ export default function StorePageClient() {
                   const isActive = step.value <= progress
                   const isCurrentStep = step.value === progress
                   return (
-                    <div
+                    <motion.div
                       key={step.id}
                       className={`flex flex-col items-center ${isActive ? 'text-primary' : 'text-muted-foreground'} group`}
+                      whileHover={{ scale: 1.05 }}
+                      transition={{ duration: 0.2 }}
                     >
                       <div className="relative">
                         <div 
-                          className={`flex h-8 w-8 items-center justify-center rounded-full border-1 border-primary/10 ${
+                          className={`flex h-10 w-10 items-center justify-center rounded-full border-2 ${
                             isActive 
                               ? 'border-primary text-primary-foreground' 
                               : 'border-gray-200'
@@ -200,18 +208,36 @@ export default function StorePageClient() {
                               transition: 'background-color 0.8s ease-in-out'
                             }}
                           />
-                          <Icon className="h-4 w-4 relative z-10" />
+                          <Icon className="h-5 w-5 relative z-10" />
                         </div>
                         {isCurrentStep && (
-                          <div 
-                            className="absolute inset-0 rounded-full ring-3 ring-primary/20 animate-pulse"
+                          <motion.div 
+                            className="absolute inset-0 rounded-full ring-4 ring-primary/20"
+                            animate={{
+                              scale: [1, 1.1, 1],
+                              opacity: [0.5, 0.8, 0.5]
+                            }}
+                            transition={{
+                              duration: 2,
+                              repeat: Infinity,
+                              ease: "easeInOut"
+                            }}
                           />
                         )}
                       </div>
                       <span className="mt-2 text-xs font-medium">
                         {step.label}
                       </span>
-                    </div>
+                      {isCurrentStep && (
+                        <motion.span
+                          initial={{ opacity: 0, y: 5 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="text-xs text-primary mt-1"
+                        >
+                          In Progress
+                        </motion.span>
+                      )}
+                    </motion.div>
                   )
                 })}
               </div>
@@ -223,8 +249,12 @@ export default function StorePageClient() {
               animate={{ opacity: 1 }}
               transition={{ duration: 0.3, delay: 0.6 }}
             >
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm font-medium">Overall Progress</span>
+                <span className="text-sm font-medium text-primary">{progress}%</span>
+              </div>
               <motion.div
-                className="relative h-2 bg-primary/20 rounded-full overflow-hidden"
+                className="relative h-3 bg-primary/10 rounded-full overflow-hidden"
                 initial={{ width: 0 }}
                 animate={{ width: "100%" }}
                 transition={{ duration: 0.8, ease: "easeInOut" }}
@@ -236,32 +266,27 @@ export default function StorePageClient() {
                   transition={{ duration: 0.8, ease: "easeInOut" }}
                 />
               </motion.div>
-              <div className="flex justify-between items-center">
-                <motion.span
-                  key={progress}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="text-sm text-muted-foreground"
-                >
-                  Current Step: {getCurrentStep(progress).label}
-                </motion.span>
-              </div>
             </motion.div>
 
             <motion.div 
-              className="grid grid-cols-2 gap-4 text-sm"
+              className="grid grid-cols-2 gap-4 text-sm bg-muted/50 p-4 rounded-lg"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.3, delay: 0.7 }}
             >
               <div className="flex items-center gap-2 text-muted-foreground">
                 <CalendarDays className="w-4 h-4" />
-                <span>Ordered: {storeOrder?.order_date ? new Date(storeOrder.order_date).toLocaleDateString() : 'N/A'}</span>
+                <div>
+                  <span className="block text-xs font-medium text-muted-foreground">Order Date</span>
+                  <span className="font-medium">{storeOrder?.order_date ? new Date(storeOrder.order_date).toLocaleDateString() : 'N/A'}</span>
+                </div>
               </div>
               <div className="flex items-center justify-end gap-2 text-muted-foreground">
                 <Clock className="w-4 h-4" />
-                <span>Est. Delivery: {storeOrder?.estimated_completion ? new Date(storeOrder.estimated_completion).toLocaleDateString() : 'TBD'}</span>
+                <div className="text-right">
+                  <span className="block text-xs font-medium text-muted-foreground">Est. Delivery</span>
+                  <span className="font-medium">{storeOrder?.estimated_completion ? new Date(storeOrder.estimated_completion).toLocaleDateString() : 'TBD'}</span>
+                </div>
               </div>
             </motion.div>
           </CardContent>
