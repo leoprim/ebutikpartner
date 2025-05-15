@@ -229,8 +229,8 @@ export default function AuthPage() {
           <a href="/">
             <span className="sr-only">Home</span>
             <Image
-              src="/LogoRemake_DarkGreen.svg"
-              width={170}
+              src="/LogoNewRemake_DarkGreen.svg"
+              width={230}
               height={40}
               alt="StorePartner white logo"
               priority
@@ -290,7 +290,7 @@ export default function AuthPage() {
           <a href="/">
             <span className="sr-only">Home</span>
             <Image
-              src="/Logo_BlackOrange.svg"
+              src="/LogoNewRemake_DarkGreen.svg"
               width={136}
               height={40}
               alt="StorePartner logo"

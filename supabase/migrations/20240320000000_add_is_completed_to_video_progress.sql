@@ -1,2 +1,0 @@
-ALTER TABLE video_progress
-ADD COLUMN is_completed BOOLEAN DEFAULT FALSE; 

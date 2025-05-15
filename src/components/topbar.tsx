@@ -115,6 +115,10 @@ export function TopBar() {
         return "Admin Dashboard"
       case "/notifications":
         return "Notifications"
+      case "/blog-post-generator":
+        return "Blog Post Generator"
+      case "/ai-tools":
+        return "AI-Tools"
       default:
         return "StorePartner"
     }

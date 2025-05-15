@@ -11,6 +11,12 @@ export const createServerClient = async (cookieStore: ReturnType<typeof cookies>
         get(name: string) {
           return cookieStoreResolved.get(name)?.value
         },
+        set(name: string, value: string, options: any) {
+          cookieStoreResolved.set({ name, value, ...options })
+        },
+        remove(name: string, options: any) {
+          cookieStoreResolved.delete({ name, ...options })
+        },
       },
     }
   )

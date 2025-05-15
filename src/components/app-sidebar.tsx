@@ -131,7 +131,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <a href="/">
             <span className="sr-only">Home</span>
             <Image
-              src="/LogoRemake_DarkGreen.svg"
+              src="/LogoNewRemake_DarkGreen.svg"
               width={140}
               height={40}
               alt="StorePartner logo"

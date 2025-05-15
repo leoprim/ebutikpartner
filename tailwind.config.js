@@ -43,8 +43,20 @@ module.exports = {
             transform: 'scale(1.1)'
           }
         }
-      }
+      },
+      typography: {
+        DEFAULT: {
+          css: {
+            maxWidth: 'none',
+            color: 'var(--tw-prose-body)',
+            fontSize: '14px',
+          },
+        },
+      },
     }
   },
-  plugins: [heroui()],
+  plugins: [
+    heroui(),
+    require('@tailwindcss/typography'),
+  ],
 } 

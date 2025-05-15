@@ -2,22 +2,31 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
+// Authentication-related paths that don't require a session
+const publicPaths = ['/auth', '/auth/callback', '/sign-in', '/sign-up']
+// Next.js system paths and static files that should be excluded
+const systemPaths = ['/_next', '/favicon.ico']
+// Image extensions to exclude
+const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.svg', '.webp', '.ico']
+
 export async function middleware(req: NextRequest) {
-  // Skip middleware for static files and public assets
-  if (
-    req.nextUrl.pathname.startsWith('/_next') ||
-    req.nextUrl.pathname.startsWith('/static') ||
-    req.nextUrl.pathname.startsWith('/images') ||
-    req.nextUrl.pathname.startsWith('/Logo_') ||
-    req.nextUrl.pathname.endsWith('.jpg') ||
-    req.nextUrl.pathname.endsWith('.png') ||
-    req.nextUrl.pathname.endsWith('.svg') ||
-    req.nextUrl.pathname.endsWith('.ico')
-  ) {
-    return NextResponse.next()
+  // Initialize response
+  const res = NextResponse.next()
+  
+  const { pathname } = req.nextUrl
+  
+  // Skip middleware for system paths and api routes
+  if (systemPaths.some(path => pathname.startsWith(path)) || 
+      pathname.startsWith('/api')) {
+    return res
+  }
+  
+  // Skip middleware for image files
+  if (imageExtensions.some(ext => pathname.toLowerCase().endsWith(ext))) {
+    return res
   }
 
-  const res = NextResponse.next()
+  // Create Supabase client using cookies from request
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -34,48 +43,45 @@ export async function middleware(req: NextRequest) {
           })
         },
         remove(name: string, options: any) {
-          res.cookies.set({
+          res.cookies.delete({
             name,
-            value: '',
             ...options,
           })
         },
       },
     }
   )
-
-  const { data: { session } } = await supabase.auth.getSession()
-
-  // If user is not signed in and the current path is not /auth,
-  // redirect the user to /auth
-  if (!session && !req.nextUrl.pathname.startsWith('/auth')) {
-    const redirectUrl = req.nextUrl.clone()
-    redirectUrl.pathname = '/auth'
-    redirectUrl.searchParams.set('redirectedFrom', req.nextUrl.pathname)
-    return NextResponse.redirect(redirectUrl)
+  
+  try {
+    // Get user session
+    const { data: { session } } = await supabase.auth.getSession()
+    
+    // Check if current path is public
+    const isPublicPath = publicPaths.some(path => pathname.startsWith(path))
+    
+    // Redirect unauthenticated users trying to access protected routes
+    if (!session && !isPublicPath) {
+      const redirectUrl = new URL('/auth', req.url)
+      redirectUrl.searchParams.set('redirectedFrom', pathname)
+      return NextResponse.redirect(redirectUrl)
+    }
+    
+    // Redirect authenticated users trying to access auth pages
+    if (session && isPublicPath) {
+      return NextResponse.redirect(new URL('/dashboard', req.url))
+    }
+    
+    // Continue with the request
+    return res
+  } catch (error) {
+    console.error('Middleware error:', error)
+    return res
   }
-
-  // If user is signed in and the current path is /auth,
-  // redirect the user to /dashboard
-  if (session && req.nextUrl.pathname.startsWith('/auth')) {
-    const redirectUrl = req.nextUrl.clone()
-    redirectUrl.pathname = '/dashboard'
-    return NextResponse.redirect(redirectUrl)
-  }
-
-  return res
 }
 
-// Specify which routes this middleware should run on
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * Feel free to modify this pattern to include more paths.
-     */
-    '/((?!_next/static|_next/image|favicon.ico).*)',
+    '/',
+    '/:path*',
   ],
 } 
