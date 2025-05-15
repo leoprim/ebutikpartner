@@ -93,18 +93,20 @@ export function AdminSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
                     size="default"
                     isActive={pathname === item.href}
                     className={cn(
-                      "data-[active=true]:bg-[oklch(0.646_0.222_41.116/10%)] py-5 pl-4",
+                      "data-[active=true]:bg-primary/10 hover:bg-primary/5 active:bg-primary/10 py-5 pl-4 transition-all duration-200 ease-in-out",
                       isPending && "opacity-50 pointer-events-none"
                     )}
                   >
                     <button
                       onClick={() => handleNavigation(item.href)}
-                      className="flex items-center gap-2 w-full"
+                      className="flex items-center gap-2 w-full group"
                     >
-                      <div className={pathname === item.href ? "text-[oklch(0.646_0.222_41.116)]" : ""}>
+                      <div className={cn(
+                        pathname === item.href ? "text-primary" : "group-hover:text-primary transition-colors duration-200",
+                      )}>
                         <item.icon className="size-4.5" />
                       </div>
-                      <span>{item.title}</span>
+                      <span className="group-hover:text-primary transition-colors duration-200">{item.title}</span>
                     </button>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

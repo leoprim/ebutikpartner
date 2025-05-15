@@ -3,8 +3,8 @@
 import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts"
 
 const data = [
-  { name: "Free", value: 5200, color: "#ff6900" },
-  { name: "Premium", value: 3800, color: "#ff6900" },
+  { name: "Free", value: 5200, color: "#1e4841" },
+  { name: "Premium", value: 3800, color: "#1e4841" },
 ]
 
 export function SubscriptionTiers() {

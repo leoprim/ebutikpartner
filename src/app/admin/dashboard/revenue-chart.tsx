@@ -39,8 +39,8 @@ export default function RevenueChart() {
         <YAxis />
         <Tooltip formatter={(value) => [`$${value}`, "Revenue"]} labelFormatter={(label) => `Month: ${label}`}  />
         <Legend />
-        <Bar dataKey="Free" fill="#94a3b8" radius={[15, 15, 0, 0]} name="Free Plan" />
-        <Bar dataKey="Premium" fill="#ff6900" radius={[15, 15, 0, 0]}name="Premium Plan" />
+        <Bar dataKey="Free" fill="#1e4841" radius={[15, 15, 0, 0]} name="Free Plan" />
+        <Bar dataKey="Premium" fill="#bbf49c" radius={[15, 15, 0, 0]}name="Premium Plan" />
       </BarChart>
     </ResponsiveContainer>
   )

@@ -234,6 +234,7 @@ export default function AuthPage() {
               height={40}
               alt="StorePartner white logo"
               priority
+              style={{ height: "auto" }}
             />
           </a>
         </div>
@@ -294,6 +295,7 @@ export default function AuthPage() {
               height={40}
               alt="StorePartner logo"
               priority
+              style={{ height: "auto" }}
             />
           </a>
         </motion.div>

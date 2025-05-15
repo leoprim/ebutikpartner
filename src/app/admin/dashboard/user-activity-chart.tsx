@@ -50,7 +50,7 @@ export default function UserActivityChart() {
         />
         <YAxis />
         <Tooltip formatter={(value) => [`${value}`, "Active Users"]} labelFormatter={(label) => `Day ${label}`} />
-        <Area type="monotone" dataKey="users" stroke="oklch(0.705 0.213 47.604)" strokeWidth={3} dot={false} fill="#ff6900" fillOpacity={0.2} />
+        <Area type="monotone" dataKey="users" stroke="#1e4841" strokeWidth={3} dot={false} fill="#bbf49c" fillOpacity={0.2} />
       </AreaChart>
     </ResponsiveContainer>
   )

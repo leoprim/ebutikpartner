@@ -74,12 +74,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname();
   const router = useRouter();
   const [isPremium, setIsPremium] = React.useState(false);
-  const [isLoading, setIsLoading] = React.useState(true);
   const [showSubscriptionModal, setShowSubscriptionModal] = React.useState(false);
 
   React.useEffect(() => {
     const checkPremiumStatus = async () => {
-      setIsLoading(true);
       const supabase = createBrowserClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -95,7 +93,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         
         setIsPremium(profile?.is_premium || false);
       }
-      setIsLoading(false);
     };
 
     checkPremiumStatus();
@@ -130,7 +127,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <>
       <Sidebar {...props}>
-        <SidebarHeader className="p-4 pt-8 pb-4">
+        <SidebarHeader className="p-4 pt-8 pb-4 pl-5">
           <a href="/">
             <span className="sr-only">Home</span>
             <Image
@@ -189,7 +186,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                           </div>
                           <span className="transition-colors duration-200 ease-in-out group-hover:text-[#1e4841]">{item.title}</span>
                         </div>
-                        {item.isPremium && !isPremium && !isLoading && (
+                        {item.isPremium && !isPremium && (
                           <Lock className="size-3 text-muted-foreground" />
                         )}
                       </div>
@@ -202,7 +199,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarContent>
         <SidebarFooter>
           <div className="p-2">
-            {!isPremium && !isLoading && (
+            {!isPremium && (
               <Card className="bg-[url(/3149495.jpg)] bg-cover bg-center relative overflow-hidden group border-none shadow-none flex flex-col mt-4 pb-0">
                 <div className="absolute inset-0 opacity-0 transition-all duration-300">
                   <div className="absolute inset-0 rounded-lg" />

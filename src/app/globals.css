@@ -161,7 +161,7 @@
   [data-slot="sidebar-menu-button"] {
     @apply font-[500];
   }
-  [data-slot="sidebar-menu-button"] {
+  [data-slot="sidebarmenubutton"] {
     @apply font-medium;
   }
   p, span, div {

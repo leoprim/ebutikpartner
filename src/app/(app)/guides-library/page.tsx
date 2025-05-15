@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { motion } from "framer-motion"
 import { Card, CardContent } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -61,10 +61,22 @@ export default function Page() {
   const [completedVideos, setCompletedVideos] = useState<Record<string, boolean>>({})
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false)
   const [reloadKey, setReloadKey] = useState(0)
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  
+  // Use ref for Supabase client to prevent recreation on re-renders
+  const supabase = useRef(
+    createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        auth: {
+          persistSession: true,
+          detectSessionInUrl: false,
+          autoRefreshToken: true,
+          flowType: 'pkce'
+        }
+      }
+    )
+  ).current
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -96,20 +108,40 @@ export default function Page() {
             })
           )
           setVideos(formattedVideos)
-          setCurrentVideo(formattedVideos[0])
-          setVideoProgress(
-            Object.fromEntries(formattedVideos.map((video) => [video.id, 0]))
-          )
-          setCompletedVideos(
-            Object.fromEntries(formattedVideos.map((video) => [video.id, false]))
-          )
+          
+          // Only set current video if it's not already set
+          if (!currentVideo) {
+            setCurrentVideo(formattedVideos[0])
+          }
+          
+          setVideoProgress(prevProgress => {
+            // Keep existing progress values while adding any new videos
+            const newProgress = { ...prevProgress };
+            formattedVideos.forEach(video => {
+              if (!(video.id in newProgress)) {
+                newProgress[video.id] = 0;
+              }
+            });
+            return newProgress;
+          });
+          
+          setCompletedVideos(prevCompleted => {
+            // Keep existing completed values while adding any new videos
+            const newCompleted = { ...prevCompleted };
+            formattedVideos.forEach(video => {
+              if (!(video.id in newCompleted)) {
+                newCompleted[video.id] = false;
+              }
+            });
+            return newCompleted;
+          });
         }
       } catch (error) {
         console.error('Error fetching videos:', error)
       }
     }
     fetchVideos()
-  }, [supabase, reloadKey])
+  }, [supabase, reloadKey, currentVideo])
 
   const handleVideoSelect = (video: PlaylistVideo) => {
     const selectedVideo = videos.find(v => v.id === video.id.toString())
@@ -204,6 +236,7 @@ export default function Page() {
         <motion.div variants={itemVariants} className="lg:col-span-2 space-y-4">
           <div className="rounded-lg overflow-hidden bg-muted">
             <VideoPlayer
+              key={`video-player-${currentVideo.id}`}
               src={currentVideo.src}
               onProgressUpdate={(progress) => handleProgressUpdate(currentVideo.id, progress)}
               initialProgress={videoProgress[currentVideo.id] || 0}

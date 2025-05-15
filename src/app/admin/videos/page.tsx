@@ -168,7 +168,6 @@ export default function AdminVideosPage() {
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Video Management</h1>
         <Button onClick={() => setIsUploadDialogOpen(true)}>
           <Plus className="w-4 h-4 mr-2" />
           Upload Video

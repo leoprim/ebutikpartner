@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -34,10 +34,14 @@ export default function SettingsModal({ open, onOpenChange }: SettingsModalProps
   const [confirmPassword, setConfirmPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [user, setUser] = useState<any>(null)
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  
+  // Use useRef to prevent creating multiple Supabase clients on re-renders
+  const supabase = useRef(
+    createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
+  ).current
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -48,8 +52,10 @@ export default function SettingsModal({ open, onOpenChange }: SettingsModalProps
         setAvatar(session.user.user_metadata?.avatar_url || null)
       }
     }
-    fetchUser()
-  }, [])
+    if (open) {
+      fetchUser()
+    }
+  }, [open, supabase])
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]

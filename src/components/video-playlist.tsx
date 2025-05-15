@@ -42,6 +42,7 @@ export default function VideoPlaylist({ videos, currentVideoId, progress, onVide
                 width={90}
                 height={50}
                 className="rounded-md object-cover w-[90px] h-[51px]"
+                style={{ height: "auto" }}
               />
 
               {/* Play indicator for current video */}
