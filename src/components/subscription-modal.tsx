@@ -25,23 +25,23 @@ export default function SubscriptionModal({ open, onOpenChange }: SubscriptionMo
 
   const plans = [
     {
-      name: "Free",
-      description: "Basic when you start out with StorePartner.",
+      name: "Gratis",
+      description: "Standard när du börjar med EbutikPartner.",
       monthlyPrice: 0,
       yearlyPrice: 0,
       features: [
-        "Track your store order",
-        "Access to Guides Library"],
+        "Spåra din beställning av butik",
+        "Tillgång till vår guidebibliotek"],
     },
     {
       name: "Premium",
-      description: "Perfect for those who want to grow their store to next level.",
-      monthlyPrice: 49.95,
-      yearlyPrice: Math.round(49.95 * 12 * (1 - yearlyDiscount)),
+      description: "Perfekt för de som vill ta sin verksamhet till nästa nivå.",
+      monthlyPrice: 599,
+      yearlyPrice: Math.round(599 * 12 * (1 - yearlyDiscount)),
       features: [
-        "Unlimited access to AI-tools",
-        "Advanced Guides Library content",
-        "Grow with the StorePartner Community",
+        "Obegränsad tillgång till AI-verktyg",
+        "Avancerat innehåll i vårt guidebibliotek",
+        "EbutikPartner-Community",
       ],
     },
   ]
@@ -52,10 +52,9 @@ export default function SubscriptionModal({ open, onOpenChange }: SubscriptionMo
         <DialogContent className="max-w-3xl p-0 sm:max-w-[700px] sm:max-h-[750px]">
           <div className="p-6 sm:p-8">
             <DialogHeader className="mb-6 text-center">
-              <DialogTitle className="text-3xl font-medium text-center">Upgrade to Premium!</DialogTitle>
+              <DialogTitle className="text-3xl font-medium text-center">Uppgradera till Premium!</DialogTitle>
               <DialogDescription className="text-muted-foreground text-center">
-                Select from best plans, ensuring a perfect match. Need more or less? Customize your subscription for a
-                seamless fit!
+                Vill du ta din verksamhet till nästa nivå? Med Premium får du tillgång till våra AI-verktyg, utökat guidebibliotek och en aktiv community.
               </DialogDescription>
             </DialogHeader>
 
@@ -68,7 +67,7 @@ export default function SubscriptionModal({ open, onOpenChange }: SubscriptionMo
                     billingCycle === "monthly" ? "bg-primary text-white" : "bg-transparent text-muted-foreground"
                   }`}
                 >
-                  Monthly
+                  Månadsvis
                 </button>
                 <button
                   onClick={() => setBillingCycle("yearly")}
@@ -76,7 +75,7 @@ export default function SubscriptionModal({ open, onOpenChange }: SubscriptionMo
                     billingCycle === "yearly" ? "bg-primary text-white" : "bg-transparent text-muted-foreground"
                   }`}
                 >
-                  Yearly (save 20%)
+                  Årligen (Spara 20%)
                 </button>
               </div>
             </div>
@@ -95,9 +94,15 @@ export default function SubscriptionModal({ open, onOpenChange }: SubscriptionMo
                   <CardContent className="pb-6">
                     <div className="mb-6 mt-4">
                       <h3 className="text-3xl font-bold text-foreground">
-                        ${billingCycle === "yearly" ? plan.yearlyPrice : plan.monthlyPrice}
+                        {billingCycle === "yearly" 
+                          ? Math.round((plan.monthlyPrice * (1 - yearlyDiscount))) 
+                          : plan.monthlyPrice} SEK
                       </h3>
-                      <p className="text-sm text-muted-foreground">{billingCycle === "yearly" ? "/year" : "/month"}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {billingCycle === "yearly" 
+                          ? `/månad (${plan.yearlyPrice} SEK/år)` 
+                          : "/månad"}
+                      </p>
                     </div>
 
                     <ul className="space-y-3">
@@ -117,7 +122,7 @@ export default function SubscriptionModal({ open, onOpenChange }: SubscriptionMo
                           : "text-white hover:opacity-90"
                       }`}
                     >
-                      {plan.name === "Free" ? "Get Started" : "Upgrade Now"}
+                      {plan.name === "Gratis" ? "Kom igång" : "Uppgradera nu"}
                     </Button>
                   </CardFooter>
                 </Card>

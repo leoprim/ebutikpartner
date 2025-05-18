@@ -72,28 +72,28 @@ export function ForgotPasswordModal({ isOpen, onClose }: ForgotPasswordModalProp
               </button>
 
               <div className="p-6">
-                <h2 className="text-xl font-medium mb-1">Reset your password</h2>
+                <h2 className="text-xl font-medium mb-1">Återställ ditt lösenord</h2>
                 <p className="text-gray-500 text-sm mb-6 font-normal">
-                  Enter your email address and we'll send you a link to reset your password.
+                Ange din e-postadress så skickar vi en länk till dig för att återställa ditt lösenord.
                 </p>
 
                 {!isSuccess ? (
                   <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="email">Email address</Label>
+                      <Label htmlFor="email">E-postadress</Label>
                       <Input
                         id="email"
                         type="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        placeholder="name@example.com"
+                        placeholder="namn@ebutikpartner.se"
                         required
                         disabled={isSubmitting}
                       />
                     </div>
 
                     <Button type="submit" className="w-full" disabled={isSubmitting}>
-                      {isSubmitting ? "Sending..." : "Send reset link"}
+                      {isSubmitting ? "Skickar..." : "Skicka länk"}
                     </Button>
                   </form>
                 ) : (
@@ -102,7 +102,7 @@ export function ForgotPasswordModal({ isOpen, onClose }: ForgotPasswordModalProp
                     animate={{ opacity: 1, y: 0 }}
                     className="bg-green-50 p-4 rounded-md border border-green-200 text-green-800"
                   >
-                    <p className="text-sm font-medium">Reset link sent! Check your email inbox.</p>
+                    <p className="text-sm font-medium">Återställningslänk skickad! Kika i din inkorg.</p>
                   </motion.div>
                 )}
               </div>

@@ -200,7 +200,7 @@ export default function AuthPage() {
   }
 
   return (
-    <div className="flex min-h-screen w-full flex-col md:flex-row overflow-hidden bg-white p-5">
+    <div className="flex min-h-screen w-full flex-col md:flex-row md:gap-6 overflow-hidden bg-white p-5">
       <AnimatePresence>
         {isRedirecting && (
           <motion.div
@@ -224,14 +224,14 @@ export default function AuthPage() {
       </AnimatePresence>
 
       {/* Left side - Background with Logo (desktop only) */}
-      <div className="hidden md:flex md:w-6/12 lg:w-7/12 flex-col relative p-10 bg-[url(/authbg.jpg)] bg-cover bg-center">
-        <div className="absolute inset-0 bg-green-950/70 backdrop-blur-sm"></div>
+      <div className="hidden md:flex md:w-1/2 flex-col relative p-10 bg-[url(/3149495.jpg)] bg-cover bg-center rounded-2xl">
+        <div className="absolute inset-0 bg-green-950/20 rounded-2xl"></div>
         <div className="relative mb-auto">
           <Image
-            src="/LogoNewRemake_Light.svg"
-            width={160}
+            src="/LogoNewRemake_White.svg"
+            width={180}
             height={48}
-            alt="StorePartner logo"
+            alt="EbutikPartner logo"
             priority
             style={{ height: 'auto' }}
           />
@@ -281,158 +281,253 @@ export default function AuthPage() {
       </div>
 
       {/* Right side - Sign In/Sign Up form */}
-      <div className="flex flex-col justify-center md:w-6/12 lg:w-5/12 p-6 md:px-12 md:py-10">
-        <div className="text-center md:text-left mb-8">
+      <div className="flex flex-col justify-center items-center md:w-1/2 p-6 md:px-16 md:py-10">
+        <div className="text-center md:text-center mb-8 max-w-md mx-auto">
           {/* Mobile logo */}
-          <div className="md:hidden mb-6 flex justify-center">
+          <div className="md:hidden mb-6 flex justify-center w-full">
             <Image
               src="/LogoNewRemake_DarkGreen.svg"
               width={160}
               height={48}
-              alt="StorePartner logo"
+              alt="EbutikPartner logo"
               priority
               style={{ height: 'auto' }}
             />
           </div>
-          <h1 className="text-2xl font-medium">{isSignIn ? 'Logga in på din partner' : 'Skapa ditt konto'}</h1>
+          <h1 className="text-2xl font-medium">{isSignIn ? 'Välkommen tillbaka!' : 'Skapa ditt konto'}</h1>
           <p className="text-muted-foreground mt-2">
-            {isSignIn ? 'Välkommen tillbaka! Logga in för att fortsätta.' : 'Fyll i dina uppgifter för att komma igång.'}
+            {isSignIn ? 'Fyll i dina uppgifter nedan för att fortsätta' : 'Fyll i dina uppgifter för att komma igång.'}
           </p>
         </div>
 
-        <form onSubmit={isSignIn ? handleSignIn : handleSignUp} className="space-y-5">
-          {!isSignIn && (
-            <div>
-              <Label htmlFor="full-name" className="text-muted-foreground text-sm block mb-1.5">
-                Fullständigt namn
-              </Label>
-              <AnimatedInput
-                id="full-name"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                disabled={isLoading}
-                type="text"
-                placeholder="Ditt namn"
-              />
-            </div>
-          )}
-
-          <div>
-            <Label htmlFor="email" className="text-muted-foreground text-sm block mb-1.5">
-              E-post
-            </Label>
-            <AnimatedInput
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              disabled={isLoading}
-              type="email"
-              placeholder="namn@exempel.se"
-            />
-          </div>
-
-          <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <Label htmlFor="password" className="text-muted-foreground text-sm">
-                Lösenord
-              </Label>
-              {isSignIn && (
-                <button
-                  type="button"
-                  onClick={() => setForgotOpen(true)}
-                  className="text-xs text-primary/80 hover:text-primary transition-colors"
+        <form onSubmit={isSignIn ? handleSignIn : handleSignUp} className="space-y-5 max-w-md mx-auto w-full relative">
+          <motion.div
+            layout
+            className="space-y-5"
+            transition={{ 
+              type: "spring", 
+              stiffness: 300, 
+              damping: 30 
+            }}
+          >
+            <AnimatePresence mode="wait">
+              {!isSignIn && (
+                <motion.div
+                  key="fullname"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ 
+                    opacity: { duration: 0.2 }, 
+                    height: { duration: 0.3 } 
+                  }}
                 >
-                  Glömt lösenord?
-                </button>
+                  <div>
+                    <AnimatedInput
+                      id="full-name"
+                      label="Fullständigt namn"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      disabled={isLoading}
+                      type="text"
+                      placeholder=" "
+                    />
+                  </div>
+                </motion.div>
               )}
-            </div>
-            <AnimatedInput
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              disabled={isLoading}
-              type="password"
-              placeholder={isSignIn ? "Ditt lösenord" : "Minst 6 tecken"}
-            />
-          </div>
+            </AnimatePresence>
 
-          {!isSignIn && (
-            <div>
-              <Label htmlFor="confirm-password" className="text-muted-foreground text-sm block mb-1.5">
-                Bekräfta lösenord
-              </Label>
-              <AnimatedInput
-                id="confirm-password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
+            <motion.div
+              layout
+              key="email"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3, delay: isSignIn ? 0 : 0.1 }}
+            >
+              <div>
+                <AnimatedInput
+                  id="email"
+                  label="E-post"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  disabled={isLoading}
+                  type="email"
+                  placeholder=" "
+                />
+              </div>
+            </motion.div>
+
+            <motion.div
+              layout
+              key="password"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3, delay: isSignIn ? 0.1 : 0.2 }}
+            >
+              <div>
+                <AnimatedInput
+                  id="password"
+                  label="Lösenord"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  disabled={isLoading}
+                  type="password"
+                  placeholder=" "
+                />
+              </div>
+            </motion.div>
+
+            <AnimatePresence mode="wait">
+              {isSignIn ? (
+                <motion.div
+                  key="remember-me"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ 
+                    opacity: { duration: 0.2 }, 
+                    height: { duration: 0.3 } 
+                  }}
+                >
+                  <div className="flex items-center justify-between mt-2">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox id="remember" />
+                      <label
+                        htmlFor="remember"
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                      >
+                        Kom ihåg mig
+                      </label>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setForgotOpen(true)}
+                      className="text-xs text-primary/80 hover:text-primary transition-colors"
+                    >
+                      Glömt lösenord?
+                    </button>
+                  </div>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="confirm-password"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ 
+                    opacity: { duration: 0.2 }, 
+                    height: { duration: 0.3 } 
+                  }}
+                >
+                  <div>
+                    <AnimatedInput
+                      id="confirm-password"
+                      label="Bekräfta lösenord"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      disabled={isLoading}
+                      type="password"
+                      placeholder=" "
+                    />
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <motion.div
+              layout
+              key="submit-button"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3, delay: isSignIn ? 0.3 : 0.4 }}
+            >
+              <Button
+                type="submit"
+                className="w-full bg-[#1e4841] hover:bg-[#1e4841]/90 text-white py-6 transition-colors"
                 disabled={isLoading}
-                type="password"
-                placeholder="Upprepa lösenord"
-              />
-            </div>
-          )}
+              >
+                {isSignIn 
+                  ? (isLoading ? "Loggar in..." : "Logga in") 
+                  : (isLoading ? "Skapar konto..." : "Skapa konto")}
+              </Button>
+            </motion.div>
 
-          <Button
-            type="submit"
-            className="w-full bg-[#1e4841] hover:bg-[#1e4841]/90 text-white py-6 transition-colors"
-            disabled={isLoading}
-          >
-            {isSignIn 
-              ? (isLoading ? "Loggar in..." : "Logga in") 
-              : (isLoading ? "Skapar konto..." : "Skapa konto")}
-          </Button>
-
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-200"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-muted-foreground">
-                eller
-              </span>
-            </div>
-          </div>
-
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleGoogleSignIn}
-            className="w-full py-6 flex items-center justify-center gap-2 border border-input hover:bg-muted/30 transition-colors"
-            disabled={isLoading}
-          >
-            <Google className="h-4 w-4" />
-            <span>Fortsätt med Google</span>
-          </Button>
-
-          <div className="mt-6 text-center text-sm">
-            {isSignIn ? (
-              <div>
-                Har du inget konto?{" "}
-                <button
-                  type="button"
-                  onClick={() => setIsSignIn(false)}
-                  className="text-primary/80 hover:text-primary transition-colors"
-                >
-                  Skapa konto
-                </button>
+            <motion.div
+              layout
+              key="divider"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3, delay: isSignIn ? 0.4 : 0.5 }}
+            >
+              <div className="relative my-6">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-200"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-2 bg-white text-muted-foreground">
+                    eller
+                  </span>
+                </div>
               </div>
-            ) : (
-              <div>
-                Har du redan ett konto?{" "}
-                <button
-                  type="button"
-                  onClick={() => setIsSignIn(true)}
-                  className="text-primary/80 hover:text-primary transition-colors"
-                >
-                  Logga in
-                </button>
+            </motion.div>
+
+            <motion.div
+              layout
+              key="google-button"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3, delay: isSignIn ? 0.5 : 0.6 }}
+            >
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleGoogleSignIn}
+                className="w-full py-6 flex items-center justify-center gap-2 border border-input hover:bg-muted/30 transition-colors"
+                disabled={isLoading}
+              >
+                <Google className="h-4 w-4" />
+                <span>Fortsätt med Google</span>
+              </Button>
+            </motion.div>
+
+            <motion.div
+              layout
+              key="account-toggle"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3, delay: isSignIn ? 0.6 : 0.7 }}
+            >
+              <div className="mt-6 text-center text-sm">
+                {isSignIn ? (
+                  <div>
+                    Har du inget konto?{" "}
+                    <button
+                      type="button"
+                      onClick={() => setIsSignIn(false)}
+                      className="text-primary/80 hover:text-primary transition-colors"
+                    >
+                      Skapa konto
+                    </button>
+                  </div>
+                ) : (
+                  <div>
+                    Har du redan ett konto?{" "}
+                    <button
+                      type="button"
+                      onClick={() => setIsSignIn(true)}
+                      className="text-primary/80 hover:text-primary transition-colors"
+                    >
+                      Logga in
+                    </button>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+            </motion.div>
+          </motion.div>
         </form>
       </div>
 
-      <ForgotPasswordModal open={forgotOpen} onOpenChange={setForgotOpen} />
+      <ForgotPasswordModal isOpen={forgotOpen} onClose={() => setForgotOpen(false)} />
     </div>
   )
 } 

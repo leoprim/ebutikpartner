@@ -99,7 +99,7 @@ export default function SettingsModal({ open, onOpenChange }: SettingsModalProps
     try {
       setIsLoading(true)
       const { data: { session } } = await supabase.auth.getSession()
-      if (!session?.user) throw new Error("No user found")
+      if (!session?.user) throw new Error("Ingen användare hittad")
 
       // Handle email change separately
       if (email !== session.user.email) {
@@ -112,9 +112,9 @@ export default function SettingsModal({ open, onOpenChange }: SettingsModalProps
             (data?.user && data.user.email !== email)) {
           toast.info(
             <div className="space-y-1">
-              <p className="font-medium">Email change confirmation required</p>
+              <p className="font-medium">Bekräftelse av ändring via e-post krävs</p>
               <p className="text-sm text-muted-foreground">
-                We've sent a confirmation email to {email}. Please check your inbox and click the confirmation link to complete the change.
+              Vi har skickat ett bekräftelsemail till {email}. Vänligen kontrollera din inkorg och klicka på bekräftelselänken för att slutföra ändringen.
               </p>
             </div>
           )
@@ -140,7 +140,7 @@ export default function SettingsModal({ open, onOpenChange }: SettingsModalProps
       // Update password if provided
       if (newPassword && confirmPassword) {
         if (newPassword !== confirmPassword) {
-          throw new Error("Passwords do not match")
+          throw new Error("Lösenorden matchar inte")
         }
         const { error: passwordError } = await supabase.auth.updateUser({
           password: newPassword
@@ -174,14 +174,14 @@ export default function SettingsModal({ open, onOpenChange }: SettingsModalProps
         setNewPassword("")
         setConfirmPassword("")
         
-        toast.success("Settings updated successfully")
+        toast.success("Inställningarna har uppdaterats")
         onOpenChange(false)
       } else {
-        toast.info("No changes to save")
+        toast.info("Inga ändringar att spara")
       }
     } catch (error: any) {
       console.error('Error updating settings:', error)
-      toast.error(error.message || "Failed to update settings")
+      toast.error(error.message || "Misslyckades att uppdatera inställningarna")
     } finally {
       setIsLoading(false)
     }
@@ -200,22 +200,22 @@ export default function SettingsModal({ open, onOpenChange }: SettingsModalProps
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px] md:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle>Account Settings</DialogTitle>
-          <DialogDescription>Update your account settings. Click save when you're done.</DialogDescription>
+          <DialogTitle>Kontoinställningar</DialogTitle>
+          <DialogDescription>Uppdatera dina kontoinställningar. Klicka på spara när du är klar.</DialogDescription>
         </DialogHeader>
         <Tabs defaultValue="profile" className="w-full">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="profile" className="flex items-center gap-2">
               <User className="h-4 w-4" />
-              <span className="hidden sm:inline">Profile</span>
+              <span className="hidden sm:inline">Profil</span>
             </TabsTrigger>
             <TabsTrigger value="email" className="flex items-center gap-2">
               <Mail className="h-4 w-4" />
-              <span className="hidden sm:inline">Email</span>
+              <span className="hidden sm:inline">E-post</span>
             </TabsTrigger>
             <TabsTrigger value="password" className="flex items-center gap-2">
               <Lock className="h-4 w-4" />
-              <span className="hidden sm:inline">Password</span>
+              <span className="hidden sm:inline">Lösenord</span>
             </TabsTrigger>
           </TabsList>
 
@@ -235,7 +235,7 @@ export default function SettingsModal({ open, onOpenChange }: SettingsModalProps
                 <Label htmlFor="avatar" className="cursor-pointer">
                   <div className="flex items-center gap-2 rounded-md border px-3 py-2 text-sm">
                     <Upload className="h-4 w-4" />
-                    Change Avatar
+                    Ändra profilbild
                   </div>
                   <Input 
                     id="avatar" 
@@ -252,13 +252,13 @@ export default function SettingsModal({ open, onOpenChange }: SettingsModalProps
 
           <TabsContent value="email" className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">E-post</Label>
               <Input
                 id="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="your.email@example.com"
+                placeholder="namn@ebutikpartner.se"
                 disabled={isLoading}
               />
             </div>
@@ -266,7 +266,7 @@ export default function SettingsModal({ open, onOpenChange }: SettingsModalProps
 
           <TabsContent value="password" className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="current-password">Current Password</Label>
+              <Label htmlFor="current-password">Nuvarande lösenord</Label>
               <Input
                 id="current-password"
                 type="password"
@@ -276,7 +276,7 @@ export default function SettingsModal({ open, onOpenChange }: SettingsModalProps
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="new-password">New Password</Label>
+              <Label htmlFor="new-password">Nytt lösenord</Label>
               <Input
                 id="new-password"
                 type="password"
@@ -286,7 +286,7 @@ export default function SettingsModal({ open, onOpenChange }: SettingsModalProps
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="confirm-password">Confirm New Password</Label>
+              <Label htmlFor="confirm-password">Bekräfta nytt lösenord</Label>
               <Input
                 id="confirm-password"
                 type="password"
@@ -299,10 +299,10 @@ export default function SettingsModal({ open, onOpenChange }: SettingsModalProps
         </Tabs>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading}>
-            Cancel
+            Avbryt
           </Button>
           <Button onClick={handleSaveChanges} disabled={isLoading}>
-            {isLoading ? "Saving..." : "Save changes"}
+            {isLoading ? "Sparar..." : "Spara ändringar"}
           </Button>
         </DialogFooter>
       </DialogContent>

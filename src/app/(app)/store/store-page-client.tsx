@@ -305,9 +305,9 @@ export default function StorePageClient() {
               <CardHeader className="relative">
                 <div className="relative flex items-center justify-between">
                   <div>
-                    <CardTitle className="text-xl font-medium">Get Started with StorePartner</CardTitle>
+                    <CardTitle className="text-xl font-medium">Kom igång med EbutikPartner</CardTitle>
                     <CardDescription className="text-sm font-normal mt-1">
-                      Purchase a tailored Shopify store from our team and launch your business.
+                    Köp en skräddarsydd Shopify-butik från vårt team och starta din resa..
                     </CardDescription>
                   </div>
                   <motion.div
@@ -318,7 +318,7 @@ export default function StorePageClient() {
                     <Badge className="px-3 py-1.5 text-sm font-medium bg-secondary text-primary">
                       <span className="flex items-center gap-1.5">
                         <ShoppingBag className="w-4 h-4" />
-                        Lowered price
+                        Begränsat erbjudande
                       </span>
                     </Badge>
                   </motion.div>
@@ -337,9 +337,9 @@ export default function StorePageClient() {
                         <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
                           <Palette className="h-4 w-4 text-primary" />
                         </div>
-                        <span className="font-medium">Custom Theme</span>
+                        <span className="font-medium">Skräddarsytt tema</span>
                       </div>
-                      <p className="text-sm text-muted-foreground">Our tailored stores comes with a custom theme built by us.</p>
+                      <p className="text-sm text-muted-foreground">Våra skräddarsydda butiker levereras med ett anpassat tema som vi har byggt.</p>
                     </div>
                     
                     <div className="flex flex-col gap-2 bg-muted/30 p-4 rounded-lg">
@@ -347,9 +347,9 @@ export default function StorePageClient() {
                         <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
                           <Package className="h-4 w-4 text-primary" />
                         </div>
-                        <span className="font-medium">Product & Supplier</span>
+                        <span className="font-medium">Produkt & Leverantör</span>
                       </div>
-                      <p className="text-sm text-muted-foreground">We'll add a product and supplier to your store based on the niche.</p>
+                      <p className="text-sm text-muted-foreground">Vi lägger till en produkt och leverantör i din butik baserat på vald nisch.</p>
                     </div>
                     
                     <div className="flex flex-col gap-2 bg-muted/30 p-4 rounded-lg">
@@ -357,26 +357,26 @@ export default function StorePageClient() {
                         <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
                           <Settings className="h-4 w-4 text-primary" />
                         </div>
-                        <span className="font-medium">Video Guides</span>
+                        <span className="font-medium">Videoguider</span>
                       </div>
-                      <p className="text-sm text-muted-foreground">Boost your business with our in-depth video tutorials.</p>
+                      <p className="text-sm text-muted-foreground">Stärk din verksamhet med våra djupgående videoguider.</p>
                     </div>
                   </div>
                   
                   <div className="flex flex-col items-center p-6 mt-4 border border-muted rounded-lg">
-                    <span className="text-3xl font-medium">$799</span>
-                    <span className="text-sm text-muted-foreground mt-1">One-time setup fee</span>
+                    <span className="text-3xl font-medium">9995:-</span>
+                    <span className="text-sm text-muted-foreground mt-1">Engångskostnad</span>
                     
                     <div className="w-full max-w-md mt-6">
                       <Button className="w-full text-white" size="lg">
-                        Purchase Your Store
+                        Köp min butik idag
                       </Button>
                     </div>
                   </div>
                 </motion.div>
               </CardContent>
               <CardFooter className="text-sm text-muted-foreground">
-                <p>Have questions? Contact our support team for assistance.</p>
+                <p>Har du några frågor? Kontakta vårt supportteam för att få hjälp.</p>
               </CardFooter>
             </Card>
           </motion.div>

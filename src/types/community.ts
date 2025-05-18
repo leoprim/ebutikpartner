@@ -11,9 +11,9 @@ export interface User {
     icon?: string
     lastMessage?: {
       content: string
-      sender: string
       timestamp: string
     }
+    unreadCount?: number
   }
   
   export interface Attachment {
