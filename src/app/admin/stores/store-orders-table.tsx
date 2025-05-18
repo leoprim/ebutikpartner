@@ -35,7 +35,7 @@ interface StoreOrder {
   client_name: string
   client_email: string
   order_date: string
-  status: 'pending' | 'in-progress' | 'review' | 'delivered'
+  status: 'Väntar' | 'Under utveckling' | 'Granska' | 'Levererad'
   price: number
   niche: string
   progress: number
@@ -44,17 +44,17 @@ interface StoreOrder {
 // Helper function to get status badge
 function getStatusBadge(status: string) {
   switch (status) {
-    case "pending":
+    case "Väntar":
       return <Badge variant="outline">Pending</Badge>
-    case "in-progress":
+    case "Under utveckling":
       return <Badge variant="secondary">In Progress</Badge>
-    case "review":
+    case "Granska":
       return (
         <Badge variant="default" className="bg-amber-500">
           Ready for Review
         </Badge>
       )
-    case "delivered":
+    case "Levererad":
       return (
         <Badge variant="default" className="bg-green-500">
           Delivered
@@ -159,7 +159,7 @@ export default function StoreOrdersTable() {
     try {
       const { error } = await supabase
         .from('store_orders')
-        .update({ status: 'delivered', progress: 100 })
+        .update({ status: 'Levererad', progress: 100 })
         .eq('id', order.id)
 
       if (error) throw error
@@ -280,9 +280,9 @@ export default function StoreOrdersTable() {
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => handleDeliver(order)} disabled={order.status === "delivered"}>
+                    <DropdownMenuItem onClick={() => handleDeliver(order)} disabled={order.status === "Levererad"}>
                       <Package className="mr-2 h-4 w-4" />
-                      {order.status === "delivered" ? "Already Delivered" : "Deliver Store"}
+                      {order.status === "Levererad" ? "Already Delivered" : "Deliver Store"}
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem 
@@ -338,17 +338,17 @@ export default function StoreOrdersTable() {
             <div className="space-y-2">
               <Label htmlFor="status">Status</Label>
               <Select
-                value={editingOrder?.status || 'pending'}
+                value={editingOrder?.status || 'Väntar'}
                 onValueChange={(value) => setEditingOrder(prev => prev ? { ...prev, status: value as StoreOrder['status'] } : null)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="in-progress">In Progress</SelectItem>
-                  <SelectItem value="review">Ready for Review</SelectItem>
-                  <SelectItem value="delivered">Delivered</SelectItem>
+                  <SelectItem value="Väntar">Pending</SelectItem>
+                  <SelectItem value="Under utveckling">In Progress</SelectItem>
+                  <SelectItem value="Granska">Ready for Review</SelectItem>
+                  <SelectItem value="Levererad">Delivered</SelectItem>
                 </SelectContent>
               </Select>
             </div>

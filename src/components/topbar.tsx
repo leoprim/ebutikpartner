@@ -1,6 +1,6 @@
 "use client"
 import { useEffect, useState, useRef } from "react"
-import { Bell, LogOut, Settings, User } from "lucide-react"
+import { Bell, LogOut, Menu, Settings, User } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,6 +19,7 @@ import { useRouter, usePathname } from "next/navigation"
 import SettingsModal from "@/components/settings-modal"
 import { Badge } from "@/components/ui/badge"
 import { notificationService, Notification } from "@/services/notification"
+import { useSidebar } from "@/components/ui/sidebar"
 
 export function TopBar() {
   const [user, setUser] = useState<SupabaseUser | null | undefined>(undefined)
@@ -27,6 +28,7 @@ export function TopBar() {
   const [unreadCount, setUnreadCount] = useState(0)
   const router = useRouter()
   const pathname = usePathname()
+  const { toggleSidebar, isMobile } = useSidebar()
   
   // Use useRef to prevent creating multiple Supabase clients on re-renders
   const supabase = useRef(
@@ -102,23 +104,23 @@ export function TopBar() {
   const getPageTitle = () => {
     switch (pathname) {
       case "/dashboard":
-        return "Dashboard"
+        return "Instrumentpanel"
       case "/guides-library":
-        return "Guides Library"
+        return "Guidesbibliotek"
       case "/community":
-        return "Community"
+        return "Gemenskap"
       case "/store":
-        return "Store"
+        return "Butik"
       case "/admin/videos":
-        return "Video Management"
+        return "Videohantering"
       case "/admin/dashboard":
-        return "Admin Dashboard"
+        return "Adminpanel"
       case "/notifications":
-        return "Notifications"
+        return "Notifieringar"
       case "/blog-post-generator":
-        return "Blog Post Generator"
+        return "Bloggenerator"
       case "/ai-tools":
-        return "AI-Tools"
+        return "AI-verktyg"
       default:
         return "StorePartner"
     }
@@ -129,18 +131,33 @@ export function TopBar() {
     const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
     
     if (diffInHours < 1) {
-      return 'Just now';
+      return 'Just nu';
     } else if (diffInHours < 24) {
-      return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
+      return diffInHours === 1 
+        ? `${diffInHours} timme sedan`
+        : `${diffInHours} timmar sedan`;
     } else {
       const diffInDays = Math.floor(diffInHours / 24);
-      return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
+      return diffInDays === 1
+        ? `${diffInDays} dag sedan`
+        : `${diffInDays} dagar sedan`;
     }
   };
 
   return (
     <header className="flex h-16 shrink-0 items-center justify-between border-b px-6 w-full">
       <div className="flex items-center gap-4">
+        {isMobile && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleSidebar}
+            className="md:hidden"
+            aria-label="Toggle sidebar"
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
+        )}
         <h1 className="text-lg font-medium">{getPageTitle()}</h1>
       </div>
       <div className="flex items-center gap-4">
@@ -156,12 +173,12 @@ export function TopBar() {
                   {unreadCount}
                 </Badge>
               )}
-              <span className="sr-only">Notifications</span>
+              <span className="sr-only">Notifieringar</span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-80">
             <DropdownMenuLabel className="flex items-center justify-between">
-              <span>Notifications</span>
+              <span>Notifieringar</span>
               {unreadCount > 0 && (
                 <Button 
                   variant="ghost" 
@@ -169,7 +186,7 @@ export function TopBar() {
                   onClick={markAllAsRead}
                   className="text-xs h-auto py-1 px-2"
                 >
-                  Mark all as read
+                  Markera alla som lästa
                 </Button>
               )}
             </DropdownMenuLabel>
@@ -193,7 +210,7 @@ export function TopBar() {
                 ))
               ) : (
                 <div className="p-3 text-center text-sm text-muted-foreground">
-                  No notifications
+                  Inga notifieringar
                 </div>
               )}
             </div>
@@ -205,7 +222,7 @@ export function TopBar() {
                 className="w-full text-xs"
                 onClick={() => router.push('/notifications')}
               >
-                View all notifications
+                Visa alla notifieringar
               </Button>
             </div>
           </DropdownMenuContent>
@@ -242,26 +259,26 @@ export function TopBar() {
                   )}
                 </Avatar>
               </div>
-              <span className="sr-only">User menu</span>
+              <span className="sr-only">Användarmeny</span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+            <DropdownMenuLabel>Mitt Konto</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem>
                 <User className="mr-2 h-4 w-4" />
-                <span>Profile</span>
+                <span>Profil</span>
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setIsSettingsOpen(true)}>
                 <Settings className="mr-2 h-4 w-4" />
-                <span>Settings</span>
+                <span>Inställningar</span>
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleSignOut}>
               <LogOut className="mr-2 h-4 w-4" />
-              <span>Sign out</span>
+              <span>Logga ut</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

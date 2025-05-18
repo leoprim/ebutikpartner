@@ -6,29 +6,47 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { MessageInput } from "@/components/community/message-input"
 import { ChatArea } from "@/components/community/chat-area"
 import { useIsMobile } from "@/hooks/use-mobile"
-import { Menu } from "lucide-react"
+import { Menu, MessageSquare, Megaphone, Wrench } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { createBrowserClient } from "@supabase/ssr"
 import type { Channel, Message } from "@/types/community"
 import { toast } from "sonner"
+import { motion, AnimatePresence } from "framer-motion"
 
 const channels: Channel[] = [
   {
     id: "1",
     name: "general",
     description: "General discussions about e-commerce",
+    icon: "MessageSquare",
   },
   {
     id: "2",
     name: "marketing",
     description: "Marketing strategies and tips",
+    icon: "Megaphone",
   },
   {
     id: "3",
     name: "technical",
     description: "Technical discussions and support",
+    icon: "Wrench",
   },
 ]
+
+// Helper function to get icon component
+const getChannelIcon = (iconName: string | undefined) => {
+  switch (iconName) {
+    case "MessageSquare":
+      return <MessageSquare className="h-5 w-5" />
+    case "Megaphone":
+      return <Megaphone className="h-5 w-5" />
+    case "Wrench":
+      return <Wrench className="h-5 w-5" />
+    default:
+      return <MessageSquare className="h-5 w-5" />
+  }
+}
 
 interface CommunityChatProps {
   initialMessages?: Message[]
@@ -38,6 +56,7 @@ export function CommunityChat({ initialMessages = [] }: CommunityChatProps) {
   const [messages, setMessages] = useState<Message[]>(initialMessages)
   const [currentUser, setCurrentUser] = useState<any>(null)
   const [activeChannel, setActiveChannel] = useState<Channel>(channels[0])
+  const [channelsWithLatestMessages, setChannelsWithLatestMessages] = useState<Channel[]>(channels)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [isPremium, setIsPremium] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -87,7 +106,7 @@ export function CommunityChat({ initialMessages = [] }: CommunityChatProps) {
       if (messagesError) throw messagesError
 
       // Get unique user IDs
-      const userIds = [...new Set(messages?.map(msg => msg.user_id) || [])]
+      const userIds = Array.from(new Set(messages?.map(msg => msg.user_id) || []))
 
       // Fetch all user metadata in parallel
       const userMetadataPromises = userIds.map(userId => 
@@ -123,12 +142,42 @@ export function CommunityChat({ initialMessages = [] }: CommunityChatProps) {
       }) || []
 
       setMessages(messagesWithUserData)
+      
+      // Update latest message for current channel
+      updateLatestMessage(activeChannel.id, messagesWithUserData);
     } catch (error) {
       console.error('Error fetching messages:', error)
       toast.error('Failed to load messages')
     } finally {
       setIsLoading(false)
     }
+  }
+  
+  // Function to update latest message for a channel
+  const updateLatestMessage = (channelId: string, messages: Message[]) => {
+    if (messages.length === 0) return;
+    
+    const latestMessage = messages[messages.length - 1];
+    
+    setChannelsWithLatestMessages(prev => 
+      prev.map(channel => 
+        channel.id === channelId 
+          ? {
+              ...channel,
+              lastMessage: {
+                content: latestMessage.content.length > 25 
+                  ? latestMessage.content.substring(0, 25) + '...' 
+                  : latestMessage.content,
+                sender: latestMessage.profiles?.full_name || 'Anonymous',
+                timestamp: new Date(latestMessage.created_at).toLocaleTimeString([], {
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })
+              }
+            }
+          : channel
+      )
+    );
   }
 
   useEffect(() => {
@@ -256,8 +305,11 @@ export function CommunityChat({ initialMessages = [] }: CommunityChatProps) {
       })) || []
     }
 
-    // Optimistically update UI
+    // Optimistically update UI without animation flags
     setMessages(prev => [...prev, optimisticMessage])
+    
+    // Update latest message for the channel
+    updateLatestMessage(activeChannel.id, [...messages, optimisticMessage]);
 
     try {
       const { error } = await supabase
@@ -292,7 +344,7 @@ export function CommunityChat({ initialMessages = [] }: CommunityChatProps) {
     <div className="flex h-[calc(100vh-4rem)] overflow-hidden">
       {/* Sidebar */}
       <div className={cn(
-        "w-64 border-r bg-background flex flex-col relative z-20",
+        "w-72 border-r bg-background flex flex-col relative z-20",
         isMobile && !isSidebarOpen && "hidden",
         isMobile && isSidebarOpen && "fixed inset-y-0 left-0 z-50 w-full"
       )}>
@@ -312,22 +364,45 @@ export function CommunityChat({ initialMessages = [] }: CommunityChatProps) {
         </div>
         <div className="flex-1 min-h-0">
           <ScrollArea className="h-[calc(100vh-8rem)]">
-            <div className="space-y-1 p-2">
-              {channels.map((channel) => (
-                <Button
+            <div className="space-y-2 p-3">
+              {channelsWithLatestMessages.map((channel) => (
+                <div 
                   key={channel.id}
-                  variant={activeChannel?.id === channel.id ? "secondary" : "ghost"}
-                  className="w-full justify-start"
+                  className={cn(
+                    "flex flex-col rounded-md p-3 cursor-pointer transition-colors",
+                    activeChannel?.id === channel.id 
+                      ? "bg-accent" 
+                      : "hover:bg-muted"
+                  )}
                   onClick={() => {
                     setActiveChannel(channel)
                     if (isMobile) {
                       setIsSidebarOpen(false)
                     }
                   }}
-                  disabled={isLoading}
                 >
-                  #{channel.name}
-                </Button>
+                  <div className="flex items-center mb-1">
+                    <div className={cn(
+                      "w-8 h-8 rounded-md flex items-center justify-center mr-2",
+                      activeChannel?.id === channel.id 
+                        ? "bg-primary text-primary-foreground" 
+                        : "bg-muted-foreground/20 text-muted-foreground"
+                    )}>
+                      {getChannelIcon(channel.icon)}
+                    </div>
+                    <span className="font-medium">{channel.name}</span>
+                  </div>
+                  
+                  {channel.lastMessage && (
+                    <div className="pl-10 text-sm text-muted-foreground">
+                      <div className="flex justify-between items-center">
+                        <span className="font-medium truncate">{channel.lastMessage.sender}:</span>
+                        <span className="text-xs">{channel.lastMessage.timestamp}</span>
+                      </div>
+                      <p className="truncate">{channel.lastMessage.content}</p>
+                    </div>
+                  )}
+                </div>
               ))}
             </div>
           </ScrollArea>

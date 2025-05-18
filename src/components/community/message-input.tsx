@@ -329,53 +329,36 @@ export function MessageInput({ onSendMessage }: MessageInputProps) {
           </div>
         </div>
 
-        <Button 
-          type="button" 
-          className="h-[48px] w-28"
+        <Button
+          type="button"
+          size="icon"
           onClick={handleSendMessage}
           disabled={isSending || (!message.trim() && attachments.length === 0)}
+          className={isSending ? "pointer-events-none" : ""}
+          title={isSending ? "Sending message..." : "Send message"}
+          aria-label={isSending ? "Sending message..." : "Send message"}
         >
-          <AnimatePresence mode="wait">
-            {isSending ? (
-              <motion.div
-                key="loading"
-                initial={{ opacity: 0, rotate: -180 }}
-                animate={{ opacity: 1, rotate: 0 }}
-                exit={{ opacity: 0, rotate: 180 }}
-                transition={{ duration: 0.2 }}
-                className="flex items-center gap-2"
-              >
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <span>Sending</span>
-              </motion.div>
-            ) : (
-              <motion.div
-                key="send"
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                transition={{ duration: 0.2 }}
-                className="flex items-center gap-2"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="lucide lucide-send"
-                >
-                  <path d="m22 2-7 20-4-9-9-4Z" />
-                  <path d="M22 2 11 13" />
-                </svg>
-                <span>Send</span>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {isSending ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <motion.svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="lucide lucide-send"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+            >
+              <path d="m22 2-7 20-4-9-9-4Z" />
+              <path d="M22 2 11 13" />
+            </motion.svg>
+          )}
         </Button>
       </div>
     </div>

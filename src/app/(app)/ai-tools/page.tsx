@@ -32,40 +32,26 @@ const itemVariants = {
 export default function AIToolsPage() {
   const aiTools = [
     {
-      title: "Blog Post Generator",
-      description: "Generate human-like blog posts to boost your SEO and engagement. Automatically publish to your Shopify store.",
+      title: "Blogginlägg Generering",
+      description: "Skapa människoliknande blogginlägg för att öka din SEO och ditt engagemang. Publicera automatiskt till din Shopify-butik.",
       icon: <FileText className="h-6 w-6 text-primary" />,
-      badge: "Popular",
-      category: "Content",
+      badge: "Populärt",
+      category: "Innehåll",
       link: "/blog-post-generator",
     },
     {
-      title: "Image Generation",
-      description: "Create stunning images from text descriptions or modify existing images with AI.",
+      title: "Textgenerering",
+      description: "Skapa högkonverterande text till annonser, produktbeskrivningar eller blogginlägg.",
       icon: <ImageIcon className="h-6 w-6 text-primary" />,
-      badge: "Trending",
-      category: "Creative",
+      badge: "Trendar",
+      category: "Kreativt",
     },
     {
-      title: "Chatbot",
-      description: "Build conversational AI assistants that can answer questions and provide support.",
-      icon: <MessageSquare className="h-6 w-6 text-primary" />,
-      badge: null,
-      category: "Communication",
-    },
-    {
-      title: "Code Assistant",
-      description: "Get help with coding, debugging, and learning programming languages.",
+      title: "Bakgrundsborttagare",
+      description: "Ladda upp produktbilder och få bakgrunden borttagen för professionellt utseende.",
       icon: <Code className="h-6 w-6 text-primary" />,
-      badge: "Developer",
-      category: "Productivity",
-    },
-    {
-      title: "Video Generation",
-      description: "Generate and edit videos with AI-powered tools and effects.",
-      icon: <Video className="h-6 w-6 text-primary" />,
-      badge: "Beta",
-      category: "Creative",
+      badge: "Visuellt",
+      category: "Innehåll",
     },
   ]
 
@@ -98,7 +84,7 @@ export default function AIToolsPage() {
                   )}
                 </div>
                 <CardTitle className="mt-4 font-medium text-lg">{tool.title}</CardTitle>
-                <CardDescription className="text-sm text-muted-foreground">Category: {tool.category}</CardDescription>
+                <CardDescription className="text-sm text-muted-foreground">Kategori: {tool.category}</CardDescription>
               </CardHeader>
               <CardContent className="flex-grow">
                 <p>{tool.description}</p>
@@ -106,10 +92,10 @@ export default function AIToolsPage() {
               <CardFooter>
               {tool.link ? (
                 <Button asChild className="w-full">
-                  <Link href={tool.link}>Select Tool</Link>
+                  <Link href={tool.link}>Välj verktyg</Link>
                 </Button>
               ) : (
-                <Button className="w-full">Select Tool</Button>
+                <Button className="w-full">Välj verktyg</Button>
               )}
             </CardFooter>
             </Card>

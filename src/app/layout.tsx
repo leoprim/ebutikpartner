@@ -6,8 +6,8 @@ import Script from "next/script"
 const inter = Inter({ subsets: ["latin"], weight: ["400", "500", "700"] })
 
 export const metadata = {
-  title: "Your App Title",
-  description: "Your app description",
+  title: "StorePartner - Din butikspartner",
+  description: "Hantera din förbyggda butik och öka din försäljning med AI-verktyg och marknadsföringsmallar",
 }
 
 export default function RootLayout({
@@ -16,7 +16,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={inter.className}>
+    <html lang="sv" className={inter.className}>
       <body className="font-sans font-medium bg-background text-foreground" suppressHydrationWarning>
         <Toaster />
         {children}

@@ -46,11 +46,12 @@ const itemVariants = {
 export default function DashboardPage() {
   const [isLoading] = useState(false)
   const [userName, setUserName] = useState<string>("")
+  
   const [onboardingSteps] = useState([
-    { id: 1, title: "Purchase a tailored store", completed: true },
-    { id: 2, title: "Choose your niche", completed: false },
-    { id: 3, title: "Guides Library and some popcorns 🍿", completed: false },
-    { id: 4, title: "Go Premium for more features", completed: false },
+    { id: 1, title: "Köp en skräddarsydd butik", completed: true },
+    { id: 2, title: "Välj din nisch", completed: false },
+    { id: 3, title: "Guidesbibliotek och lite popcorn 🍿", completed: false },
+    { id: 4, title: "Gå Premium för fler funktioner", completed: false },
   ])
 
   useEffect(() => {
@@ -89,9 +90,11 @@ export default function DashboardPage() {
         <Card className="overflow-hidden">
           <div className="grid md:grid-cols-2">
             <div className="p-6">
-              <h2 className="text-2xl font-medium mb-4">Welcome {userName} to StorePartner! 🎉</h2>
+              <h2 className="text-2xl font-medium mb-4">
+                Välkommen {userName} till StorePartner! 🎉
+              </h2>
               <p className="text-muted-foreground mb-6">
-                Let's get your store up and running. Follow these steps to complete your setup.
+                Låt oss få igång din butik. Följ dessa steg för att slutföra din konfiguration.
               </p>
               <div className="space-y-4">
                 {onboardingSteps.map((step) => (
@@ -130,7 +133,7 @@ export default function DashboardPage() {
         transition={{ duration: 0.5 }}
       >
         <div>
-          <p className="text-muted-foreground">Welcome back! Here&apos;s an overview of your store.</p>
+          <p className="text-muted-foreground">Välkommen tillbaka! Här är en översikt av din butik.</p>
         </div>
       </motion.div>
 
@@ -144,36 +147,36 @@ export default function DashboardPage() {
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle className="font-medium text-lg">Store Overview</CardTitle>
+                <CardTitle className="font-medium text-lg">Butiksöversikt</CardTitle>
                 <LayoutDashboard className="h-5 w-5 text-muted-foreground" />
               </div>
-              <CardDescription className="font-normal">Track your store&apos;s progress and performance</CardDescription>
+              <CardDescription className="font-normal">Spåra din butiks framsteg och prestanda</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <div className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 transition-colors">
                   <div className="flex items-center">
                     <Store className="mr-2 h-4 w-4 text-muted-foreground" />
-                    <span>Store Status</span>
+                    <span>Butiksstatus</span>
                   </div>
-                  <span className="text-sm font-medium text-blue-600 dark:text-blue-400">In Progress</span>
+                  <span className="text-sm font-medium text-blue-600 dark:text-blue-400">Pågående</span>
                 </div>
                 <div className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 transition-colors">
                   <div className="flex items-center">
                     <ShoppingBag className="mr-2 h-4 w-4 text-muted-foreground" />
-                    <span>Niche</span>
+                    <span>Nisch</span>
                   </div>
-                  <span className="text-sm font-medium">Health & Beauty</span>
+                  <span className="text-sm font-medium">Hälsa & Skönhet</span>
                 </div>
                 <div className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 transition-colors">
                   <div className="flex items-center">
                     <Users className="mr-2 h-4 w-4 text-muted-foreground" />
-                    <span>Support Hours</span>
+                    <span>Supporttimmar</span>
                   </div>
-                  <span className="text-sm font-medium">1 hour left</span>
+                  <span className="text-sm font-medium">1 timme kvar</span>
                 </div>
                 <Button variant="outline" className="w-full justify-start">
-                  View Store Details
+                  Visa butiksdetaljer
                   <ArrowRight className="ml-auto h-4 w-4" />
                 </Button>
               </div>
@@ -185,26 +188,26 @@ export default function DashboardPage() {
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle className="font-medium text-lg">Quick Actions</CardTitle>
+                <CardTitle className="font-medium text-lg">Snabbåtgärder</CardTitle>
                 <Zap className="h-5 w-5 text-muted-foreground" />
               </div>
-              <CardDescription className="font-normal">Common tasks and shortcuts</CardDescription>
+              <CardDescription className="font-normal">Vanliga uppgifter och genvägar</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
                 <Button variant="outline" className="w-full justify-start">
                   <Store className="mr-2 h-4 w-4" />
-                  View Store
+                  Visa butik
                   <ArrowRight className="ml-auto h-4 w-4" />
                 </Button>
                 <Button variant="outline" className="w-full justify-start">
                   <ShoppingBag className="mr-2 h-4 w-4" />
-                  Manage Products
+                  Hantera produkter
                   <ArrowRight className="ml-auto h-4 w-4" />
                 </Button>
                 <Button variant="outline" className="w-full justify-start">
                   <BarChart3 className="mr-2 h-4 w-4" />
-                  View Analytics
+                  Visa analys
                   <ArrowRight className="ml-auto h-4 w-4" />
                 </Button>
               </div>
@@ -216,10 +219,10 @@ export default function DashboardPage() {
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle className="font-medium text-lg">News</CardTitle>
+                <CardTitle className="font-medium text-lg">Nyheter</CardTitle>
                 <Bell className="h-5 w-5 text-muted-foreground" />
               </div>
-              <CardDescription className="font-normal">Latest updates and announcements</CardDescription>
+              <CardDescription className="font-normal">Senaste uppdateringarna och tillkännagivandena</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -228,8 +231,8 @@ export default function DashboardPage() {
                     <Zap className="h-6 w-6 text-muted-foreground" />
                   </div>
                   <div className="flex-1 space-y-1 text-left">
-                    <p className="text-sm font-medium">New AI Features Released</p>
-                    <p className="text-xs text-muted-foreground">Enhanced product recommendations and customer insights</p>
+                    <p className="text-sm font-medium">Nya AI-funktioner släppta</p>
+                    <p className="text-xs text-muted-foreground">Förbättrade produktrekommendationer och kundinsikter</p>
                   </div>
                   <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-1" />
                 </button>
@@ -238,18 +241,8 @@ export default function DashboardPage() {
                     <LayoutDashboard className="h-6 w-6 text-muted-foreground" />
                   </div>
                   <div className="flex-1 space-y-1 text-left">
-                    <p className="text-sm font-medium">Platform Update v2.1</p>
-                    <p className="text-xs text-muted-foreground">Improved performance and new dashboard features</p>
-                  </div>
-                  <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-1" />
-                </button>
-                <button className="w-full flex items-start gap-3 hover:bg-muted/50 p-2 rounded-lg transition-colors text-left">
-                  <div className="w-12 h-12 rounded-md bg-muted flex-shrink-0 flex items-center justify-center">
-                    <Users className="h-6 w-6 text-muted-foreground" />
-                  </div>
-                  <div className="flex-1 space-y-1 text-left">
-                    <p className="text-sm font-medium">Community Success Story</p>
-                    <p className="text-xs text-muted-foreground">How StorePartner helped grow a business by 200%</p>
+                    <p className="text-sm font-medium">Plattformsuppdatering v2.1</p>
+                    <p className="text-xs text-muted-foreground">Förbättrad prestanda och nya instrumentpanelsfunktioner</p>
                   </div>
                   <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-1" />
                 </button>

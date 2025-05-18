@@ -28,7 +28,7 @@ interface StoreOrder {
   client_name: string
   client_email: string
   order_date: string
-  status: 'pending' | 'in-progress' | 'review' | 'delivered'
+  status: 'Väntar' | 'Under utveckling' | 'Granska' | 'Levererad'
   price: number
   niche: string
   description: string
@@ -129,7 +129,7 @@ export default function StoreDetailsPage({ params }: { params: { id: string } })
         .from('store_orders')
         .update({
           progress: currentStep.value,
-          status: currentStep.id === 'deliver' ? 'delivered' : 'in-progress',
+          status: currentStep.id === 'deliver' ? 'Levererad' : 'Under utveckling',
           updated_at: new Date().toISOString()
         })
         .eq('id', storeId)
@@ -157,7 +157,7 @@ export default function StoreDetailsPage({ params }: { params: { id: string } })
       setStoreDetails(prev => prev ? {
         ...prev,
         progress: currentStep.value,
-        status: currentStep.id === 'deliver' ? 'delivered' : 'in-progress'
+        status: currentStep.id === 'deliver' ? 'Levererad' : 'Under utveckling'
       } : null)
     } catch (error) {
       console.error('Error in handleProgressChange:', error)
@@ -198,22 +198,22 @@ export default function StoreDetailsPage({ params }: { params: { id: string } })
             <Badge
               variant="secondary"
               className={
-                storeDetails.status === "delivered"
+                storeDetails.status === "Levererad"
                   ? "bg-green-500 text-white"
-                  : storeDetails.status === "review"
+                  : storeDetails.status === "Granska"
                     ? "bg-amber-500 text-white"
                     : undefined
               }
             >
-              {storeDetails.status === "in-progress"
+              {storeDetails.status === "Under utveckling"
                 ? "In Progress"
-                : storeDetails.status === "review"
+                : storeDetails.status === "Granska"
                   ? "Ready for Review"
-                  : storeDetails.status === "delivered"
+                  : storeDetails.status === "Levererad"
                     ? "Delivered"
                     : "Pending"}
             </Badge>
-            <Button onClick={handleDeliver} disabled={storeDetails.status === "delivered"}>
+            <Button onClick={handleDeliver} disabled={storeDetails.status === "Levererad"}>
               Deliver Store
             </Button>
           </div>
@@ -334,9 +334,9 @@ export default function StoreDetailsPage({ params }: { params: { id: string } })
                   <span>Ordered: {new Date(storeDetails.order_date).toLocaleDateString()}</span>
                 </div>
                 <div className="flex items-center gap-2 text-muted-foreground">
-                  <Badge className={storeDetails.status === "in-progress" ? "bg-blue-100 text-blue-800" : 
-                                  storeDetails.status === "review" ? "bg-yellow-100 text-yellow-800" :
-                                  storeDetails.status === "delivered" ? "bg-green-100 text-green-800" :
+                  <Badge className={storeDetails.status === "Under utveckling" ? "bg-blue-100 text-blue-800" : 
+                                  storeDetails.status === "Granska" ? "bg-yellow-100 text-yellow-800" :
+                                  storeDetails.status === "Levererad" ? "bg-green-100 text-green-800" :
                                   "bg-gray-100 text-gray-800"}>
                     {storeDetails.status}
                   </Badge>

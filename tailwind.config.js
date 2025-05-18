@@ -31,6 +31,8 @@ module.exports = {
         },
       animation: {
         'pulse': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'pulse-soft': 'pulse-soft 1s ease-out',
+        'once': 'once 0.5s ease-out forwards',
       },
       keyframes: {
         pulse: {
@@ -41,6 +43,30 @@ module.exports = {
           '50%': { 
             opacity: '0.4',
             transform: 'scale(1.1)'
+          }
+        },
+        'pulse-soft': {
+          '0%': { 
+            opacity: '0.95',
+            boxShadow: '0 0 0 0 rgba(255, 255, 255, 0.3)'
+          },
+          '70%': { 
+            opacity: '1',
+            boxShadow: '0 0 0 4px rgba(255, 255, 255, 0)'
+          },
+          '100%': { 
+            opacity: '1',
+            boxShadow: '0 0 0 0 rgba(255, 255, 255, 0)'
+          }
+        },
+        'once': {
+          '0%': {
+            opacity: '0.8',
+            transform: 'translateY(8px) scale(0.95)',
+          },
+          '100%': {
+            opacity: '1',
+            transform: 'translateY(0) scale(1)',
           }
         }
       },

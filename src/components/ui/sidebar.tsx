@@ -699,6 +699,7 @@ function SidebarMenuSubButton({
 }
 
 export {
+  Sheet,
   Sidebar,
   SidebarContent,
   SidebarFooter,
@@ -707,13 +708,13 @@ export {
   SidebarGroupContent,
   SidebarGroupLabel,
   SidebarHeader,
-  SidebarInput,
   SidebarInset,
+  SidebarInput,
   SidebarMenu,
   SidebarMenuAction,
   SidebarMenuBadge,
-  SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuButton,
   SidebarMenuSkeleton,
   SidebarMenuSub,
   SidebarMenuSubButton,

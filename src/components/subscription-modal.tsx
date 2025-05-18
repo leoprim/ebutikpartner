@@ -26,24 +26,22 @@ export default function SubscriptionModal({ open, onOpenChange }: SubscriptionMo
   const plans = [
     {
       name: "Free",
-      description: "Perfect for individuals getting started with basic features.",
+      description: "Basic when you start out with StorePartner.",
       monthlyPrice: 0,
       yearlyPrice: 0,
-      features: ["3 projects", "Basic analytics", "1GB storage", "Community support", "24-hour response time"],
+      features: [
+        "Track your store order",
+        "Access to Guides Library"],
     },
     {
       name: "Premium",
-      description: "Ideal for professionals who need advanced features and priority support.",
-      monthlyPrice: 29,
-      yearlyPrice: Math.round(29 * 12 * (1 - yearlyDiscount)),
+      description: "Perfect for those who want to grow their store to next level.",
+      monthlyPrice: 49.95,
+      yearlyPrice: Math.round(49.95 * 12 * (1 - yearlyDiscount)),
       features: [
-        "Unlimited projects",
-        "Advanced analytics",
-        "50GB storage",
-        "Priority support",
-        "1-hour response time",
-        "Custom domain",
-        "API access",
+        "Unlimited access to AI-tools",
+        "Advanced Guides Library content",
+        "Grow with the StorePartner Community",
       ],
     },
   ]
@@ -51,11 +49,11 @@ export default function SubscriptionModal({ open, onOpenChange }: SubscriptionMo
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogPortal>
-        <DialogContent className="max-w-3xl p-0 sm:max-w-[700px]">
+        <DialogContent className="max-w-3xl p-0 sm:max-w-[700px] sm:max-h-[750px]">
           <div className="p-6 sm:p-8">
             <DialogHeader className="mb-6 text-center">
-              <DialogTitle className="text-3xl font-bold">Choose your right plan!</DialogTitle>
-              <DialogDescription className="text-muted-foreground">
+              <DialogTitle className="text-3xl font-medium text-center">Upgrade to Premium!</DialogTitle>
+              <DialogDescription className="text-muted-foreground text-center">
                 Select from best plans, ensuring a perfect match. Need more or less? Customize your subscription for a
                 seamless fit!
               </DialogDescription>
@@ -91,7 +89,7 @@ export default function SubscriptionModal({ open, onOpenChange }: SubscriptionMo
                   className={`overflow-hidden bg-white shadow-sm ${plan.name === "Premium" ? "border-primary border-2" : ""}`}
                 >
                   <CardHeader className="pb-4">
-                    <CardTitle className="text-xl font-bold bg-primary">{plan.name}</CardTitle>
+                    <CardTitle className="text-xl font-medium">{plan.name}</CardTitle>
                     <CardDescription className="text-muted-foreground">{plan.description}</CardDescription>
                   </CardHeader>
                   <CardContent className="pb-6">
@@ -105,7 +103,7 @@ export default function SubscriptionModal({ open, onOpenChange }: SubscriptionMo
                     <ul className="space-y-3">
                       {plan.features.map((feature, featureIndex) => (
                         <li key={featureIndex} className="flex items-start">
-                          <Check className="mr-2 h-5 w-5 shrink-0 text-[oklch(0.646_0.222_41.116)]" />
+                          <Check className="mr-2 h-5 w-5 shrink-0 text-primary" />
                           <span className="text-sm text-muted-foreground">{feature}</span>
                         </li>
                       ))}
@@ -115,7 +113,7 @@ export default function SubscriptionModal({ open, onOpenChange }: SubscriptionMo
                     <Button
                       className={`w-full ${
                         plan.name === "Free" 
-                          ? "bg-white text-[oklch(0.646_0.222_41.116)] border border-[oklch(0.646_0.222_41.116)] hover:bg-[oklch(0.646_0.222_41.116/5%)]" 
+                          ? "bg-white text-primary border border-primary hover:bg-primary/5%" 
                           : "text-white hover:opacity-90"
                       }`}
                     >

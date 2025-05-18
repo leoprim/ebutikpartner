@@ -8,6 +8,12 @@ export interface User {
     id: string
     name: string
     description: string
+    icon?: string
+    lastMessage?: {
+      content: string
+      sender: string
+      timestamp: string
+    }
   }
   
   export interface Attachment {

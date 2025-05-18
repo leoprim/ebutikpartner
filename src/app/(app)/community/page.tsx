@@ -27,7 +27,7 @@ export default async function CommunityPage() {
   console.log('Server fetched messages:', messages)
 
   // Get unique user IDs
-  const userIds = [...new Set(messages?.map(msg => msg.user_id) || [])]
+  const userIds = Array.from(new Set(messages?.map(msg => msg.user_id) || []))
 
   // Fetch user metadata for all users
   const userMetadataPromises = userIds.map(async (userId) => {

@@ -6,7 +6,7 @@ CREATE TABLE store_orders (
     client_name TEXT NOT NULL,
     client_email TEXT NOT NULL,
     order_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'in-progress', 'review', 'delivered')),
+    status TEXT NOT NULL DEFAULT 'Väntar' CHECK (status IN ('Väntar', 'Under utveckling', 'Granska', 'Levererad')),
     price DECIMAL(10,2) NOT NULL,
     niche TEXT NOT NULL,
     description TEXT,

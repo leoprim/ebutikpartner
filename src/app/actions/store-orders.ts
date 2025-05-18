@@ -17,6 +17,8 @@ interface StoreOrderData {
   created_by?: string
 }
 
+// Database-accepted status values: 'Väntar', 'Under utveckling', 'Granska', 'Levererad'
+
 export async function createStoreOrder(formData: FormData) {
   try {
     const cookieStore = await cookies()
@@ -65,7 +67,7 @@ export async function createStoreOrder(formData: FormData) {
       niche: formData.get('niche') as string,
       description: formData.get('description') as string,
       requirements: (formData.get('requirements') as string).split('\n').filter(Boolean),
-      status: 'pending',
+      status: 'Väntar',
       progress: 0,
       user_id: user.id, // Default to current user
     }

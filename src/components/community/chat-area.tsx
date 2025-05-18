@@ -2,7 +2,7 @@
 
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { formatDistanceToNow } from "date-fns"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState, useId } from "react"
 import { createBrowserClient } from "@supabase/ssr"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { cn } from "@/lib/utils"
@@ -126,6 +126,15 @@ export function ChatArea({ channel, messages, setMessages, isLoading }: ChatArea
   const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [hasMoreMessages, setHasMoreMessages] = useState(true)
   const oldestMessageRef = useRef<HTMLDivElement>(null)
+  const [messagesKey, setMessagesKey] = useState(Date.now())
+  const previousMessageCount = useRef(messages.length)
+
+  useEffect(() => {
+    if (messages.length > previousMessageCount.current) {
+      setMessagesKey(Date.now())
+    }
+    previousMessageCount.current = messages.length
+  }, [messages.length])
 
   useEffect(() => {
     const getUser = async () => {
@@ -148,7 +157,6 @@ export function ChatArea({ channel, messages, setMessages, isLoading }: ChatArea
     const isAtBottom = scrollHeight - scrollTop - clientHeight < 100
     setShouldAutoScroll(isAtBottom)
 
-    // Load more messages when scrolling to top
     if (scrollTop < 100 && !isLoadingMore && hasMoreMessages) {
       setIsLoadingMore(true)
       try {
@@ -169,7 +177,6 @@ export function ChatArea({ channel, messages, setMessages, isLoading }: ChatArea
           setHasMoreMessages(false)
         }
 
-        // Fetch user data for older messages
         const messagesWithUserData = await Promise.all(olderMessages.map(async (msg) => {
           if (msg.user_id === currentUser?.id) {
             const { data: { user } } = await supabase.auth.getUser()
@@ -213,14 +220,11 @@ export function ChatArea({ channel, messages, setMessages, isLoading }: ChatArea
           }
         }))
 
-        // Preserve scroll position
         const scrollHeightBefore = scrollRef.current.scrollHeight
         const scrollTopBefore = scrollRef.current.scrollTop
 
-        // Add older messages to the beginning of the messages array
         setMessages(prev => [...messagesWithUserData, ...prev])
 
-        // Restore scroll position
         requestAnimationFrame(() => {
           if (scrollRef.current) {
             const scrollHeightAfter = scrollRef.current.scrollHeight
@@ -258,181 +262,183 @@ export function ChatArea({ channel, messages, setMessages, isLoading }: ChatArea
                 <MessageSkeletonGroup />
               </div>
             ) : (
-              messages.map((message, index) => {
-                const isCurrentUser = message.user_id === currentUser?.id
-                const isFirstInGroup = 
-                  index === 0 ||
-                  messages[index - 1]?.user_id !== message.user_id ||
-                  new Date(message.created_at).getTime() -
-                    new Date(messages[index - 1]?.created_at).getTime() >
-                    5 * 60 * 1000
+              <AnimatePresence initial={false} mode="popLayout">
+                {messages.map((message, index) => {
+                  const isCurrentUser = message.user_id === currentUser?.id
+                  const isFirstInGroup = 
+                    index === 0 ||
+                    messages[index - 1]?.user_id !== message.user_id ||
+                    new Date(message.created_at).getTime() -
+                      new Date(messages[index - 1]?.created_at).getTime() >
+                      5 * 60 * 1000
 
-                const isLastInGroup = 
-                  index === messages.length - 1 ||
-                  messages[index + 1]?.user_id !== message.user_id ||
-                  new Date(messages[index + 1]?.created_at).getTime() -
-                    new Date(message.created_at).getTime() >
-                    5 * 60 * 1000
+                  const isLastInGroup = 
+                    index === messages.length - 1 ||
+                    messages[index + 1]?.user_id !== message.user_id ||
+                    new Date(messages[index + 1]?.created_at).getTime() -
+                      new Date(message.created_at).getTime() >
+                      5 * 60 * 1000
 
-                return (
-                  <motion.div
-                    key={message.id}
-                    ref={index === 0 ? oldestMessageRef : null}
-                    initial={message.id.startsWith('temp-') ? false : { opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3 }}
-                    className={cn(
-                      "group flex items-start gap-2",
-                      isCurrentUser && "flex-row-reverse",
-                      !isFirstInGroup && "mt-0.5",
-                      isLastInGroup && "mb-2"
-                    )}
-                  >
-                    {isFirstInGroup && (
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage
-                          src={message.profiles?.avatar_url}
-                          alt={message.profiles?.full_name || "User"}
-                        />
-                        <AvatarFallback>
-                          {message.profiles?.full_name
-                            ?.split(" ")
-                            .map((n) => n[0])
-                            .join("") || "U"}
-                        </AvatarFallback>
-                      </Avatar>
-                    )}
-                    {!isFirstInGroup && <div className="w-8" />}
+                  return (
                     <div
+                      key={message.id}
+                      ref={index === 0 ? oldestMessageRef : null}
                       className={cn(
-                        "flex max-w-[80%] flex-col",
-                        isCurrentUser && "items-end"
+                        "group flex items-start gap-2",
+                        isCurrentUser && "flex-row-reverse",
+                        !isFirstInGroup && "mt-0.5",
+                        isLastInGroup && "mb-2"
                       )}
                     >
                       {isFirstInGroup && (
-                        <div
-                          className={cn(
-                            "mb-1 flex items-center gap-2",
-                            isCurrentUser && "flex-row-reverse"
-                          )}
-                        >
-                          <span className="text-sm font-medium">
-                            {message.profiles?.full_name}
-                          </span>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <span className="text-xs text-muted-foreground">
-                                {new Date(message.created_at).toLocaleTimeString(
-                                  undefined,
-                                  {
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                  }
-                                )}
-                              </span>
-                            </TooltipTrigger>
-                            <TooltipContent
-                              side="top"
-                              className="bg-muted text-muted-foreground"
-                            >
-                              {new Date(message.created_at).toLocaleString()}
-                            </TooltipContent>
-                          </Tooltip>
-                        </div>
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage
+                            src={message.profiles?.avatar_url}
+                            alt={message.profiles?.full_name || "User"}
+                          />
+                          <AvatarFallback>
+                            {message.profiles?.full_name
+                              ?.split(" ")
+                              .map((n) => n[0])
+                              .join("") || "U"}
+                          </AvatarFallback>
+                        </Avatar>
                       )}
+                      {!isFirstInGroup && <div className="w-8" />}
                       <div
                         className={cn(
-                          "rounded-lg px-4 py-2",
-                          isCurrentUser
-                            ? "bg-primary text-white font-normal text-sm"
-                            : "bg-muted font-normal text-sm"
+                          "flex max-w-[80%] flex-col",
+                          isCurrentUser && "items-end"
                         )}
                       >
-                        <p className="whitespace-pre-wrap break-words">
-                          {message.content}
-                        </p>
-                      </div>
-                      {message.attachments && message.attachments.length > 0 && (
-                        <div className={cn(
-                          "mt-2",
-                          isCurrentUser ? "ml-auto" : "mr-auto"
-                        )}>
+                        {isFirstInGroup && (
                           <div
                             className={cn(
-                              "grid gap-2",
-                              message.attachments.length === 1
-                                ? "grid-cols-1"
-                                : "grid-cols-2"
+                              "mb-1 flex items-center gap-2",
+                              isCurrentUser && "flex-row-reverse"
                             )}
                           >
-                            {message.attachments.map((attachment) => {
-                              const isImage = attachment.type?.startsWith("image/") || false
-                              const fileType = attachment.type?.split('/')[1] || 'file'
-                              return (
-                                <Dialog key={`${message.id}-${attachment.id}`}>
-                                  <DialogTrigger asChild>
-                                    <div
-                                      className={cn(
-                                        "relative cursor-pointer overflow-hidden rounded-lg",
-                                        isImage
-                                          ? "h-[300px] w-[400px]"
-                                          : "aspect-video"
-                                      )}
-                                    >
+                            <span className="text-sm font-medium">
+                              {message.profiles?.full_name}
+                            </span>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span className="text-xs text-muted-foreground">
+                                  {new Date(message.created_at).toLocaleTimeString(
+                                    undefined,
+                                    {
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    }
+                                  )}
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent
+                                side="top"
+                                className="bg-muted text-muted-foreground"
+                              >
+                                {new Date(message.created_at).toLocaleString()}
+                              </TooltipContent>
+                            </Tooltip>
+                          </div>
+                        )}
+                        <div
+                          className={cn(
+                            "rounded-lg px-4 py-2",
+                            isCurrentUser
+                              ? "bg-primary text-white font-normal text-sm"
+                              : "bg-muted font-normal text-sm",
+                            message.id === messages[messages.length - 1]?.id && 
+                            isCurrentUser && 
+                            "animate-once"
+                          )}
+                        >
+                          <p className="whitespace-pre-wrap break-words">
+                            {message.content}
+                          </p>
+                        </div>
+                        {message.attachments && message.attachments.length > 0 && (
+                          <div className={cn(
+                            "mt-2",
+                            isCurrentUser ? "ml-auto" : "mr-auto"
+                          )}>
+                            <div
+                              className={cn(
+                                "grid gap-2",
+                                message.attachments.length === 1
+                                  ? "grid-cols-1"
+                                  : "grid-cols-2"
+                              )}
+                            >
+                              {message.attachments.map((attachment) => {
+                                const isImage = attachment.type?.startsWith("image/") || false
+                                const fileType = attachment.type?.split('/')[1] || 'file'
+                                return (
+                                  <Dialog key={`${message.id}-${attachment.id}`}>
+                                    <DialogTrigger asChild>
+                                      <div
+                                        className={cn(
+                                          "relative cursor-pointer overflow-hidden rounded-lg",
+                                          isImage
+                                            ? "h-[300px] w-[400px]"
+                                            : "aspect-video"
+                                        )}
+                                      >
+                                        {isImage ? (
+                                          <Image
+                                            src={attachment.url}
+                                            alt="Attachment"
+                                            className="h-full w-full object-cover transition-transform hover:scale-105"
+                                            fill
+                                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                          />
+                                        ) : (
+                                          <div className="flex h-full items-center justify-center bg-muted">
+                                            <FileIcon className="h-8 w-8 text-muted-foreground" />
+                                          </div>
+                                        )}
+                                      </div>
+                                    </DialogTrigger>
+                                    <DialogContent className="max-w-5xl p-0">
+                                      <DialogTitle className="sr-only">Image Preview</DialogTitle>
+                                      <DialogDescription className="sr-only">Preview of the attached image</DialogDescription>
                                       {isImage ? (
-                                        <Image
-                                          src={attachment.url}
-                                          alt="Attachment"
-                                          className="h-full w-full object-cover transition-transform hover:scale-105"
-                                          fill
-                                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                                        />
+                                        <div className="relative w-full">
+                                          <Image
+                                            src={attachment.url}
+                                            alt="Attachment"
+                                            className="w-full h-auto"
+                                            width={1920}
+                                            height={1080}
+                                            style={{ maxHeight: '90vh' }}
+                                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                          />
+                                        </div>
                                       ) : (
-                                        <div className="flex h-full items-center justify-center bg-muted">
-                                          <FileIcon className="h-8 w-8 text-muted-foreground" />
+                                        <div className="flex h-full items-center justify-center">
+                                          <a
+                                            href={attachment.url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="flex items-center gap-2 text-primary hover:underline"
+                                          >
+                                            <FileIcon className="h-4 w-4" />
+                                            Open {fileType.toUpperCase()} file
+                                          </a>
                                         </div>
                                       )}
-                                    </div>
-                                  </DialogTrigger>
-                                  <DialogContent className="max-w-5xl p-0">
-                                    <DialogTitle className="sr-only">Image Preview</DialogTitle>
-                                    <DialogDescription className="sr-only">Preview of the attached image</DialogDescription>
-                                    {isImage ? (
-                                      <div className="relative w-full">
-                                        <Image
-                                          src={attachment.url}
-                                          alt="Attachment"
-                                          className="w-full h-auto"
-                                          width={1920}
-                                          height={1080}
-                                          style={{ maxHeight: '90vh' }}
-                                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                                        />
-                                      </div>
-                                    ) : (
-                                      <div className="flex h-full items-center justify-center">
-                                        <a
-                                          href={attachment.url}
-                                          target="_blank"
-                                          rel="noopener noreferrer"
-                                          className="flex items-center gap-2 text-primary hover:underline"
-                                        >
-                                          <FileIcon className="h-4 w-4" />
-                                          Open {fileType.toUpperCase()} file
-                                        </a>
-                                      </div>
-                                    )}
-                                  </DialogContent>
-                                </Dialog>
-                              )
-                            })}
+                                    </DialogContent>
+                                  </Dialog>
+                                )
+                              })}
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </div>
-                  </motion.div>
-                )
-              })
+                  )
+                })}
+              </AnimatePresence>
             )}
             <div ref={messagesEndRef} />
           </div>

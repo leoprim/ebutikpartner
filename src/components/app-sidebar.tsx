@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Bell, LayoutDashboard, Settings, Star, UsersRound, Lock, Store, LibraryBig, Crown} from "lucide-react"
+import { Bell, LayoutDashboard, Settings, Star, UsersRound, Lock, Store, LibraryBig, Crown, Rocket} from "lucide-react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import Image from 'next/image'
@@ -24,74 +24,77 @@ import {
 } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-
-// Navigation items
-const navItems = [
-  {
-    title: "Dashboard",
-    icon: LayoutDashboard,
-    href: "/dashboard",
-  },
-  {
-    title: "Store",
-    icon: Store,
-    href: "/store",
-  },
-  {
-    title: "Guides Library",
-    icon: LibraryBig,
-    href: "/guides-library",
-  },
-  {
-    title: "Notifications",
-    icon: Bell,
-    href: "/notifications",
-  },
-  {
-    title: "Settings",
-    icon: Settings,
-    href: "/settings",
-  },
-]
-
-// Premium navigation items
-const premiumNavItems = [
-  {
-    title: "AI-tools",
-    icon: Star,
-    href: "/ai-tools",
-    isPremium: true,
-  },
-  {
-    title: "Community",
-    icon: UsersRound,
-    href: "/community",
-    isPremium: true,
-  },
-]
+import { Skeleton } from "@/components/ui/skeleton"
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname();
   const router = useRouter();
   const [isPremium, setIsPremium] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(false);
   const [showSubscriptionModal, setShowSubscriptionModal] = React.useState(false);
+
+  // Navigation items
+  const navItems = [
+    {
+      title: "Instrumentpanel",
+      icon: LayoutDashboard,
+      href: "/dashboard",
+    },
+    {
+      title: "Butik",
+      icon: Store,
+      href: "/store",
+    },
+    {
+      title: "Guidesbibliotek",
+      icon: LibraryBig,
+      href: "/guides-library",
+    },
+    {
+      title: "Tillväxt",
+      icon: Rocket,
+      href: "/growth",
+    },
+  ]
+
+  // Premium navigation items
+  const premiumNavItems = [
+    {
+      title: "AI-verktyg",
+      icon: Star,
+      href: "/ai-tools",
+      isPremium: true,
+    },
+    {
+      title: "Gemenskap",
+      icon: UsersRound,
+      href: "/community",
+      isPremium: true,
+    },
+  ]
 
   React.useEffect(() => {
     const checkPremiumStatus = async () => {
-      const supabase = createBrowserClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-      );
-      
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('is_premium')
-          .eq('id', user.id)
-          .single();
+      try {
+        const supabase = createBrowserClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+        );
         
-        setIsPremium(profile?.is_premium || false);
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('is_premium')
+            .eq('id', user.id)
+            .single();
+          
+          if (profile?.is_premium) {
+            setIsPremium(true);
+          }
+        }
+      } catch (error) {
+        console.error("Error checking premium status:", error);
       }
     };
 
@@ -100,21 +103,21 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   const handlePremiumClick = (href: string) => {
     if (!isPremium) {
-      toast.custom((t) => (
+      toast.custom((toastData) => (
         <div className="bg-background border rounded-lg p-4 shadow-lg">
           <div className="flex flex-col gap-2">
-            <h3 className="text-[#1e4841] font-medium">Premium Required</h3>
+            <h3 className="text-[#1e4841] font-medium">Premium krävs</h3>
             <p className="text-muted-foreground text-sm">
-              This feature is only available for premium users. Upgrade your account to access it.
+              Denna funktion är endast tillgänglig för premiumanvändare. Uppgradera ditt konto för att få tillgång till den.
             </p>
             <button
               onClick={() => {
-                toast.dismiss(t);
+                toast.dismiss(toastData);
                 setShowSubscriptionModal(true);
               }}
               className="mt-2 bg-[#1e4841] text-white px-4 py-2 rounded-md hover:bg-[#1e4841]/90 transition-colors"
             >
-              Upgrade
+              Uppgradera
             </button>
           </div>
         </div>
@@ -129,7 +132,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <Sidebar {...props}>
         <SidebarHeader className="p-4 pt-8 pb-4 pl-5">
           <a href="/">
-            <span className="sr-only">Home</span>
+            <span className="sr-only">Hem</span>
             <Image
               src="/LogoNewRemake_DarkGreen.svg"
               width={140}
@@ -152,11 +155,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                       isActive={pathname === item.href}
                       className="data-[active=true]:bg-[#bbf49c] hover:bg-[#bbf49c]/30 active:bg-[#bbf49c] py-5 pl-4 transition-all duration-200 ease-in-out group focus-visible:ring-[#1e4841] focus-visible:ring-offset-0 font-medium"
                     >
-                      <Link href={item.href} prefetch={true} className="flex items-center gap-2">
+                      <Link href={item.href} prefetch={true} className="flex items-center gap-2 font-medium">
                         <div className="transition-colors duration-200 ease-in-out">
                           <item.icon className={`size-4.5 ${pathname === item.href ? "text-[#1e4841]" : "text-foreground group-hover:text-[#1e4841]"}`} />
                         </div>
-                        <span className="transition-colors duration-200 ease-in-out group-hover:text-[#1e4841]">{item.title}</span>
+                        <span className="transition-colors duration-200 ease-in-out group-hover:text-[#1e4841] font-medium">{item.title}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -164,6 +167,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
+          
           <SidebarGroup>
             <SidebarGroupLabel className="p-2">Premium</SidebarGroupLabel>
             <SidebarGroupContent>
@@ -184,7 +188,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                           <div className="transition-colors duration-200 ease-in-out">
                             <item.icon className={`size-4.5 ${pathname === item.href ? "text-[#1e4841]" : "text-foreground group-hover:text-[#1e4841]"}`} />
                           </div>
-                          <span className="transition-colors duration-200 ease-in-out group-hover:text-[#1e4841]">{item.title}</span>
+                          <span className="transition-colors duration-200 ease-in-out group-hover:text-[#1e4841] font-medium">{item.title}</span>
                         </div>
                         {item.isPremium && !isPremium && (
                           <Lock className="size-3 text-muted-foreground" />
@@ -200,27 +204,27 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarFooter>
           <div className="p-2">
             {!isPremium && (
-              <Card className="bg-[url(/3149495.jpg)] bg-cover bg-center relative overflow-hidden group border-none shadow-none flex flex-col mt-4 pb-0">
+              <Card className="bg-[url(/3149495.jpg)] bg-cover bg-center relative overflow-hidden group border-none shadow-none flex flex-col mt-4 pb-0 animate-in fade-in duration-300">
                 <div className="absolute inset-0 opacity-0 transition-all duration-300">
                   <div className="absolute inset-0 rounded-lg" />
                 </div>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-[15px] font-medium">Upgrade to Premium</CardTitle>
-                  <CardDescription className="text-xs font-normal text-primary/70">Unlock all features and benefits</CardDescription>
+                  <CardTitle className="text-[15px] font-medium">Uppgradera till Premium</CardTitle>
+                  <CardDescription className="text-xs font-normal text-primary/70">Lås upp alla funktioner och fördelar</CardDescription>
                 </CardHeader>
                 <CardContent className="pb-2 text-xs">
                   <ul className="space-y-1">
                     <li className="flex items-center gap-1">
                       <Crown className="size-3 text-primary" />
-                      <span>Access to AI-tools</span>
+                      <span>Tillgång till AI-verktyg</span>
                     </li>
                     <li className="flex items-center gap-1">
                       <Crown className="size-3 text-primary" />
-                      <span>Priority support</span>
+                      <span>Prioriterad support</span>
                     </li>
                     <li className="flex items-center gap-1">
                       <Crown className="size-3 text-primary" />
-                      <span>Community access</span>
+                      <span>Tillgång till gemenskap</span>
                     </li>
                   </ul>
                 </CardContent>
@@ -234,7 +238,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                       setShowSubscriptionModal(true);
                     }}
                   >
-                    Upgrade Now
+                    Uppgradera nu
                   </Button>
                 </CardFooter>
               </Card>
@@ -244,9 +248,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarRail />
       </Sidebar>
       <SubscriptionModal 
-        open={showSubscriptionModal} 
-        onOpenChange={setShowSubscriptionModal} 
+        open={showSubscriptionModal}
+        onOpenChange={setShowSubscriptionModal}
       />
     </>
-  );
+  )
 } 

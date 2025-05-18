@@ -106,7 +106,7 @@ export function AdminSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
                       )}>
                         <item.icon className="size-4.5" />
                       </div>
-                      <span className="group-hover:text-primary transition-colors duration-200">{item.title}</span>
+                      <span className="group-hover:text-primary transition-colors duration-20 font-medium">{item.title}</span>
                     </button>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

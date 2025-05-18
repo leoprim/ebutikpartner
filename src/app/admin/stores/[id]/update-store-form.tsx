@@ -13,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea"
 
 interface UpdateStoreFormProps {
   storeId: string
-  currentStatus: 'pending' | 'in-progress' | 'review' | 'delivered'
+  currentStatus: 'Väntar' | 'Under utveckling' | 'Granska' | 'Levererad'
   currentProgress: number
   onUpdate: () => void
 }
@@ -58,10 +58,10 @@ export function UpdateStoreForm({ storeId, currentStatus, currentProgress, onUpd
             <SelectValue placeholder="Select status" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="pending">Pending</SelectItem>
-            <SelectItem value="in-progress">In Progress</SelectItem>
-            <SelectItem value="review">Ready for Review</SelectItem>
-            <SelectItem value="delivered">Delivered</SelectItem>
+            <SelectItem value="Väntar">Pending</SelectItem>
+            <SelectItem value="Under utveckling">In Progress</SelectItem>
+            <SelectItem value="Granska">Ready for Review</SelectItem>
+            <SelectItem value="Levererad">Delivered</SelectItem>
           </SelectContent>
         </Select>
       </div>
