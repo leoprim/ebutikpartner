@@ -3,10 +3,16 @@ import Image from "next/image"
 import { ArrowLeft, Calendar, Edit } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
-export default function PostPreview({ params }: { params: { id: string } }) {
-  // In a real app, we would fetch the post data based on the ID
-  const post = {
-    id: params.id,
+type PageProps = {
+  params: { id: string }
+  searchParams: { [key: string]: string | string[] | undefined }
+}
+
+// Simulate post data fetch for the example
+async function getPostData(id: string) {
+  // In a real app, we would fetch the post data from an API or database
+  return {
+    id,
     title: "How to Optimize Your Product Descriptions for SEO",
     date: "May 25, 2025",
     author: "AI Assistant",
@@ -105,6 +111,10 @@ export default function PostPreview({ params }: { params: { id: string } }) {
       <p>Remember that the best product descriptions serve both search engines and human readers—they're discoverable, informative, and persuasive.</p>
     `,
   }
+}
+
+export default async function PostPreview({ params }: PageProps) {
+  const post = await getPostData(params.id)
 
   return (
     <div className="flex min-h-screen flex-col">

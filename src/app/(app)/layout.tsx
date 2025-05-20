@@ -5,6 +5,7 @@ import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 import { SidebarProvider } from "@/components/ui/sidebar"
 import { SupabaseProvider } from "@/components/supabase-provider"
+import { NicheProvider } from "@/contexts/niche-context"
 
 export const dynamic = 'force-dynamic'
 
@@ -41,15 +42,17 @@ export default async function AppLayout({
   return (
     <SupabaseProvider>
       <SidebarProvider>
-        <div className="flex h-screen w-full">
-          <AppSidebar />
-          <div className="flex-1 flex flex-col w-full">
-            <TopBar />
-            <main className="flex-1 overflow-y-auto w-full">
-              {children}
-            </main>
+        <NicheProvider session={session}>
+          <div className="flex h-screen w-full">
+            <AppSidebar />
+            <div className="flex-1 flex flex-col w-full">
+              <TopBar />
+              <main className="flex-1 overflow-y-auto w-full">
+                {children}
+              </main>
+            </div>
           </div>
-        </div>
+        </NicheProvider>
       </SidebarProvider>
     </SupabaseProvider>
   )

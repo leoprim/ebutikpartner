@@ -4,6 +4,9 @@ import type { Channel } from "@/types/community"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import Image from "next/image"
+import { useState, useEffect } from "react"
+import { createBrowserClient } from "@supabase/ssr"
 
 interface ChannelSidebarProps {
   channels: Channel[]
@@ -12,6 +15,26 @@ interface ChannelSidebarProps {
 }
 
 export function ChannelSidebar({ channels, activeChannel, onSelectChannel }: ChannelSidebarProps) {
+  const [currentUser, setCurrentUser] = useState<{
+    id: string;
+    user_metadata?: {
+      avatar_url?: string;
+    };
+  } | null>(null)
+
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
+
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      setCurrentUser(user)
+    }
+    getUser()
+  }, [supabase])
+
   return (
     <div className="flex h-full flex-col">
       <div className="border-b p-4">
@@ -38,7 +61,13 @@ export function ChannelSidebar({ channels, activeChannel, onSelectChannel }: Cha
       <div className="border-t p-4">
         <div className="flex items-center">
           <div className="h-8 w-8 rounded-full bg-primary">
-            <img src="/placeholder.svg?height=32&width=32" alt="Your avatar" className="h-8 w-8 rounded-full" />
+            <Image
+              src={currentUser?.user_metadata?.avatar_url || "/placeholder.svg"} 
+              alt="Avatar"
+              width={40}
+              height={40}
+              className="h-10 w-10 rounded-full"
+            />
           </div>
           <div className="ml-2">
             <div className="text-sm font-medium">You</div>

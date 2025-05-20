@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 // Authentication-related paths that don't require a session
-const publicPaths = ['/auth', '/auth/callback', '/sign-in', '/sign-up']
+const publicPaths = ['/auth', '/auth/callback', '/sign-in', '/sign-up', '/dummy-purchase']
 // Next.js system paths and static files that should be excluded
 const systemPaths = ['/_next', '/favicon.ico']
 // Image extensions to exclude
@@ -57,7 +57,14 @@ export async function middleware(req: NextRequest) {
     const { data: { session } } = await supabase.auth.getSession()
     
     // Check if current path is public
-    const isPublicPath = publicPaths.some(path => pathname.startsWith(path))
+    const isPublicPath = publicPaths.some(
+      path => pathname === path || pathname.startsWith(`${path}/`)
+    )
+    
+    // If authenticated but missing full_name, force to /dashboard
+    if (session && session.user && !session.user.user_metadata?.full_name && pathname !== '/dashboard') {
+      return NextResponse.redirect(new URL('/dashboard', req.url))
+    }
     
     // Redirect unauthenticated users trying to access protected routes
     if (!session && !isPublicPath) {

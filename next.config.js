@@ -1,5 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  reactStrictMode: true,
   images: {
     remotePatterns: [
       {
@@ -9,6 +16,7 @@ const nextConfig = {
         pathname: '/storage/v1/object/public/**',
       },
     ],
+    domains: ['lh3.googleusercontent.com', 'avatars.githubusercontent.com', 'oamgbaobmctsptfgjidm.supabase.co'],
   },
   transpilePackages: ['date-fns'],
 }

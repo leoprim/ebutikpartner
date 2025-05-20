@@ -1,8 +1,7 @@
 "use client"
 
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { formatDistanceToNow } from "date-fns"
-import { useEffect, useRef, useState, useId } from "react"
+import { useEffect, useRef, useState } from "react"
 import { createBrowserClient } from "@supabase/ssr"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { cn } from "@/lib/utils"
@@ -10,7 +9,6 @@ import { motion, AnimatePresence } from "framer-motion"
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import {
@@ -116,7 +114,15 @@ function MessageSkeletonGroup() {
 
 export function ChatArea({ channel, messages, setMessages, isLoading }: ChatAreaProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  const [currentUser, setCurrentUser] = useState<any>(null)
+  const [currentUser, setCurrentUser] = useState<{
+    id: string;
+    email?: string;
+    user_metadata?: {
+      full_name?: string;
+      name?: string;
+      avatar_url?: string;
+    };
+  } | null>(null)
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -126,12 +132,12 @@ export function ChatArea({ channel, messages, setMessages, isLoading }: ChatArea
   const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [hasMoreMessages, setHasMoreMessages] = useState(true)
   const oldestMessageRef = useRef<HTMLDivElement>(null)
-  const [messagesKey, setMessagesKey] = useState(Date.now())
   const previousMessageCount = useRef(messages.length)
 
   useEffect(() => {
     if (messages.length > previousMessageCount.current) {
-      setMessagesKey(Date.now())
+      // Force re-render when new messages arrive
+      previousMessageCount.current = messages.length
     }
     previousMessageCount.current = messages.length
   }, [messages.length])

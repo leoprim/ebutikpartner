@@ -8,6 +8,7 @@ import Image from 'next/image'
 import { toast } from "sonner"
 import { createBrowserClient } from "@supabase/ssr"
 import SubscriptionModal from "./subscription-modal"
+import { useNiche } from "@/contexts/niche-context"
 
 import {
   Sidebar,
@@ -32,6 +33,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [isPremium, setIsPremium] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
   const [showSubscriptionModal, setShowSubscriptionModal] = React.useState(false);
+  const { needsNicheSelection } = useNiche();
+
+  // Add console log to debug
+  React.useEffect(() => {
+    console.log('Needs niche selection:', needsNicheSelection);
+  }, [needsNicheSelection]);
 
   // Navigation items
   const navItems = [
@@ -44,6 +51,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       title: "Butik",
       icon: Store,
       href: "/store",
+      showNotification: needsNicheSelection,
     },
     {
       title: "Guidesbibliotek",
@@ -155,11 +163,18 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                       isActive={pathname === item.href}
                       className="data-[active=true]:bg-[#bbf49c] hover:bg-[#bbf49c]/30 active:bg-[#bbf49c] py-5 pl-4 transition-all duration-200 ease-in-out group focus-visible:ring-[#1e4841] focus-visible:ring-offset-0 font-medium"
                     >
-                      <Link href={item.href} prefetch={true} className="flex items-center gap-2 font-medium">
-                        <div className="transition-colors duration-200 ease-in-out">
-                          <item.icon className={`size-4.5 ${pathname === item.href ? "text-[#1e4841]" : "text-foreground group-hover:text-[#1e4841]"}`} />
+                      <Link href={item.href} prefetch={true} className="flex items-center gap-2 font-medium w-full justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="transition-colors duration-200 ease-in-out">
+                            <item.icon className={`size-4.5 ${pathname === item.href ? "text-[#1e4841]" : "text-foreground group-hover:text-[#1e4841]"}`} />
+                          </div>
+                          <span className="transition-colors duration-200 ease-in-out group-hover:text-[#1e4841] font-medium">{item.title}</span>
                         </div>
-                        <span className="transition-colors duration-200 ease-in-out group-hover:text-[#1e4841] font-medium">{item.title}</span>
+                        {item.showNotification && (
+                          <span className="relative flex h-3 w-3 mr-2">
+                            <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                          </span>
+                        )}
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>

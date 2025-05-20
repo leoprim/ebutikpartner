@@ -17,9 +17,14 @@ import {
   Badge
 } from "lucide-react"
 import { createBrowserClient } from "@supabase/ssr"
+import { Dialog } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import OnboardingModal from "@/components/onboarding-modal"
+import { useRouter, usePathname } from "next/navigation"
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -46,7 +51,12 @@ const itemVariants = {
 export default function DashboardPage() {
   const [isLoading] = useState(false)
   const [userName, setUserName] = useState<string>("")
-  
+  const [user, setUser] = useState<any>(null)
+  const [showOnboarding, setShowOnboarding] = useState(false)
+  const [onboardingComplete, setOnboardingComplete] = useState(false)
+  const router = useRouter()
+  const pathname = usePathname()
+
   const [onboardingSteps] = useState([
     { id: 1, title: "Köp en skräddarsydd butik", completed: true },
     { id: 2, title: "Välj din nisch", completed: false },
@@ -55,25 +65,84 @@ export default function DashboardPage() {
   ])
 
   useEffect(() => {
+    if (onboardingComplete) return;
     const supabase = createBrowserClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    )
-
-    const fetchUserName = async () => {
+    );
+    const fetchUserSession = async () => {
       try {
-        const { data: { user } } = await supabase.auth.getUser()
-        if (user?.user_metadata?.full_name) {
-          const firstName = user.user_metadata.full_name.split(' ')[0]
-          setUserName(firstName)
+        const { data: { session } } = await supabase.auth.getSession();
+        setUser(session?.user || null);
+        let needsOnboarding = false;
+        if (session?.user) {
+          const name = session.user.user_metadata?.full_name;
+          if (!name) {
+            needsOnboarding = true;
+          } else {
+            const firstName = name.split(' ')[0];
+            setUserName(firstName);
+          }
         }
+        setShowOnboarding(needsOnboarding);
       } catch (error) {
-        console.error('Error in fetchUserName:', error)
+        setShowOnboarding(false);
       }
-    }
+    };
+    fetchUserSession();
+  }, [onboardingComplete]);
 
-    fetchUserName()
-  }, [])
+  // Block navigation while onboarding modal is open
+  useEffect(() => {
+    if (!showOnboarding) return;
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "Du måste slutföra din registrering innan du kan lämna denna sida.";
+      return e.returnValue;
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [showOnboarding]);
+
+  // Redirect back to /dashboard if modal is open and user leaves the page
+  useEffect(() => {
+    if (showOnboarding && pathname !== "/dashboard") {
+      alert("Du måste slutföra din registrering innan du kan lämna denna sida.");
+      router.replace("/dashboard");
+    }
+  }, [showOnboarding, pathname, router]);
+
+  // After user is set, update store_orders with missing user_id
+  useEffect(() => {
+    if (!user?.id || !user?.email) return;
+    const supabase = createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+    const updateStoreOrders = async () => {
+      try {
+        // Find orders with this email and missing user_id
+        const { data: orders, error } = await supabase
+          .from('store_orders')
+          .select('id')
+          .eq('client_email', user.email)
+          .is('user_id', null);
+        if (error) throw error;
+        if (orders && orders.length > 0) {
+          const ids = orders.map((o: any) => o.id);
+          await supabase
+            .from('store_orders')
+            .update({ user_id: user.id })
+            .in('id', ids);
+        }
+      } catch (err) {
+        // Optionally log or handle error
+      }
+    };
+    updateStoreOrders();
+  }, [user]);
 
   if (isLoading) {
     return null
@@ -81,6 +150,23 @@ export default function DashboardPage() {
 
   return (
     <div className="flex-1 p-6">
+      <OnboardingModal
+        open={showOnboarding}
+        onComplete={async () => {
+          const supabase = createBrowserClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+          );
+          const { data: { session } } = await supabase.auth.getSession();
+          setUser(session?.user || null);
+          if (session?.user?.user_metadata?.full_name) {
+            setUserName(session.user.user_metadata.full_name.split(' ')[0]);
+          }
+          setShowOnboarding(false);
+          setOnboardingComplete(true);
+        }}
+        user={user}
+      />
       <motion.div 
         className="mb-8"
         initial={{ opacity: 0, y: 20 }}

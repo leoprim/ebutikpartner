@@ -8,21 +8,28 @@ import { motion, AnimatePresence } from "framer-motion"
 import type { User } from "@supabase/supabase-js"
 import { createBrowserClient } from "@supabase/ssr"
 import { Skeleton } from "@/components/ui/skeleton"
-import { CalendarDays, Clock, AlertCircle, CheckCircle2, Settings, Palette, Package, Truck, ShoppingBag } from "lucide-react"
+import { CalendarDays, Clock, AlertCircle, CheckCircle2, Settings, Palette, Package, Truck, ShoppingBag, ArrowRight, Store, Circle } from "lucide-react"
 import { Slider } from "@/components/ui/slider"
 import { Button } from "@/components/ui/button"
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
+import { toast } from "sonner"
+import NicheSelectionModal from "@/components/niche-selection-modal"
 
 interface StoreOrder {
   id: string
   store_name: string
-  status: 'Väntar' | 'Under utveckling' | 'Granska' | 'Levererad'
-  progress: number
+  client_name: string
+  client_email: string
   order_date: string
-  description: string
-  requirements: string[]
-  estimated_completion?: string
-  last_updated?: string
-  current_step?: 'setup' | 'design' | 'content' | 'deliver'
+  status: 'Väntar' | 'Under utveckling' | 'Granska' | 'Levererad'
+  price: number
+  niche: string | null
+  progress: number
+  timeline: {
+    date: string
+    event: string
+    completed: boolean
+  }[]
 }
 
 const STEPS = [
@@ -37,6 +44,8 @@ export default function StorePageClient() {
   const [isLoading, setIsLoading] = useState(true)
   const [user, setUser] = useState<User | null>(null)
   const [progress, setProgress] = useState(0)
+  const [showNicheModal, setShowNicheModal] = useState(false)
+  const supabase = createClientComponentClient()
 
   useEffect(() => {
     const supabase = createBrowserClient(
@@ -63,6 +72,11 @@ export default function StorePageClient() {
 
           setStoreOrder(data)
           setProgress(data.progress)
+          
+          // Show niche modal if store order exists but no niche is selected
+          if (data && !data.niche) {
+            setShowNicheModal(true)
+          }
         }
       } catch (error) {
         console.error('Error in fetchData:', error)
@@ -137,164 +151,193 @@ export default function StorePageClient() {
     return STEPS[0]
   }
 
+  const handleNicheSelect = async (selectedNiche: string) => {
+    if (!storeOrder) return
+
+    try {
+      const { error } = await supabase
+        .from('store_orders')
+        .update({ niche: selectedNiche })
+        .eq('id', storeOrder.id)
+
+      if (error) throw error
+
+      setStoreOrder(prev => prev ? { ...prev, niche: selectedNiche } : null)
+      setShowNicheModal(false)
+      toast.success('Store niche updated successfully')
+    } catch (error) {
+      console.error('Error updating store niche:', error)
+      toast.error('Failed to update store niche')
+    }
+  }
+
   return (
     <div className="w-full p-6">
       <AnimatePresence>
         {!isLoading && storeOrder ? (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: "easeOut" }}
-          >
-            <Card className="w-full overflow-hidden">
-              <CardHeader className="relative">
-                <div className="absolute inset-0" />
-                <div className="relative flex items-center justify-between">
-                  <div>
-                    <CardTitle className="text-xl font-medium">Status för din butik</CardTitle>
-                    <CardDescription className="text-sm font-normal mt-1">Följ resan av utvecklingen av din butik nedan. Vid frågor, skriv i chatten.</CardDescription>
-                  </div>
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.3, delay: 0.2 }}
-                  >
-                    <Badge className={`px-3 py-1.5 text-sm font-medium ${
-                      storeOrder?.status === "Under utveckling" ? "bg-blue-100 text-blue-800" : 
-                      storeOrder?.status === "Granska" ? "bg-yellow-100 text-yellow-800" :
-                      storeOrder?.status === "Levererad" ? "bg-green-100 text-green-800" :
-                      "bg-gray-100 text-gray-800"
-                    }`}>
-                      <span className="flex items-center gap-1.5">
-                        {getStatusIcon(storeOrder?.status || 'pending')}
-                        {storeOrder?.status || 'pending'}
-                      </span>
-                    </Badge>
-                  </motion.div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-6 pt-6">
-                <motion.div 
-                  className="relative"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.3, delay: 0.3 }}
-                >
-                  <div className="absolute inset-0 flex items-center" aria-hidden="true">
-                    <div className="w-full border-t border-gray-200" />
-                  </div>
-                  <div className="relative flex justify-between">
-                    {STEPS.map((step, index) => {
-                      const Icon = step.icon
-                      const isActive = step.value <= progress
-                      const isCurrentStep = step.value === progress
-                      return (
-                        <motion.div
-                          key={step.id}
-                          className={`flex flex-col items-center ${isActive ? 'text-primary' : 'text-muted-foreground'} group`}
-                          whileHover={{ scale: 1.05 }}
-                          transition={{ duration: 0.2 }}
-                        >
-                          <div className="relative">
-                            <div 
-                              className={`flex h-10 w-10 items-center justify-center rounded-full border-2 ${
-                                isActive 
-                                  ? 'border-primary text-primary-foreground' 
-                                  : 'border-gray-200'
-                              }`}
-                            >
-                              <div
-                                className={`absolute inset-0 rounded-full overflow-hidden ${
-                                  isActive ? 'bg-primary' : 'bg-transparent'
-                                }`}
-                                style={{
-                                  transition: 'background-color 0.8s ease-in-out'
-                                }}
-                              />
-                              <Icon className="h-5 w-5 relative z-10" />
-                            </div>
-                            {isCurrentStep && (
-                              <motion.div 
-                                className="absolute inset-0 rounded-full ring-4 ring-primary/20"
-                                animate={{
-                                  scale: [1, 1.1, 1],
-                                  opacity: [0.5, 0.8, 0.5]
-                                }}
-                                transition={{
-                                  duration: 2,
-                                  repeat: Infinity,
-                                  ease: "easeInOut"
-                                }}
-                              />
-                            )}
-                          </div>
-                          <span className="mt-2 text-xs font-medium">
-                            {step.label}
-                          </span>
-                          {isCurrentStep && (
-                            <motion.span
-                              initial={{ opacity: 0, y: 5 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              className="text-xs text-primary mt-1"
-                            >
-                              Under utveckling
-                            </motion.span>
-                          )}
-                        </motion.div>
-                      )
-                    })}
-                  </div>
-                </motion.div>
-
-                <motion.div 
-                  className="space-y-4 px-2"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.3, delay: 0.6 }}
-                >
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm font-medium">Förlopp</span>
-                    <span className="text-sm font-medium text-primary">{progress}%</span>
-                  </div>
-                  <motion.div
-                    className="relative h-3 bg-primary/10 rounded-full overflow-hidden"
-                    initial={{ width: 0 }}
-                    animate={{ width: "100%" }}
-                    transition={{ duration: 0.8, ease: "easeInOut" }}
-                  >
-                    <motion.div
-                      className="absolute top-0 left-0 h-full bg-primary"
-                      initial={{ width: 0 }}
-                      animate={{ width: `${progress}%` }}
-                      transition={{ duration: 0.8, ease: "easeInOut" }}
-                    />
-                  </motion.div>
-                </motion.div>
-
-                <motion.div 
-                  className="grid grid-cols-2 gap-4 text-sm bg-muted/50 p-4 rounded-lg"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.3, delay: 0.7 }}
-                >
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <CalendarDays className="w-4 h-4" />
+          <>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
+            >
+              <Card className="w-full overflow-hidden">
+                <CardHeader className="relative">
+                  <div className="absolute inset-0" />
+                  <div className="relative flex items-center justify-between">
                     <div>
-                      <span className="block text-xs font-medium text-muted-foreground">Orderdatum</span>
-                      <span className="font-medium">{storeOrder?.order_date ? new Date(storeOrder.order_date).toLocaleDateString() : 'N/A'}</span>
+                      <CardTitle className="text-xl font-medium">Status för din butik</CardTitle>
+                      <CardDescription className="text-sm font-normal mt-1">Följ resan av utvecklingen av din butik nedan. Vid frågor, skriv i chatten.</CardDescription>
                     </div>
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.3, delay: 0.2 }}
+                    >
+                      <Badge className={`px-3 py-1.5 text-sm font-medium ${
+                        storeOrder?.status === "Under utveckling" ? "bg-blue-100 text-blue-800" : 
+                        storeOrder?.status === "Granska" ? "bg-yellow-100 text-yellow-800" :
+                        storeOrder?.status === "Levererad" ? "bg-green-100 text-green-800" :
+                        "bg-gray-100 text-gray-800"
+                      }`}>
+                        <span className="flex items-center gap-1.5">
+                          {getStatusIcon(storeOrder?.status || 'pending')}
+                          {storeOrder?.status || 'pending'}
+                        </span>
+                      </Badge>
+                    </motion.div>
                   </div>
-                  <div className="flex items-center justify-end gap-2 text-muted-foreground">
-                    <Clock className="w-4 h-4" />
-                    <div className="text-right">
-                      <span className="block text-xs font-medium text-muted-foreground">Förväntad leverans</span>
-                      <span className="font-medium">{storeOrder?.estimated_completion ? new Date(storeOrder.estimated_completion).toLocaleDateString() : 'TBD'}</span>
+                </CardHeader>
+                <CardContent className="space-y-6 pt-6">
+                  <motion.div 
+                    className="relative"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.3, delay: 0.3 }}
+                  >
+                    <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                      <div className="w-full border-t border-gray-200" />
                     </div>
-                  </div>
-                </motion.div>
-              </CardContent>
-            </Card>
-          </motion.div>
+                    <div className="relative flex justify-between">
+                      {STEPS.map((step, index) => {
+                        const Icon = step.icon
+                        const isActive = step.value <= progress
+                        const isCurrentStep = step.value === progress
+                        return (
+                          <motion.div
+                            key={step.id}
+                            className={`flex flex-col items-center ${isActive ? 'text-primary' : 'text-muted-foreground'} group`}
+                            whileHover={{ scale: 1.05 }}
+                            transition={{ duration: 0.2 }}
+                          >
+                            <div className="relative">
+                              <div 
+                                className={`flex h-10 w-10 items-center justify-center rounded-full border-2 ${
+                                  isActive 
+                                    ? 'border-primary text-primary-foreground' 
+                                    : 'border-gray-200'
+                                }`}
+                              >
+                                <div
+                                  className={`absolute inset-0 rounded-full overflow-hidden ${
+                                    isActive ? 'bg-primary' : 'bg-transparent'
+                                  }`}
+                                  style={{
+                                    transition: 'background-color 0.8s ease-in-out'
+                                  }}
+                                />
+                                <Icon className="h-5 w-5 relative z-10" />
+                              </div>
+                              {isCurrentStep && (
+                                <motion.div 
+                                  className="absolute inset-0 rounded-full ring-4 ring-primary/20"
+                                  animate={{
+                                    scale: [1, 1.1, 1],
+                                    opacity: [0.5, 0.8, 0.5]
+                                  }}
+                                  transition={{
+                                    duration: 2,
+                                    repeat: Infinity,
+                                    ease: "easeInOut"
+                                  }}
+                                />
+                              )}
+                            </div>
+                            <span className="mt-2 text-xs font-medium">
+                              {step.label}
+                            </span>
+                            {isCurrentStep && (
+                              <motion.span
+                                initial={{ opacity: 0, y: 5 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="text-xs text-primary mt-1"
+                              >
+                                Under utveckling
+                              </motion.span>
+                            )}
+                          </motion.div>
+                        )
+                      })}
+                    </div>
+                  </motion.div>
+
+                  <motion.div 
+                    className="space-y-4 px-2"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.3, delay: 0.6 }}
+                  >
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-sm font-medium">Förlopp</span>
+                      <span className="text-sm font-medium text-primary">{progress}%</span>
+                    </div>
+                    <motion.div
+                      className="relative h-3 bg-primary/10 rounded-full overflow-hidden"
+                      initial={{ width: 0 }}
+                      animate={{ width: "100%" }}
+                      transition={{ duration: 0.8, ease: "easeInOut" }}
+                    >
+                      <motion.div
+                        className="absolute top-0 left-0 h-full bg-primary"
+                        initial={{ width: 0 }}
+                        animate={{ width: `${progress}%` }}
+                        transition={{ duration: 0.8, ease: "easeInOut" }}
+                      />
+                    </motion.div>
+                  </motion.div>
+
+                  <motion.div 
+                    className="grid grid-cols-2 gap-4 text-sm bg-muted/50 p-4 rounded-lg"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.3, delay: 0.7 }}
+                  >
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <CalendarDays className="w-4 h-4" />
+                      <div>
+                        <span className="block text-xs font-medium text-muted-foreground">Orderdatum</span>
+                        <span className="font-medium">{storeOrder?.order_date ? new Date(storeOrder.order_date).toLocaleDateString() : 'N/A'}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-end gap-2 text-muted-foreground">
+                      <Clock className="w-4 h-4" />
+                      <div className="text-right">
+                        <span className="block text-xs font-medium text-muted-foreground">Förväntad leverans</span>
+                        <span className="font-medium">2-4 veckor</span>
+                      </div>
+                    </div>
+                  </motion.div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* Niche Selection Modal */}
+            <NicheSelectionModal 
+              open={showNicheModal}
+              onOpenChange={setShowNicheModal}
+              onNicheSelect={handleNicheSelect}
+            />
+          </>
         ) : !isLoading ? (
           <motion.div
             initial={{ opacity: 0, y: 20 }}

@@ -8,7 +8,7 @@ export function ToastHandler() {
     // Check for sign-in success flag
     const showSignInSuccess = localStorage.getItem("showSignInSuccess")
     if (showSignInSuccess) {
-      toast.success("Successfully signed in!")
+      toast.success("Inloggningen lyckades!")
       localStorage.removeItem("showSignInSuccess")
     }
   }, [])

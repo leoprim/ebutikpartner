@@ -6,10 +6,11 @@ import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { motion, AnimatePresence } from "framer-motion"
+import { motion } from "framer-motion"
 import { Loader2 } from "lucide-react"
 import { createBrowserClient } from "@supabase/ssr"
 import { toast } from "@/components/ui/use-toast"
+import Image from "next/image"
 
 interface MessageInputProps {
   onSendMessage: (content: string, attachments?: { type: string; url: string }[]) => void
@@ -207,10 +208,12 @@ export function MessageInput({ onSendMessage }: MessageInputProps) {
               exit={{ scale: 0.8, opacity: 0 }}
             >
               {attachment.type === "image" && (
-                <img
+                <Image
                   src={attachment.url || "/placeholder.svg"}
                   alt="Attachment preview"
                   className="h-20 w-20 rounded object-cover"
+                  width={80}
+                  height={80}
                 />
               )}
               <motion.button
