@@ -158,7 +158,6 @@ export function TopBar() {
             <Menu className="h-5 w-5" />
           </Button>
         )}
-        <h1 className="text-lg font-medium">{getPageTitle()}</h1>
       </div>
       <div className="flex items-center gap-4">
         {/* Notification Bell */}

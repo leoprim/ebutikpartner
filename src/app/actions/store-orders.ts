@@ -113,4 +113,30 @@ export async function createStoreOrder(formData: FormData) {
     console.error('Unexpected error in createStoreOrder:', error)
     throw error
   }
+}
+
+export async function updateShopifyCredentials(orderId: string, domain: string, accessToken: string) {
+  const cookieStore = await cookies()
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value
+        },
+      },
+    }
+  )
+
+  const { error } = await supabase
+    .from('store_orders')
+    .update({
+      shopify_domain: domain,
+      shopify_access_token: accessToken,
+    })
+    .eq('id', orderId)
+
+  if (error) throw error
+  return { success: true }
 } 

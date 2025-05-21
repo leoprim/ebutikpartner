@@ -1,0 +1,19 @@
+[
+  {
+    "name": "color",
+    "options": [
+      {
+        "label": "Red",
+        "image": "https://s.alicdn.com/@sc04/kf/Hf77936225d524383be39e6959e359b3do.jpg"
+      },
+      {
+        "label": "Orange",
+        "image": "https://s.alicdn.com/@sc04/kf/Hb3b4537c2090403ebf7f82ae815db370k.jpg"
+      },
+      {
+        "label": "Green",
+        "image": "https://s.alicdn.com/@sc04/kf/H2852465740524f11a36669164ce60576E.jpg"
+      }
+    ]
+  }
+]

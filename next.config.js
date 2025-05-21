@@ -16,7 +16,14 @@ const nextConfig = {
         pathname: '/storage/v1/object/public/**',
       },
     ],
-    domains: ['lh3.googleusercontent.com', 'avatars.githubusercontent.com', 'oamgbaobmctsptfgjidm.supabase.co'],
+    domains: [
+      'lh3.googleusercontent.com',
+      'avatars.githubusercontent.com',
+      'oamgbaobmctsptfgjidm.supabase.co',
+      'img.alicdn.com',
+      's.alicdn.com',
+      'sc04.alicdn.com',
+    ],
   },
   transpilePackages: ['date-fns'],
 }

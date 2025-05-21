@@ -5,6 +5,7 @@ import { Edit, ExternalLink, MoreHorizontal, Package, Trash } from "lucide-react
 import Link from "next/link"
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
 import { toast } from "sonner"
+import { useRouter } from "next/navigation"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -39,25 +40,26 @@ interface StoreOrder {
   price: number
   niche: string
   progress: number
+  user_id: string
 }
 
 // Helper function to get status badge
 function getStatusBadge(status: string) {
   switch (status) {
     case "Väntar":
-      return <Badge variant="outline">Pending</Badge>
+      return <Badge variant="outline">Väntar</Badge>
     case "Under utveckling":
-      return <Badge variant="secondary">In Progress</Badge>
+      return <Badge variant="secondary">Under utveckling</Badge>
     case "Granska":
       return (
         <Badge variant="default" className="bg-amber-500">
-          Ready for Review
+          Redo för granskning
         </Badge>
       )
     case "Levererad":
       return (
         <Badge variant="default" className="bg-green-500">
-          Delivered
+          Levererad
         </Badge>
       )
     default:
@@ -67,17 +69,15 @@ function getStatusBadge(status: string) {
 
 export default function StoreOrdersTable() {
   const [orders, setOrders] = useState<StoreOrder[]>([])
+  const [userMap, setUserMap] = useState<Record<string, string>>({})
   const [isLoading, setIsLoading] = useState(true)
   const [editingOrder, setEditingOrder] = useState<StoreOrder | null>(null)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const supabase = createClientComponentClient()
+  const router = useRouter()
 
   const fetchOrders = async () => {
     try {
-      console.log('Fetching orders from database...')
-      
-      // Since we're in an admin route, we can assume we're authenticated
-      // Try a more explicit query with error details
       const { data, error } = await supabase
         .from('store_orders')
         .select(`
@@ -94,27 +94,17 @@ export default function StoreOrdersTable() {
         `)
         .order('order_date', { ascending: false })
 
-      if (error) {
-        console.error('Error fetching orders:', error)
-        console.error('Error details:', {
-          code: error.code,
-          message: error.message,
-          details: error.details,
-          hint: error.hint
-        })
-        throw error
-      }
-
-      console.log('Raw query response:', { data, error })
-      console.log('Number of orders found:', data?.length || 0)
-      
-      if (data) {
-        console.log('First order (if any):', data[0])
-      }
-
       setOrders(data || [])
+
+      // Fetch user metadata for all unique user_ids from Supabase Auth
+      const userIds = Array.from(new Set((data || []).map((o: any) => o.user_id).filter(Boolean)))
+      const map: Record<string, string> = {}
+      await Promise.all(userIds.map(async (userId) => {
+        const { data: meta } = await supabase.rpc('get_user_metadata', { user_id: userId })
+        map[userId] = meta?.full_name || meta?.name || 'Okänd kund'
+      }))
+      setUserMap(map)
     } catch (error) {
-      console.error('Error in fetchOrders:', error)
       toast.error('Failed to load store orders')
     } finally {
       setIsLoading(false)
@@ -225,7 +215,7 @@ export default function StoreOrdersTable() {
       <div className="flex items-center justify-center p-8">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
-          <p className="mt-2 text-sm text-gray-600">Loading orders...</p>
+          <p className="mt-2 text-sm text-gray-600">Laddar beställningar...</p>
         </div>
       </div>
     )
@@ -236,29 +226,39 @@ export default function StoreOrdersTable() {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Store Name</TableHead>
-            <TableHead>Client</TableHead>
-            <TableHead>Order Date</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Price</TableHead>
-            <TableHead>Progress</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
+            <TableHead className="px-2 py-2 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Kund</TableHead>
+            <TableHead className="px-2 py-2 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Orderdatum</TableHead>
+            <TableHead className="px-2 py-2 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Status</TableHead>
+            <TableHead className="px-2 py-2 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Pris</TableHead>
+            <TableHead className="px-2 py-2 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Nisch</TableHead>
+            <TableHead className="px-2 py-2 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">Åtgärder</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {orders.map((order) => (
-            <TableRow key={order.id}>
-              <TableCell className="font-medium">{order.store_name}</TableCell>
+            <TableRow
+              key={order.id}
+              className="cursor-pointer hover:bg-muted transition-colors group"
+              onClick={e => {
+                // Prevent row click if dropdown menu is clicked
+                if ((e.target as HTMLElement).closest('[role="menu"]')) return;
+                router.push(`/admin/stores/${order.id}`)
+              }}
+            >
               <TableCell>
                 <div>
-                  <div className="font-medium">{order.client_name}</div>
+                  <div className="font-medium">{userMap[order.user_id] || order.client_name || <span className="text-muted-foreground">—</span>}</div>
                   <div className="text-sm text-muted-foreground">{order.client_email}</div>
                 </div>
               </TableCell>
               <TableCell>{new Date(order.order_date).toLocaleDateString()}</TableCell>
               <TableCell>{getStatusBadge(order.status)}</TableCell>
-              <TableCell>${order.price.toFixed(2)}</TableCell>
-              <TableCell>{order.progress}%</TableCell>
+              <TableCell>{
+                typeof order.price === 'number'
+                  ? order.price.toLocaleString('sv-SE', { style: 'currency', currency: 'SEK' })
+                  : <span className="text-muted-foreground">—</span>
+              }</TableCell>
+              <TableCell>{order.niche}</TableCell>
               <TableCell className="text-right">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -268,21 +268,12 @@ export default function StoreOrdersTable() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                    <DropdownMenuItem onClick={() => handleEdit(order)}>
-                      <Edit className="mr-2 h-4 w-4" />
-                      Edit Details
-                    </DropdownMenuItem>
+                    <DropdownMenuLabel>Åtgärder</DropdownMenuLabel>
                     <DropdownMenuItem asChild>
                       <Link href={`/admin/stores/${order.id}`}>
                         <ExternalLink className="mr-2 h-4 w-4" />
-                        View Details
+                        Redigera beställning
                       </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => handleDeliver(order)} disabled={order.status === "Levererad"}>
-                      <Package className="mr-2 h-4 w-4" />
-                      {order.status === "Levererad" ? "Already Delivered" : "Deliver Store"}
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem 
@@ -290,7 +281,7 @@ export default function StoreOrdersTable() {
                       onClick={() => handleDelete(order.id)}
                     >
                       <Trash className="mr-2 h-4 w-4" />
-                      Delete Order
+                      Ta bort beställning
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -311,7 +302,7 @@ export default function StoreOrdersTable() {
           </DialogHeader>
           <form onSubmit={handleUpdateOrder} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="store_name">Store Name</Label>
+              <Label htmlFor="store_name">Butiksnamn</Label>
               <Input
                 id="store_name"
                 value={editingOrder?.store_name || ''}

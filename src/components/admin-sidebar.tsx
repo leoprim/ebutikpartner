@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { LayoutDashboard, Users, Settings, Store, LibraryBig, Bell, Shield } from "lucide-react"
+import { LayoutDashboard, Users, Settings, Store, LibraryBig, Bell, Shield, Package } from "lucide-react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import Image from 'next/image'
@@ -25,22 +25,27 @@ import {
 // Admin navigation items
 const adminNavItems = [
   {
-    title: "Admin Dashboard",
+    title: "Instrumentpanel",
     icon: LayoutDashboard,
     href: "/admin/dashboard",
   },
   {
-    title: "Users",
+    title: "Användare",
     icon: Users,
     href: "/admin/users",
   },
   {
-    title: "Stores",
+    title: "Butiker",
     icon: Store,
     href: "/admin/stores",
   },
   {
-    title: "Videos",
+    title: "Produkter",
+    icon: Package,
+    href: "/admin/products",
+  },
+  {
+    title: "Videobibliotek",
     icon: LibraryBig,
     href: "/admin/videos",
   },
@@ -48,11 +53,6 @@ const adminNavItems = [
     title: "Admin Community",
     icon: Bell,
     href: "/admin/community",
-  },
-  {
-    title: "Admin Settings",
-    icon: Shield,
-    href: "/admin/settings",
   },
 ]
 
