@@ -1,14 +1,14 @@
 "use client"
 
 import { useEffect } from "react"
-import { toast } from "sonner"
+import { addToast } from "@heroui/react"
 
 export function ToastHandler() {
   useEffect(() => {
     // Check for sign-in success flag
     const showSignInSuccess = localStorage.getItem("showSignInSuccess")
     if (showSignInSuccess) {
-      toast.success("Inloggningen lyckades!")
+      addToast({ title: "Inloggningen lyckades!", color: "success" })
       localStorage.removeItem("showSignInSuccess")
     }
   }, [])

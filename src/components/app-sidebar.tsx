@@ -5,10 +5,11 @@ import { Bell, LayoutDashboard, Settings, Star, UsersRound, Lock, Store, Library
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import Image from 'next/image'
-import { toast } from "sonner"
+import { addToast } from "@heroui/react"
 import { createBrowserClient } from "@supabase/ssr"
 import SubscriptionModal from "./subscription-modal"
 import { useNiche } from "@/contexts/niche-context"
+
 
 import {
   Sidebar,
@@ -23,9 +24,11 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar"
-import { Button } from "@/components/ui/button"
+//import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
+import {Button, ButtonGroup} from "@heroui/button";
+
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname();
@@ -111,25 +114,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   const handlePremiumClick = (href: string) => {
     if (!isPremium) {
-      toast.custom((toastData) => (
-        <div className="bg-background border rounded-lg p-4 shadow-lg">
-          <div className="flex flex-col gap-2">
-            <h3 className="text-[#1e4841] font-medium">Premium krävs</h3>
-            <p className="text-muted-foreground text-sm">
-              Denna funktion är endast tillgänglig för premiumanvändare. Uppgradera ditt konto för att få tillgång till den.
-            </p>
-            <button
-              onClick={() => {
-                toast.dismiss(toastData);
-                setShowSubscriptionModal(true);
-              }}
-              className="mt-2 bg-[#1e4841] text-white px-4 py-2 rounded-md hover:bg-[#1e4841]/90 transition-colors"
-            >
-              Uppgradera
-            </button>
-          </div>
-        </div>
-      ));
+      addToast({
+        title: "Premium krävs",
+        description: "Denna funktion är endast tillgänglig för premiumanvändare. Uppgradera ditt konto för att få tillgång till den.",
+        color: "secondary"
+      });
       return;
     }
     router.push(href);
@@ -246,8 +235,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 <CardFooter className="relative flex items-center justify-center p-4 m-0 mt-auto">
                   <div className="absolute inset-0 bg-white/30 backdrop-blur-sm" />
                   <Button 
+                    color="primary"
                     size="lg" 
-                    className="w-full relative z-10 bg-[#1e4841] hover:bg-[#1e4841]/90" 
+                    radius="md"
+                    className="w-full relative z-10 bg-[#1e4841] hover:bg-[#1e4841]/90 rounded-lg font-medium duration-300" 
                     onClick={() => {
                       console.log('Button clicked');
                       setShowSubscriptionModal(true);

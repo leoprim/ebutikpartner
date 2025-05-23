@@ -10,7 +10,7 @@ import { Menu, Megaphone, Wrench, Crown, Flame } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { createBrowserClient } from "@supabase/ssr"
 import type { Channel, Message } from "@/types/community"
-import { toast } from "sonner"
+import { addToast } from "@heroui/react"
 import { motion, AnimatePresence } from "framer-motion"
 
 const channels: Channel[] = [
@@ -252,7 +252,7 @@ export function CommunityChat({ initialMessages = [] }: CommunityChatProps) {
       await fetchMessagesForChannel(activeChannel.id)
     } catch (error) {
       console.error('Error fetching messages:', error)
-      toast.error('Failed to load messages')
+      addToast({ title: 'Failed to load messages', color: 'danger' })
       setIsLoading(false)
     }
   }
@@ -440,13 +440,7 @@ export function CommunityChat({ initialMessages = [] }: CommunityChatProps) {
 
   const handleSendMessage = async (content: string, attachments?: { type: string; url: string }[]) => {
     if (!isPremium) {
-      toast.error('Premium Required', {
-        description: 'This feature is only available for premium users. Upgrade your account to access it.',
-        action: {
-          label: 'Upgrade',
-          onClick: () => window.location.href = '/premium',
-        },
-      })
+      addToast({ title: 'Premium Required', description: 'This feature is only available for premium users. Upgrade your account to access it.', color: 'secondary' })
       return
     }
 
@@ -502,7 +496,7 @@ export function CommunityChat({ initialMessages = [] }: CommunityChatProps) {
         // Remove optimistic message on error
         setMessages(prev => prev.filter(msg => msg.id !== optimisticMessage.id))
         console.error('Error sending message:', error)
-        toast.error('Failed to send message')
+        addToast({ title: 'Failed to send message', color: 'danger' })
       } else if (data && data[0]) {
         // Replace temp message with real one
         replaceTempMessage(tempId, data[0]);
@@ -511,7 +505,7 @@ export function CommunityChat({ initialMessages = [] }: CommunityChatProps) {
       // Remove optimistic message on error
       setMessages(prev => prev.filter(msg => msg.id !== optimisticMessage.id))
       console.error('Error sending message:', error)
-      toast.error('Failed to send message')
+      addToast({ title: 'Failed to send message', color: 'danger' })
     }
   }
 

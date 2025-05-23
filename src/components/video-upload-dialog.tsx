@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { X } from "lucide-react"
-import { toast } from "sonner"
+import { addToast } from "@heroui/react"
 import { Progress } from "@/components/ui/progress"
 import { getVideoDuration, formatDuration } from "@/lib/video-utils"
 import Image from "next/image"
@@ -43,7 +43,7 @@ export function VideoUploadDialog({
         setDuration(formatDuration(durationInSeconds))
       } catch (error) {
         console.error('Error getting video duration:', error)
-        toast.error('Failed to get video duration')
+        addToast({ title: 'Failed to get video duration', color: 'danger' })
       }
     }
   }
@@ -120,7 +120,7 @@ export function VideoUploadDialog({
 
       if (dbError) throw dbError
 
-      toast.success("Video uploaded successfully")
+      addToast({ title: "Video uploaded successfully", color: "success" })
 
       // Reset form
       setTitle("")
@@ -134,7 +134,7 @@ export function VideoUploadDialog({
 
     } catch (error) {
       console.error('Error uploading video:', error)
-      toast.error("Failed to upload video. Please try again.")
+      addToast({ title: "Failed to upload video. Please try again.", color: "danger" })
     } finally {
       setIsUploading(false)
       setUploadProgress(0)

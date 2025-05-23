@@ -6,7 +6,7 @@ import { Check } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import Confetti from "react-confetti"
-import { toast } from "sonner"
+import { addToast } from "@heroui/react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
@@ -41,13 +41,13 @@ export default function EmailConfirmationSuccess() {
     const checkSession = async () => {
       const { data: { session }, error } = await supabase.auth.getSession()
       if (error) {
-        toast.error("Failed to get session. Please try signing in again.")
+        addToast({ title: "Failed to get session. Please try signing in again.", color: "danger" })
         router.push("/sign-in")
         return
       }
 
       if (session) {
-        toast.success("Successfully logged in!")
+        addToast({ title: "Successfully logged in!", color: "success" })
         router.push("/dashboard")
       }
     }

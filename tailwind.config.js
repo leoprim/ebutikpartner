@@ -1,88 +1,14 @@
-const {heroui} = require('@heroui/theme');
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
-    "./src/**/*.{js,ts,jsx,tsx}",
-    "./components/**/*.{js,ts,jsx,tsx}",
+    "./pages/**/*.{js,ts,jsx,tsx}",
     "./app/**/*.{js,ts,jsx,tsx}",
-    "./node_modules/@heroui/theme/dist/components/(input|form).js"
+    "./components/**/*.{js,ts,jsx,tsx}",
+    "./node_modules/@headlessui/react/**/*.{js,ts,jsx,tsx}",
+    "./node_modules/@hero-ui/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-    fontSize: {
-      'xs': ['12px', { lineHeight: '16px' }],
-      'sm': ['13px', { lineHeight: '18px' }],
-      'base': ['14px', { lineHeight: '20px' }],
-      'lg': ['16px', { lineHeight: '24px' }],
-      'xl': ['18px', { lineHeight: '28px' }],
-      '2xl': ['20px', { lineHeight: '30px' }],
-      '3xl': ['24px', { lineHeight: '32px' }],
-      '4xl': ['30px', { lineHeight: '36px' }],
-      '5xl': ['36px', { lineHeight: '40px' }],
-    },
-    fontWeight: {
-      normal: '400',
-      medium: '500',
-      semibold: '600',
-    },
-    extend: {
-      colors: {
-          'orange': '#fa7f14', // Primary Orange
-          'orangeLight': '#ffe5cc', // Light/bright Orange
-        },
-      animation: {
-        'pulse': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-        'pulse-soft': 'pulse-soft 1s ease-out',
-        'once': 'once 0.5s ease-out forwards',
-      },
-      keyframes: {
-        pulse: {
-          '0%, 100%': { 
-            opacity: '0.2',
-            transform: 'scale(1)'
-          },
-          '50%': { 
-            opacity: '0.4',
-            transform: 'scale(1.1)'
-          }
-        },
-        'pulse-soft': {
-          '0%': { 
-            opacity: '0.95',
-            boxShadow: '0 0 0 0 rgba(255, 255, 255, 0.3)'
-          },
-          '70%': { 
-            opacity: '1',
-            boxShadow: '0 0 0 4px rgba(255, 255, 255, 0)'
-          },
-          '100%': { 
-            opacity: '1',
-            boxShadow: '0 0 0 0 rgba(255, 255, 255, 0)'
-          }
-        },
-        'once': {
-          '0%': {
-            opacity: '0.8',
-            transform: 'translateY(8px) scale(0.95)',
-          },
-          '100%': {
-            opacity: '1',
-            transform: 'translateY(0) scale(1)',
-          }
-        }
-      },
-      typography: {
-        DEFAULT: {
-          css: {
-            maxWidth: 'none',
-            color: 'var(--tw-prose-body)',
-            fontSize: '14px',
-          },
-        },
-      },
-    }
+    extend: {},
   },
-  plugins: [
-    heroui(),
-    require('@tailwindcss/typography'),
-  ],
-} 
+  plugins: [],
+}

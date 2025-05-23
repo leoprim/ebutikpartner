@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useTransition } from "react"
+import { useState, useTransition, useEffect } from "react"
 import { ArrowLeft, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -11,6 +11,7 @@ import Image from "next/image"
 import { createProduct, ProductDraft } from "@/app/actions/products"
 import { scrapeAlibabaProduct } from "@/app/actions/alibaba"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
+import { ArrowPathIcon } from "@heroicons/react/24/outline"
 
 // Place this at the top-level, outside the component and functions
 function normalizeUrl(url: string | undefined): string | undefined {
@@ -44,6 +45,26 @@ export default function NewProductPage() {
   const [saving, setSaving] = useState(false)
   const [success, setSuccess] = useState(false)
   const [isPending, startTransition] = useTransition()
+  const [progress, setProgress] = useState(0)
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout | null = null
+    if (loading) {
+      setProgress(0)
+      let start = Date.now()
+      interval = setInterval(() => {
+        const elapsed = (Date.now() - start) / 1000
+        // Animate to 95% over 15s, then to 99% after 10s
+        let pct = Math.min(95, elapsed * 6.5) // ~15s to 95%
+        if (elapsed > 10) pct = Math.min(99, pct + (elapsed - 10) * 2)
+        setProgress(pct)
+      }, 100)
+    } else if (!loading && progress > 0) {
+      setProgress(100)
+      setTimeout(() => setProgress(0), 500)
+    }
+    return () => { if (interval) clearInterval(interval) }
+  }, [loading])
 
   const handleImport = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -150,6 +171,15 @@ export default function NewProductPage() {
           <CardContent className="space-y-8">
             {step === "import" && (
               <form onSubmit={handleImport} className="space-y-8 w-full">
+                {/* Progress bar shown when loading or progress > 0 */}
+                {(loading || progress > 0) && (
+                  <div className="w-full bg-gray-200 rounded-full h-2.5 mb-4 overflow-hidden">
+                    <div
+                      className="bg-primary h-2.5 rounded-full transition-all duration-300"
+                      style={{ width: `${progress}%` }}
+                    ></div>
+                  </div>
+                )}
                 <div className="space-y-2">
                   <label htmlFor="alibaba-url" className="font-medium">Alibaba-länk</label>
                   <Input
@@ -163,7 +193,7 @@ export default function NewProductPage() {
                 {importError && <div className="text-destructive text-sm">{importError}</div>}
                 <div className="flex justify-end">
                   <Button type="submit" disabled={loading || !alibabaUrl} className="w-40">
-                    {loading && <Loader2 className="animate-spin mr-2 h-4 w-4" />}Importera
+                    {loading && <ArrowPathIcon className="animate-spin mr-2 h-5 w-5" />}Importera
                   </Button>
                 </div>
                 {success && <div className="text-green-600 text-sm">Produkten importerades och sparades!</div>}

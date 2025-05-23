@@ -1,7 +1,9 @@
 import "./globals.css"
-import { Toaster } from "sonner"
+import { ToastProvider } from "@heroui/react"
 import { Inter } from "next/font/google"
 import Script from "next/script"
+import { ToastHandler } from "@/components/toast-handler"
+import { HeroUIProvider } from "@heroui/react"
 
 const inter = Inter({ subsets: ["latin"], weight: ["400", "500", "700"] })
 
@@ -18,8 +20,11 @@ export default function RootLayout({
   return (
     <html lang="sv" className={inter.className}>
       <body className="font-sans font-medium bg-background text-foreground" suppressHydrationWarning>
-        <Toaster />
-        {children}
+        <HeroUIProvider>
+          <ToastProvider />
+          <ToastHandler />
+          {children}
+        </HeroUIProvider>
         <Script id="clean-cookies" strategy="beforeInteractive">
           {`
             // Disabled cookie cleanup as it was causing authentication issues

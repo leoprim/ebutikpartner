@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { X } from "lucide-react"
-import { toast } from "sonner"
+import { addToast } from "@heroui/react"
 
 interface Video {
   id: string
@@ -64,7 +64,7 @@ export function VideoEditDialog({
 
     if (!user) {
       console.log("No user found")
-      toast.error("Please sign in to edit videos")
+      addToast({ title: "Please sign in to edit videos", color: "danger" })
       return
     }
 
@@ -115,13 +115,13 @@ export function VideoEditDialog({
       }
 
       console.log("Video updated successfully")
-      toast.success("Video updated successfully")
+      addToast({ title: "Video updated successfully", color: "success" })
       onOpenChange(false)
       onEditComplete?.()
 
     } catch (error) {
       console.error('Error updating video:', error)
-      toast.error("Failed to update video. Please try again.")
+      addToast({ title: "Failed to update video. Please try again.", color: "danger" })
     } finally {
       setIsUploading(false)
     }

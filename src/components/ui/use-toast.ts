@@ -1,3 +1,5 @@
+// Deprecated: replaced by HeroUI addToast
+
 import * as React from "react"
 
 import type {

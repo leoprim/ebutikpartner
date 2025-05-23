@@ -83,15 +83,18 @@ export async function scrapeAlibabaProduct(url: string): Promise<AlibabaProduct>
     throw new Error('Endast Alibaba-länkar stöds.')
   }
 
-  // Try Puppeteer script first
+  // Use Railway API for scraping
   try {
-    const puppeteerResult = await new Promise<string>((resolve, reject) => {
-      execFile('node', ['scripts/scrape-alibaba-puppeteer.js', url], { timeout: 90000 }, (err, stdout, stderr) => {
-        if (err) return reject(stderr || err)
-        resolve(stdout)
-      })
+    const response = await fetch('https://alibaba-ebutikpartner-production.up.railway.app/import-alibaba', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url })
     })
-    const data = JSON.parse(puppeteerResult)
+    if (!response.ok) {
+      const errorText = await response.text()
+      throw new Error('Railway API error: ' + errorText)
+    }
+    const data = await response.json()
     if (data && data.title) {
       // AI rewrite in Swedish
       const ai = await aiRewriteTitleAndDescription(data.title, data.description)
@@ -102,10 +105,8 @@ export async function scrapeAlibabaProduct(url: string): Promise<AlibabaProduct>
         variants: Array.isArray(data.variants) ? data.variants : [],
       }
     }
-    throw new Error('Puppeteer did not return valid product data.')
+    throw new Error('Railway API did not return valid product data.')
   } catch (e) {
-    // Fallback to SSR scraping if Puppeteer fails
-    // ... (keep your old SSR logic here as a fallback if needed) ...
-    throw new Error('Kunde inte hämta produktdata med Puppeteer. ' + (typeof e === 'object' && e && 'message' in e ? (e as any).message : String(e)))
+    throw new Error('Kunde inte hämta produktdata från Railway API. ' + (typeof e === 'object' && e && 'message' in e ? (e as any).message : String(e)))
   }
 } 

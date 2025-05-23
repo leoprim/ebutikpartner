@@ -9,7 +9,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { motion } from "framer-motion"
 import { Loader2 } from "lucide-react"
 import { createBrowserClient } from "@supabase/ssr"
-import { toast } from "@/components/ui/use-toast"
+import { addToast } from "@heroui/react"
 import Image from "next/image"
 
 interface MessageInputProps {
@@ -107,10 +107,10 @@ export function MessageInput({ onSendMessage }: MessageInputProps) {
                 }
               } catch (error) {
                 console.error('Error processing file:', error)
-                toast({
-                  variant: "destructive",
+                addToast({
                   title: "Upload Failed",
-                  description: `Failed to upload ${attachment.file.name}`
+                  description: `Failed to upload ${attachment.file.name}`,
+                  color: "danger"
                 })
                 return null
               }
@@ -133,10 +133,10 @@ export function MessageInput({ onSendMessage }: MessageInputProps) {
         setAttachments([])
       } catch (error) {
         console.error('Error sending message:', error)
-        toast({
-          variant: "destructive",
+        addToast({
           title: "Error",
-          description: "Failed to send message"
+          description: "Failed to send message",
+          color: "danger"
         })
       } finally {
         setIsSending(false)

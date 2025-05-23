@@ -1,3 +1,5 @@
+// Deprecated: replaced by HeroUI ToastProvider and addToast
+
 import * as React from "react"
 import * as ToastPrimitives from "@radix-ui/react-toast"
 import { cva, type VariantProps } from "class-variance-authority"

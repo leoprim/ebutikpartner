@@ -13,11 +13,12 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+//import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Tabs, Tab, Card, CardBody } from "@heroui/react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { User, Mail, Lock, Upload } from "lucide-react"
 import { createBrowserClient } from "@supabase/ssr"
-import { toast } from "sonner"
+import { addToast } from "@heroui/react"
 
 interface SettingsModalProps {
   open: boolean
@@ -110,14 +111,7 @@ export default function SettingsModal({ open, onOpenChange }: SettingsModalProps
         // Check if we got a response indicating email confirmation is needed
         if (emailError?.message?.includes('email change') || 
             (data?.user && data.user.email !== email)) {
-          toast.info(
-            <div className="space-y-1">
-              <p className="font-medium">Bekräftelse av ändring via e-post krävs</p>
-              <p className="text-sm text-muted-foreground">
-              Vi har skickat ett bekräftelsemail till {email}. Vänligen kontrollera din inkorg och klicka på bekräftelselänken för att slutföra ändringen.
-              </p>
-            </div>
-          )
+          addToast({ title: "Bekräftelse av ändring via e-post krävs", color: "primary" })
           setIsLoading(false)
           return
         }
@@ -174,14 +168,14 @@ export default function SettingsModal({ open, onOpenChange }: SettingsModalProps
         setNewPassword("")
         setConfirmPassword("")
         
-        toast.success("Inställningarna har uppdaterats")
+        addToast({ title: "Inställningarna har uppdaterats", color: "success" })
         onOpenChange(false)
       } else {
-        toast.info("Inga ändringar att spara")
+        addToast({ title: "Inga ändringar att spara", color: "primary" })
       }
     } catch (error: any) {
       console.error('Error updating settings:', error)
-      toast.error(error.message || "Misslyckades att uppdatera inställningarna")
+      addToast({ title: error.message || "Misslyckades att uppdatera inställningarna", color: "danger" })
     } finally {
       setIsLoading(false)
     }
@@ -203,100 +197,127 @@ export default function SettingsModal({ open, onOpenChange }: SettingsModalProps
           <DialogTitle>Kontoinställningar</DialogTitle>
           <DialogDescription>Uppdatera dina kontoinställningar. Klicka på spara när du är klar.</DialogDescription>
         </DialogHeader>
-        <Tabs defaultValue="profile" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="profile" className="flex items-center gap-2">
-              <User className="h-4 w-4" />
-              <span className="hidden sm:inline">Profil</span>
-            </TabsTrigger>
-            <TabsTrigger value="email" className="flex items-center gap-2">
-              <Mail className="h-4 w-4" />
-              <span className="hidden sm:inline">E-post</span>
-            </TabsTrigger>
-            <TabsTrigger value="password" className="flex items-center gap-2">
-              <Lock className="h-4 w-4" />
-              <span className="hidden sm:inline">Lösenord</span>
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="profile" className="space-y-4 py-4">
-            <div className="flex flex-col items-center space-y-4">
-              <div className="relative h-24 w-24 overflow-hidden rounded-full">
-                <Avatar className="h-full w-full">
-                  <AvatarImage 
-                    src={previewUrl || avatar || "/placeholder.svg"} 
-                    alt="User avatar"
-                    className="object-cover"
-                  />
-                  <AvatarFallback>UN</AvatarFallback>
-                </Avatar>
-              </div>
-              <div className="flex items-center gap-2">
-                <Label htmlFor="avatar" className="cursor-pointer">
-                  <div className="flex items-center gap-2 rounded-md border px-3 py-2 text-sm">
-                    <Upload className="h-4 w-4" />
-                    Ändra profilbild
+        <div className="flex w-full flex-col">
+          <Tabs aria-label="Kontoinställningar" defaultSelectedKey="profile">
+            <Tab
+              key="profile"
+              title={
+                <span className="flex items-center gap-2">
+                  <User className="h-4 w-4" />
+                  <span className="hidden sm:inline">Profil</span>
+                </span>
+              }
+            >
+              <Card>
+                <CardBody>
+                  <div className="space-y-4 py-4">
+                    <div className="flex flex-col items-center space-y-4">
+                      <div className="relative h-24 w-24 overflow-hidden rounded-full">
+                        <Avatar className="h-full w-full">
+                          <AvatarImage 
+                            src={previewUrl || avatar || "/placeholder.svg"} 
+                            alt="User avatar"
+                            className="object-cover"
+                          />
+                          <AvatarFallback>UN</AvatarFallback>
+                        </Avatar>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Label htmlFor="avatar" className="cursor-pointer">
+                          <div className="flex items-center gap-2 rounded-md border px-3 py-2 text-sm">
+                            <Upload className="h-4 w-4" />
+                            Ändra profilbild
+                          </div>
+                          <Input 
+                            id="avatar" 
+                            type="file" 
+                            accept="image/*" 
+                            className="hidden" 
+                            onChange={handleAvatarChange}
+                            disabled={isLoading}
+                          />
+                        </Label>
+                      </div>
+                    </div>
                   </div>
-                  <Input 
-                    id="avatar" 
-                    type="file" 
-                    accept="image/*" 
-                    className="hidden" 
-                    onChange={handleAvatarChange}
-                    disabled={isLoading}
-                  />
-                </Label>
-              </div>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="email" className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">E-post</Label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="namn@ebutikpartner.se"
-                disabled={isLoading}
-              />
-            </div>
-          </TabsContent>
-
-          <TabsContent value="password" className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="current-password">Nuvarande lösenord</Label>
-              <Input
-                id="current-password"
-                type="password"
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-                disabled={isLoading}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="new-password">Nytt lösenord</Label>
-              <Input
-                id="new-password"
-                type="password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                disabled={isLoading}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="confirm-password">Bekräfta nytt lösenord</Label>
-              <Input
-                id="confirm-password"
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                disabled={isLoading}
-              />
-            </div>
-          </TabsContent>
-        </Tabs>
+                </CardBody>
+              </Card>
+            </Tab>
+            <Tab
+              key="email"
+              title={
+                <span className="flex items-center gap-2">
+                  <Mail className="h-4 w-4" />
+                  <span className="hidden sm:inline">E-post</span>
+                </span>
+              }
+            >
+              <Card>
+                <CardBody>
+                  <div className="space-y-4 py-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="email">E-post</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="namn@ebutikpartner.se"
+                        disabled={isLoading}
+                      />
+                    </div>
+                  </div>
+                </CardBody>
+              </Card>
+            </Tab>
+            <Tab
+              key="password"
+              title={
+                <span className="flex items-center gap-2">
+                  <Lock className="h-4 w-4" />
+                  <span className="hidden sm:inline">Lösenord</span>
+                </span>
+              }
+            >
+              <Card>
+                <CardBody>
+                  <div className="space-y-4 py-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="current-password">Nuvarande lösenord</Label>
+                      <Input
+                        id="current-password"
+                        type="password"
+                        value={currentPassword}
+                        onChange={(e) => setCurrentPassword(e.target.value)}
+                        disabled={isLoading}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="new-password">Nytt lösenord</Label>
+                      <Input
+                        id="new-password"
+                        type="password"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        disabled={isLoading}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="confirm-password">Bekräfta nytt lösenord</Label>
+                      <Input
+                        id="confirm-password"
+                        type="password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        disabled={isLoading}
+                      />
+                    </div>
+                  </div>
+                </CardBody>
+              </Card>
+            </Tab>
+          </Tabs>
+        </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading}>
             Avbryt
