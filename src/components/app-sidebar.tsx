@@ -5,7 +5,7 @@ import { Bell, LayoutDashboard, Settings, Star, UsersRound, Lock, Store, Library
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import Image from 'next/image'
-import { addToast } from "@heroui/react"
+import toast from "react-hot-toast"
 import { createBrowserClient } from "@supabase/ssr"
 import SubscriptionModal from "./subscription-modal"
 import { useNiche } from "@/contexts/niche-context"
@@ -114,11 +114,25 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   const handlePremiumClick = (href: string) => {
     if (!isPremium) {
-      addToast({
-        title: "Premium krävs",
-        description: "Denna funktion är endast tillgänglig för premiumanvändare. Uppgradera ditt konto för att få tillgång till den.",
-        color: "secondary"
-      });
+      toast.error(
+        (t) => (
+          <div className="flex flex-col gap-2">
+            <span>Premium krävs - Uppgradera ditt konto för att få tillgång till denna funktion</span>
+            <button
+              onClick={() => {
+                setShowSubscriptionModal(true);
+                toast.dismiss(t.id);
+              }}
+              className="bg-[#1e4841] text-white px-4 py-2 rounded-md text-sm hover:bg-[#1e4841]/90 transition-colors"
+            >
+              Uppgradera nu
+            </button>
+          </div>
+        ),
+        {
+          duration: 5000,
+        }
+      );
       return;
     }
     router.push(href);

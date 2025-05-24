@@ -1,27 +1,26 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useEffect, useState } from "react"
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
 import { Plus, Edit, Trash2, Eye, EyeOff, BarChart2 } from "lucide-react"
-import { toast } from "sonner"
+import { toast } from "react-hot-toast"
 import { useRouter } from "next/navigation"
+import { useAdmin } from "@/hooks/use-admin"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { VideoUploadDialog } from "@/components/video-upload-dialog"
 import { VideoEditDialog } from "@/components/video-edit-dialog"
-import { useAdmin } from "@/hooks/use-admin"
 
 interface Video {
   id: string
   title: string
-  description: string | null
-  duration: string | null
-  thumbnail_url: string | null
+  description: string
   video_url: string
+  thumbnail_url: string
   is_published: boolean
-  order_index: number
   created_at: string
+  duration?: string
   view_count?: number
 }
 
@@ -35,8 +34,6 @@ export default function AdminVideosPage() {
   const supabase = createClientComponentClient()
 
   useEffect(() => {
-    console.log('AdminVideosPage - Admin status:', { isAdmin, isAdminLoading })
-    
     if (!isAdminLoading && !isAdmin) {
       console.log('AdminVideosPage - Not an admin, redirecting to home')
       toast.error("You must be an admin to access this page")
@@ -44,40 +41,16 @@ export default function AdminVideosPage() {
     }
   }, [isAdmin, isAdminLoading, router])
 
-  useEffect(() => {
-    if (isAdmin) {
-      console.log('AdminVideosPage - Fetching videos')
-      fetchVideos()
-    }
-  }, [isAdmin])
-
   const fetchVideos = async () => {
     try {
-      // First get all videos
-      const { data: videos, error: videosError } = await supabase
-        .from("videos")
-        .select("*")
-        .order("order_index", { ascending: true })
+      const { data, error } = await supabase
+        .from('videos')
+        .select('*')
+        .order('created_at', { ascending: false })
 
-      if (videosError) throw videosError
+      if (error) throw error
 
-      // Then get view counts for each video
-      const { data: analytics, error: analyticsError } = await supabase
-        .from("video_analytics")
-        .select("video_id, view_count")
-        .in("video_id", videos.map(v => v.id))
-
-      if (analyticsError) throw analyticsError
-
-      // Combine the data
-      const videosWithViews = videos.map(video => ({
-        ...video,
-        view_count: analytics
-          ?.filter(a => a.video_id === video.id)
-          .reduce((sum, a) => sum + a.view_count, 0) || 0
-      }))
-
-      setVideos(videosWithViews)
+      setVideos(data)
     } catch (error) {
       console.error("Error fetching videos:", error)
       toast.error("Failed to load videos")
@@ -86,17 +59,23 @@ export default function AdminVideosPage() {
     }
   }
 
-  const handleTogglePublish = async (videoId: string, currentStatus: boolean) => {
+  useEffect(() => {
+    if (isAdmin) {
+      fetchVideos()
+    }
+  }, [isAdmin, supabase])
+
+  const toggleVideoStatus = async (videoId: string, currentStatus: boolean) => {
     try {
       const { error } = await supabase
-        .from("videos")
+        .from('videos')
         .update({ is_published: !currentStatus })
-        .eq("id", videoId)
+        .eq('id', videoId)
 
       if (error) throw error
 
-      setVideos(videos.map(video => 
-        video.id === videoId 
+      setVideos(videos.map(video =>
+        video.id === videoId
           ? { ...video, is_published: !currentStatus }
           : video
       ))
@@ -108,46 +87,14 @@ export default function AdminVideosPage() {
     }
   }
 
-  const handleDelete = async (videoId: string) => {
-    if (!confirm("Are you sure you want to delete this video?")) return
-
+  const deleteVideo = async (videoId: string) => {
     try {
-      // Get the video details first
-      const { data: video, error: fetchError } = await supabase
-        .from("videos")
-        .select("video_url, thumbnail_url")
-        .eq("id", videoId)
-        .single()
-
-      if (fetchError) throw fetchError
-
-      // Delete the video file from storage
-      if (video.video_url) {
-        const { error: videoError } = await supabase.storage
-          .from('videos')
-          .remove([video.video_url])
-
-        if (videoError) throw videoError
-      }
-
-      // Delete the thumbnail file from storage if it exists
-      if (video.thumbnail_url) {
-        // Extract the path from the full URL
-        const thumbnailPath = video.thumbnail_url.split('/').slice(-2).join('/')
-        const { error: thumbnailError } = await supabase.storage
-          .from('videos')
-          .remove([`thumbnails/${thumbnailPath}`])
-
-        if (thumbnailError) throw thumbnailError
-      }
-
-      // Delete the database record
-      const { error: dbError } = await supabase
-        .from("videos")
+      const { error } = await supabase
+        .from('videos')
         .delete()
-        .eq("id", videoId)
+        .eq('id', videoId)
 
-      if (dbError) throw dbError
+      if (error) throw error
 
       setVideos(videos.filter(video => video.id !== videoId))
       toast.success("Video deleted successfully")
@@ -187,7 +134,7 @@ export default function AdminVideosPage() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => handleTogglePublish(video.id, video.is_published)}
+                  onClick={() => toggleVideoStatus(video.id, video.is_published)}
                 >
                   {video.is_published ? (
                     <Eye className="w-4 h-4" />
@@ -205,7 +152,7 @@ export default function AdminVideosPage() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => handleDelete(video.id)}
+                  onClick={() => deleteVideo(video.id)}
                 >
                   <Trash2 className="w-4 h-4" />
                 </Button>

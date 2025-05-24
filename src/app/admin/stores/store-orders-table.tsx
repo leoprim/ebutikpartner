@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { Edit, ExternalLink, MoreHorizontal, Package, Trash } from "lucide-react"
 import Link from "next/link"
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
-import { toast } from "sonner"
+import { toast } from "react-hot-toast"
 import { useRouter } from "next/navigation"
 
 import { Badge } from "@/components/ui/badge"
@@ -71,6 +71,7 @@ export default function StoreOrdersTable() {
   const [orders, setOrders] = useState<StoreOrder[]>([])
   const [userMap, setUserMap] = useState<Record<string, string>>({})
   const [isLoading, setIsLoading] = useState(true)
+  const [mounted, setMounted] = useState(false)
   const [editingOrder, setEditingOrder] = useState<StoreOrder | null>(null)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const supabase = createClientComponentClient()
@@ -80,64 +81,62 @@ export default function StoreOrdersTable() {
     try {
       const { data, error } = await supabase
         .from('store_orders')
-        .select(`
-          id,
-          store_name,
-          client_name,
-          client_email,
-          order_date,
-          status,
-          price,
-          niche,
-          progress,
-          user_id
-        `)
-        .order('order_date', { ascending: false })
+        .select('*')
+        .order('created_at', { ascending: false })
 
-      setOrders(data || [])
+      if (error) throw error
 
-      // Fetch user metadata for all unique user_ids from Supabase Auth
-      const userIds = Array.from(new Set((data || []).map((o: any) => o.user_id).filter(Boolean)))
-      const map: Record<string, string> = {}
-      await Promise.all(userIds.map(async (userId) => {
-        const { data: meta } = await supabase.rpc('get_user_metadata', { user_id: userId })
-        map[userId] = meta?.full_name || meta?.name || 'Okänd kund'
-      }))
-      setUserMap(map)
+      setOrders(data)
     } catch (error) {
-      toast.error('Failed to load store orders')
+      console.error('Error fetching store orders:', error)
+      toast.error("Failed to load store orders")
     } finally {
       setIsLoading(false)
     }
   }
 
-  useEffect(() => {
-    let mounted = true
+  const initialize = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        router.push('/sign-in')
+        return
+      }
 
-    const initialize = async () => {
-      try {
-        console.log('Initializing component...')
-        // Since we're in an admin route, we can assume we're authenticated
-        if (mounted) {
-          await fetchOrders()
-        }
-      } catch (error) {
-        console.error('Error initializing:', error)
+      const { data: adminData, error: adminError } = await supabase
+        .from('admin_users')
+        .select('*')
+        .eq('user_id', user.id)
+        .single()
+
+      if (adminError) {
+        console.error('Error checking admin status:', adminError)
         if (mounted) {
           setIsLoading(false)
-          toast.error('Failed to initialize')
+          toast.error("Failed to initialize: Not authorized")
         }
+        return
+      }
+
+      if (!adminData) {
+        router.push('/')
+        return
+      }
+
+      await fetchOrders()
+    } catch (error) {
+      console.error('Error initializing:', error)
+      if (mounted) {
+        setIsLoading(false)
+        toast.error("Failed to initialize")
       }
     }
+  }
 
-    // Initialize
+  useEffect(() => {
+    setMounted(true)
     initialize()
-
-    // Cleanup
-    return () => {
-      console.log('Cleaning up component...')
-      mounted = false
-    }
+    return () => setMounted(false)
   }, [])
 
   const handleEdit = (order: StoreOrder) => {
@@ -145,26 +144,24 @@ export default function StoreOrdersTable() {
     setIsEditDialogOpen(true)
   }
 
-  const handleDeliver = async (order: StoreOrder) => {
+  const handleDeliver = async (orderId: string) => {
     try {
       const { error } = await supabase
         .from('store_orders')
-        .update({ status: 'Levererad', progress: 100 })
-        .eq('id', order.id)
+        .update({ status: 'Levererad' })
+        .eq('id', orderId)
 
       if (error) throw error
 
-      toast.success('Store marked as delivered')
+      toast.success("Store marked as delivered")
       fetchOrders()
     } catch (error) {
       console.error('Error delivering store:', error)
-      toast.error('Failed to update store status')
+      toast.error("Failed to update store status")
     }
   }
 
   const handleDelete = async (orderId: string) => {
-    if (!confirm('Are you sure you want to delete this order?')) return
-
     try {
       const { error } = await supabase
         .from('store_orders')
@@ -173,40 +170,29 @@ export default function StoreOrdersTable() {
 
       if (error) throw error
 
-      toast.success('Order deleted successfully')
+      toast.success("Order deleted successfully")
       fetchOrders()
     } catch (error) {
       console.error('Error deleting order:', error)
-      toast.error('Failed to delete order')
+      toast.error("Failed to delete order")
     }
   }
 
-  const handleUpdateOrder = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!editingOrder) return
-
+  const handleUpdate = async (orderId: string, updates: Partial<StoreOrder>) => {
     try {
       const { error } = await supabase
         .from('store_orders')
-        .update({
-          store_name: editingOrder.store_name,
-          client_name: editingOrder.client_name,
-          client_email: editingOrder.client_email,
-          status: editingOrder.status,
-          price: editingOrder.price,
-          niche: editingOrder.niche,
-          progress: editingOrder.progress,
-        })
-        .eq('id', editingOrder.id)
+        .update(updates)
+        .eq('id', orderId)
 
       if (error) throw error
 
-      toast.success('Order updated successfully')
+      toast.success("Order updated successfully")
       setIsEditDialogOpen(false)
       fetchOrders()
     } catch (error) {
       console.error('Error updating order:', error)
-      toast.error('Failed to update order')
+      toast.error("Failed to update order")
     }
   }
 
@@ -300,7 +286,7 @@ export default function StoreOrdersTable() {
               Update the details of this store order.
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleUpdateOrder} className="space-y-4">
+          <form onSubmit={() => handleUpdate(editingOrder?.id || '', editingOrder || {})} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="store_name">Butiksnamn</Label>
               <Input

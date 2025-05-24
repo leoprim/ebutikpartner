@@ -9,11 +9,11 @@ import { createBrowserClient } from "@supabase/ssr"
 import { ArrowRight, ChromeIcon as Google, ChevronLeft, ChevronRight } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import Image from "next/image"
+import toast from "react-hot-toast"
 
 import { Checkbox } from "@/components/ui/checkbox"
 import { ForgotPasswordModal } from "@/components/forgot-password-modal"
 import { AnimatedInput } from "@/components/ui/animated-input"
-import { addToast } from "@heroui/react"
 
 const sliderTexts = [
   {
@@ -83,15 +83,15 @@ export default function AuthPage() {
 
       if (error) {
         if (error.message.includes("rate limit")) {
-          addToast({ title: "För många inloggningsförsök. Vänta några minuter innan du försöker igen.", color: "danger" })
+          toast.error("För många inloggningsförsök. Vänta några minuter innan du försöker igen.")
         } else {
-          addToast({ title: error.message, color: "danger" })
+          toast.error(error.message)
         }
         return
       }
 
       if (data.user) {
-        addToast({ title: "Inloggningen lyckades", color: "success" })
+        toast.success("Inloggningen lyckades. Välkomen tillbaka!")
         setIsRedirecting(true)
         setTimeout(() => {
           const redirectPath = redirectedFrom || "/dashboard"
@@ -102,9 +102,9 @@ export default function AuthPage() {
       }
     } catch (error) {
       if (error instanceof Error && error.message.includes("rate limit")) {
-        addToast({ title: "För många inloggningsförsök. Vänta några minuter innan du försöker igen.", color: "danger" })
+        toast.error("För många inloggningsförsök. Vänta några minuter innan du försöker igen.")
       } else {
-        addToast({ title: "Ett fel uppstod vid inloggning", color: "danger" })
+        toast.error("Ett fel uppstod vid inloggning")
       }
     } finally {
       setIsLoading(false)
@@ -115,32 +115,32 @@ export default function AuthPage() {
     e.preventDefault()
 
     if (!fullName) {
-      addToast({ title: "Vänligen ange ditt fullständiga namn", color: "danger" })
+      toast.error("Vänligen ange ditt fullständiga namn")
       return
     }
 
     if (!email) {
-      addToast({ title: "Vänligen ange din e-postadress", color: "danger" })
+      toast.error("Vänligen ange din e-postadress")
       return
     }
 
     if (!email.includes("@")) {
-      addToast({ title: "Vänligen ange en giltig e-postadress", color: "danger" })
+      toast.error("Vänligen ange en giltig e-postadress")
       return
     }
 
     if (!password) {
-      addToast({ title: "Vänligen ange ett lösenord", color: "danger" })
+      toast.error("Vänligen ange ett lösenord")
       return
     }
 
     if (password.length < 6) {
-      addToast({ title: "Lösenordet måste vara minst 6 tecken långt", color: "danger" })
+      toast.error("Lösenordet måste vara minst 6 tecken långt")
       return
     }
 
     if (password !== confirmPassword) {
-      addToast({ title: "Lösenorden matchar inte", color: "danger" })
+      toast.error("Lösenorden matchar inte")
       return
     }
 
@@ -157,12 +157,12 @@ export default function AuthPage() {
       })
 
       if (error) {
-        addToast({ title: error.message, color: "danger" })
+        toast.error(error.message)
         return
       }
 
       if (data.user) {
-        addToast({ title: "Registreringen lyckades! Kontrollera din e-post för att bekräfta ditt konto.", color: "success" })
+        toast.success("Registreringen lyckades! Kontrollera din e-post för att bekräfta ditt konto.")
         setIsSignIn(true)
         setEmail("")
         setPassword("")
@@ -170,7 +170,7 @@ export default function AuthPage() {
         setConfirmPassword("")
       }
     } catch (error) {
-      addToast({ title: "Ett fel uppstod vid registreringen", color: "danger" })
+      toast.error("Ett fel uppstod vid registreringen")
     }
   }
 
@@ -184,10 +184,10 @@ export default function AuthPage() {
       })
 
       if (error) {
-        addToast({ title: error.message, color: "danger" })
+        toast.error(error.message)
       }
     } catch (error) {
-      addToast({ title: "Ett fel uppstod vid inloggning med Google", color: "danger" })
+      toast.error("Ett fel uppstod vid inloggning med Google")
     }
   }
 

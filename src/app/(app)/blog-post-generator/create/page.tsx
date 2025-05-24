@@ -14,7 +14,7 @@ import RichEditor from "@/components/rich-editor"
 import TopicSelector from "@/components/topic-selector"
 import DatePicker from "@/components/date-picker"
 import { generateBlogContent } from "@/lib/openai"
-import { toast } from "sonner"
+import { toast } from "react-hot-toast"
 
 export default function CreatePost() {
   const router = useRouter()
@@ -39,16 +39,7 @@ export default function CreatePost() {
 
     setIsGenerating(true)
     try {
-      const text = await generateBlogContent(topic, keywords, prompt)
-
-      // Extract title from generated content
-      const titleMatch = text.match(/^#\s+(.+)$|^(.+)\n={3,}$/m)
-      const extractedTitle = titleMatch ? titleMatch[1] || titleMatch[2] : ""
-
-      if (extractedTitle) {
-        setTitle(extractedTitle)
-      }
-
+      const text = await generateBlogContent(topic, keywords)
       setContent(text)
       setActiveTab("edit")
       toast.success("Blog post generated successfully!")

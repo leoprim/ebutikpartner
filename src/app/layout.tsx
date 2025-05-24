@@ -1,9 +1,8 @@
 import "./globals.css"
-import { ToastProvider } from "@heroui/react"
 import { Inter } from "next/font/google"
 import Script from "next/script"
-import { ToastHandler } from "@/components/toast-handler"
 import { HeroUIProvider } from "@heroui/react"
+import { ToastProvider } from "@/components/toast-provider"
 
 const inter = Inter({ subsets: ["latin"], weight: ["400", "500", "700"] })
 
@@ -22,7 +21,6 @@ export default function RootLayout({
       <body className="font-sans font-medium bg-background text-foreground" suppressHydrationWarning>
         <HeroUIProvider>
           <ToastProvider />
-          <ToastHandler />
           {children}
         </HeroUIProvider>
         <Script id="clean-cookies" strategy="beforeInteractive">

@@ -20,6 +20,7 @@ import SettingsModal from "@/components/settings-modal"
 import { Badge } from "@/components/ui/badge"
 import { notificationService, Notification } from "@/services/notification"
 import { useSidebar } from "@/components/ui/sidebar"
+import { toast } from "react-hot-toast"
 
 export function TopBar() {
   const [user, setUser] = useState<SupabaseUser | null | undefined>(undefined)
@@ -96,6 +97,7 @@ export function TopBar() {
   const avatarUrl = (user?.user_metadata?.avatar_url as string | undefined) || undefined
 
   const handleSignOut = async () => {
+    toast.success("Du har loggats ut");
     await supabase.auth.signOut()
     router.push("/auth")
     router.refresh()

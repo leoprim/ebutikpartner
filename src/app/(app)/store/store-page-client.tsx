@@ -12,7 +12,7 @@ import { CalendarDays, Clock, AlertCircle, CheckCircle2, Settings, Palette, Pack
 import { Slider } from "@/components/ui/slider"
 import { Button } from "@/components/ui/button"
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
-import { toast } from "sonner"
+import { toast } from "react-hot-toast"
 import NicheSelectionModal from "@/components/niche-selection-modal"
 
 interface StoreOrder {
@@ -164,10 +164,10 @@ export default function StorePageClient() {
 
       setStoreOrder(prev => prev ? { ...prev, niche: selectedNiche } : null)
       setShowNicheModal(false)
-      toast.success('Store niche updated successfully')
+      toast.success("Store niche updated successfully")
     } catch (error) {
       console.error('Error updating store niche:', error)
-      toast.error('Failed to update store niche')
+      toast.error("Failed to update store niche")
     }
   }
 
