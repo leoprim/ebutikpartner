@@ -1,5 +1,3 @@
-"use client"
-
 import { PlusCircle, Search } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -23,8 +21,38 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import StoreOrdersTable from "./store-orders-table"
+import { cookies } from "next/headers"
+import { createServerClient } from "@supabase/ssr"
 
-export default function StoresPage() {
+export default async function StoresPage() {
+  const cookieStore = await cookies();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value;
+        },
+        set(name: string, value: string, options: any) {
+          cookieStore.set({ name, value, ...options });
+        },
+        remove(name: string, options: any) {
+          cookieStore.delete({ name, ...options });
+        },
+      },
+    }
+  );
+
+  const { data: orders, error } = await supabase
+    .from('store_orders')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    throw new Error('Failed to fetch store orders: ' + error.message);
+  }
+
   return (
     <div className="p-6">
       <div className="flex flex-col space-y-6">
@@ -82,7 +110,7 @@ export default function StoresPage() {
                   </Select>
                 </div>
               </div>
-              <StoreOrdersTable />
+              <StoreOrdersTable initialOrders={orders || []} />
             </div>
           </CardContent>
         </Card>

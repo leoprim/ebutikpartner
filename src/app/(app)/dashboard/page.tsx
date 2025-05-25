@@ -177,7 +177,7 @@ export default function DashboardPage() {
           <div className="grid md:grid-cols-2">
             <div className="p-6">
               <h2 className="text-2xl font-medium mb-4">
-                Välkommen {userName} till StorePartner! 🎉
+                Välkommen {userName} till EbutikPartner! 🎉
               </h2>
               <p className="text-muted-foreground mb-6">
                 Låt oss få igång din butik. Följ dessa steg för att slutföra din konfiguration.
@@ -202,7 +202,7 @@ export default function DashboardPage() {
                 <iframe
                   className="w-full h-full"
                   src="https://iozuanlnbqyykvkfwacl.supabase.co/storage/v1/object/public/videos//E-Butik%20Partner.se%20V2%20.mp4"
-                  title="Welcome to StorePartner"
+                  title="Welcome to EbutikPartner"
                   allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
                 />

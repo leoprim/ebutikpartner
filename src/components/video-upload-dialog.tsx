@@ -120,7 +120,7 @@ export function VideoUploadDialog({
 
       if (dbError) throw dbError
 
-      addToast({ title: "Video uploaded successfully", color: "success" })
+      addToast({ title: "Video uppladdad!", color: "success" })
 
       // Reset form
       setTitle("")
@@ -133,8 +133,8 @@ export function VideoUploadDialog({
       onSuccess?.()
 
     } catch (error) {
-      console.error('Error uploading video:', error)
-      addToast({ title: "Failed to upload video. Please try again.", color: "danger" })
+      console.error('Kunde inte ladda upp video:', error)
+      addToast({ title: "Kunde inte ladda upp video. Försök igen.", color: "danger" })
     } finally {
       setIsUploading(false)
       setUploadProgress(0)
@@ -145,31 +145,31 @@ export function VideoUploadDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle>Upload New Video</DialogTitle>
+          <DialogTitle className="font-medium text-lg">Ladda upp ny video</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="title">Title</Label>
+            <Label htmlFor="title">Rubrik</Label>
             <Input
               id="title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Enter video title"
+              placeholder="Ange rubrik på video"
               required
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description">Beskrivning</Label>
             <Textarea
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Enter video description"
+              placeholder="Ange beskrivning på video"
               rows={3}
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="video">Video File</Label>
+            <Label htmlFor="video">Videofil</Label>
             <Input
               id="video"
               type="file"
@@ -179,12 +179,12 @@ export function VideoUploadDialog({
             />
             {duration && (
               <p className="text-sm text-muted-foreground">
-                Duration: {duration}
+                Längd: {duration}
               </p>
             )}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="thumbnail">Thumbnail</Label>
+            <Label htmlFor="thumbnail">Miniatyrbild</Label>
             <div className="flex items-center gap-4">
               <Input
                 id="thumbnail"
@@ -218,7 +218,7 @@ export function VideoUploadDialog({
             <div className="space-y-2">
               <Progress value={uploadProgress} />
               <p className="text-sm text-muted-foreground text-center">
-                Uploading... {uploadProgress}%
+                Laddar upp... {uploadProgress}%
               </p>
             </div>
           )}
@@ -229,10 +229,10 @@ export function VideoUploadDialog({
               onClick={() => onOpenChange(false)}
               disabled={isUploading}
             >
-              Cancel
+              Avbryt
             </Button>
             <Button type="submit" disabled={isUploading}>
-              Upload
+              Ladda upp
             </Button>
           </div>
         </form>

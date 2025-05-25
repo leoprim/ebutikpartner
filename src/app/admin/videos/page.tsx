@@ -1,16 +1,18 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
 import { Plus, Edit, Trash2, Eye, EyeOff, BarChart2 } from "lucide-react"
 import { toast } from "react-hot-toast"
 import { useRouter } from "next/navigation"
 import { useAdmin } from "@/hooks/use-admin"
+import { createBrowserClient } from '@supabase/ssr'
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { VideoUploadDialog } from "@/components/video-upload-dialog"
 import { VideoEditDialog } from "@/components/video-edit-dialog"
+import { Skeleton } from "@/components/ui/skeleton"
 
 interface Video {
   id: string
@@ -31,7 +33,13 @@ export default function AdminVideosPage() {
   const [isLoading, setIsLoading] = useState(true)
   const { isAdmin, isLoading: isAdminLoading } = useAdmin()
   const router = useRouter()
-  const supabase = createClientComponentClient()
+  const supabase = useRef(
+    createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
+  ).current
+  const [user, setUser] = useState<any>(null)
 
   useEffect(() => {
     if (!isAdminLoading && !isAdmin) {
@@ -40,6 +48,14 @@ export default function AdminVideosPage() {
       router.push("/")
     }
   }, [isAdmin, isAdminLoading, router])
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      setUser(session?.user || null)
+    }
+    fetchUser()
+  }, [supabase])
 
   const fetchVideos = async () => {
     try {
@@ -97,15 +113,15 @@ export default function AdminVideosPage() {
       if (error) throw error
 
       setVideos(videos.filter(video => video.id !== videoId))
-      toast.success("Video deleted successfully")
+      toast.success("Video borttagen")
     } catch (error) {
-      console.error("Error deleting video:", error)
-      toast.error("Failed to delete video")
+      console.error("Kunde inte ta bort video:", error)
+      toast.error("Kunde inte ta bort video")
     }
   }
 
-  if (isAdminLoading) {
-    return <div>Loading...</div>
+  if (isLoading || isAdminLoading) {
+    return null;
   }
 
   if (!isAdmin) {
@@ -114,10 +130,10 @@ export default function AdminVideosPage() {
 
   return (
     <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex justify-end items-center mb-6">
         <Button onClick={() => setIsUploadDialogOpen(true)}>
           <Plus className="w-4 h-4 mr-2" />
-          Upload Video
+          Ladda upp video
         </Button>
       </div>
 
@@ -129,7 +145,7 @@ export default function AdminVideosPage() {
               <div className="flex items-center space-x-2">
                 <div className="flex items-center text-sm text-muted-foreground mr-2">
                   <BarChart2 className="w-4 h-4 mr-1" />
-                  {video.view_count || 0} views
+                  {video.view_count || 0} visningar
                 </div>
                 <Button
                   variant="ghost"
@@ -160,10 +176,10 @@ export default function AdminVideosPage() {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground">
-                {video.description || "No description"}
+                {video.description || "Ingen beskrivning"}
               </p>
               <div className="mt-2 text-sm text-muted-foreground">
-                Duration: {video.duration || "Unknown"}
+                Längd: {video.duration || "Okänd"}
               </div>
             </CardContent>
           </Card>
@@ -193,6 +209,8 @@ export default function AdminVideosPage() {
             fetchVideos()
             setEditingVideo(null)
           }}
+          user={user}
+          supabase={supabase}
         />
       )}
     </div>

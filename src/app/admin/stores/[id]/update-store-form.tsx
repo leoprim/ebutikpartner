@@ -64,7 +64,7 @@ export function UpdateStoreForm({ storeId, currentStatus, currentProgress, onUpd
             <div className="flex gap-2 items-center">
               {["Väntar", "Under utveckling", "Granska", "Levererad"].map((s, i) => (
                 <div key={s} className={`flex flex-col items-center ${status === s ? 'text-primary' : 'text-muted-foreground'}`}>
-                  <div className={`flex h-7 w-7 items-center justify-center rounded-full border-2 ${status === s ? 'border-primary bg-primary text-primary-foreground' : 'border-gray-200'}`}>
+                  <div className={`flex h-7 w-7 items-center justify-center rounded-full border-2 ${status === s ? 'border-primary bg-primary text-primary-foreground' : 'border-border'}`}>
                     <span className="text-xs font-bold">{i + 1}</span>
                   </div>
                   <span className="mt-1 text-xs">{s}</span>

@@ -40,6 +40,7 @@ import {
   DialogClose
 } from "@/components/ui/dialog"
 import Image from "next/image"
+import { Skeleton } from "@/components/ui/skeleton"
 
 const STEPS = [
   { id: 'setup', label: 'Konfiguration', icon: Settings, value: 0 },
@@ -399,7 +400,28 @@ export default function StoreDetailsPage({ params }: { params: { id: string } })
   }
 
   if (isLoading) {
-    return <div>Laddar...</div>
+    return (
+      <div className="max-w-4xl mx-auto mt-8">
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-8 w-48 mb-2" />
+            <Skeleton className="h-4 w-32" />
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="grid grid-cols-2 gap-6">
+              <Skeleton className="h-6 w-full col-span-1" />
+              <Skeleton className="h-6 w-full col-span-1" />
+              <Skeleton className="h-6 w-full col-span-2" />
+              <Skeleton className="h-6 w-full col-span-2" />
+            </div>
+            <div className="flex gap-4 mt-6">
+              <Skeleton className="h-10 w-32" />
+              <Skeleton className="h-10 w-32" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
   }
 
   if (!storeDetails) {
@@ -518,7 +540,7 @@ export default function StoreDetailsPage({ params }: { params: { id: string } })
               <CardContent className="space-y-4 min-h-[320px] flex flex-col">
                 <div className="relative">
                   <div className="absolute inset-0 flex items-center" aria-hidden="true">
-                    <div className="w-full border-t border-gray-200" />
+                    <div className="w-full border-t border-border" />
                   </div>
                   <div className="relative flex justify-between">
                     {STEPS.map((step) => {
@@ -530,7 +552,7 @@ export default function StoreDetailsPage({ params }: { params: { id: string } })
                           className={`flex flex-col items-center ${isActive ? 'text-primary' : 'text-muted-foreground'}`}
                         >
                           <div className={`flex h-8 w-8 items-center justify-center rounded-full border-2 ${
-                            isActive ? 'border-primary bg-primary text-primary-foreground' : 'border-gray-200'
+                            isActive ? 'border-primary bg-primary text-primary-foreground' : 'border-border'
                           }`}>
                             <Icon className="h-4 w-4" />
                           </div>

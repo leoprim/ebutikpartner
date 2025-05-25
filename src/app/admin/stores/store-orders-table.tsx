@@ -29,6 +29,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Textarea } from "@/components/ui/textarea"
+import { Skeleton } from "@/components/ui/skeleton"
 
 interface StoreOrder {
   id: string
@@ -67,77 +68,19 @@ function getStatusBadge(status: string) {
   }
 }
 
-export default function StoreOrdersTable() {
-  const [orders, setOrders] = useState<StoreOrder[]>([])
+type StoreOrdersTableProps = {
+  initialOrders: StoreOrder[]
+}
+
+export default function StoreOrdersTable({ initialOrders }: StoreOrdersTableProps) {
+  const [orders, setOrders] = useState<StoreOrder[]>(initialOrders)
   const [userMap, setUserMap] = useState<Record<string, string>>({})
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(false)
   const [mounted, setMounted] = useState(false)
   const [editingOrder, setEditingOrder] = useState<StoreOrder | null>(null)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const supabase = createClientComponentClient()
   const router = useRouter()
-
-  const fetchOrders = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('store_orders')
-        .select('*')
-        .order('created_at', { ascending: false })
-
-      if (error) throw error
-
-      setOrders(data)
-    } catch (error) {
-      console.error('Error fetching store orders:', error)
-      toast.error("Failed to load store orders")
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const initialize = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
-        router.push('/sign-in')
-        return
-      }
-
-      const { data: adminData, error: adminError } = await supabase
-        .from('admin_users')
-        .select('*')
-        .eq('user_id', user.id)
-        .single()
-
-      if (adminError) {
-        console.error('Error checking admin status:', adminError)
-        if (mounted) {
-          setIsLoading(false)
-          toast.error("Failed to initialize: Not authorized")
-        }
-        return
-      }
-
-      if (!adminData) {
-        router.push('/')
-        return
-      }
-
-      await fetchOrders()
-    } catch (error) {
-      console.error('Error initializing:', error)
-      if (mounted) {
-        setIsLoading(false)
-        toast.error("Failed to initialize")
-      }
-    }
-  }
-
-  useEffect(() => {
-    setMounted(true)
-    initialize()
-    return () => setMounted(false)
-  }, [])
 
   const handleEdit = (order: StoreOrder) => {
     setEditingOrder(order)
@@ -154,7 +97,7 @@ export default function StoreOrdersTable() {
       if (error) throw error
 
       toast.success("Store marked as delivered")
-      fetchOrders()
+      setOrders(prev => prev.map(order => order.id === orderId ? { ...order, status: 'Levererad' } : order))
     } catch (error) {
       console.error('Error delivering store:', error)
       toast.error("Failed to update store status")
@@ -171,7 +114,7 @@ export default function StoreOrdersTable() {
       if (error) throw error
 
       toast.success("Order deleted successfully")
-      fetchOrders()
+      setOrders(prev => prev.filter(order => order.id !== orderId))
     } catch (error) {
       console.error('Error deleting order:', error)
       toast.error("Failed to delete order")
@@ -189,7 +132,7 @@ export default function StoreOrdersTable() {
 
       toast.success("Order updated successfully")
       setIsEditDialogOpen(false)
-      fetchOrders()
+      setOrders(prev => prev.map(order => order.id === orderId ? { ...order, ...updates } : order))
     } catch (error) {
       console.error('Error updating order:', error)
       toast.error("Failed to update order")
@@ -198,11 +141,31 @@ export default function StoreOrdersTable() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center p-8">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
-          <p className="mt-2 text-sm text-gray-600">Laddar beställningar...</p>
-        </div>
+      <div className="space-y-4">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="px-2 py-2">Kund</TableHead>
+              <TableHead className="px-2 py-2">Orderdatum</TableHead>
+              <TableHead className="px-2 py-2">Status</TableHead>
+              <TableHead className="px-2 py-2">Pris</TableHead>
+              <TableHead className="px-2 py-2">Nisch</TableHead>
+              <TableHead className="px-2 py-2 text-right">Åtgärder</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {[...Array(6)].map((_, i) => (
+              <TableRow key={i}>
+                <TableCell><Skeleton className="h-6 w-32" /></TableCell>
+                <TableCell><Skeleton className="h-6 w-24" /></TableCell>
+                <TableCell><Skeleton className="h-6 w-20" /></TableCell>
+                <TableCell><Skeleton className="h-6 w-16" /></TableCell>
+                <TableCell><Skeleton className="h-6 w-20" /></TableCell>
+                <TableCell className="text-right"><Skeleton className="h-6 w-16 ml-auto" /></TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       </div>
     )
   }

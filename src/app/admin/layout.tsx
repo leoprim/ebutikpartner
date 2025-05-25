@@ -61,9 +61,7 @@ export default async function AdminLayout({
         <div className="flex-1 flex flex-col w-full">
           <TopBar />
           <main className="flex-1 overflow-y-auto w-full">
-            <Suspense fallback={<div className="flex items-center justify-center h-full"><LoadingSpinner /></div>}>
-              {children}
-            </Suspense>
+            {children}
           </main>
         </div>
       </div>

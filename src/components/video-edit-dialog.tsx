@@ -1,7 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
+import { useState } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -22,30 +21,23 @@ interface VideoEditDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onEditComplete?: () => void
+  user: any
+  supabase: any
 }
 
 export function VideoEditDialog({ 
   video, 
   open,
   onOpenChange,
-  onEditComplete 
+  onEditComplete,
+  user,
+  supabase
 }: VideoEditDialogProps) {
   const [title, setTitle] = useState(video.title)
   const [description, setDescription] = useState(video.description)
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null)
   const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(video.thumbnail_url)
   const [isUploading, setIsUploading] = useState(false)
-  const [user, setUser] = useState<any>(null)
-  const supabase = createClientComponentClient()
-
-  useEffect(() => {
-    const checkUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      console.log("Current user:", user)
-      setUser(user)
-    }
-    checkUser()
-  }, [supabase.auth])
 
   const handleThumbnailFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -60,11 +52,8 @@ export function VideoEditDialog({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     console.log("Form submitted")
-    if (!title) return
-
-    if (!user) {
-      console.log("No user found")
-      addToast({ title: "Please sign in to edit videos", color: "danger" })
+    if (!title) {
+      console.log("No title provided, aborting submit")
       return
     }
 
@@ -99,8 +88,8 @@ export function VideoEditDialog({
       }
 
       // Update video record in database
-      console.log("Updating video record")
-      const { error: dbError } = await supabase
+      console.log("Updating video record", { title, description, thumbnailUrl, videoId: video.id })
+      const { data: updateData, error: dbError } = await supabase
         .from('videos')
         .update({
           title,
@@ -108,17 +97,26 @@ export function VideoEditDialog({
           thumbnail_url: thumbnailUrl
         })
         .eq('id', video.id)
+        .select()
+
+      console.log('Update result:', { updateData, dbError, videoId: video.id })
 
       if (dbError) {
         console.error("Database update error:", dbError)
         throw dbError
       }
 
+      if (!updateData || updateData.length === 0) {
+        console.error("No video was updated. Check if the video id exists.", video.id)
+        addToast({ title: "Failed to update video. Video not found.", color: "danger" })
+        setIsUploading(false)
+        return
+      }
+
       console.log("Video updated successfully")
       addToast({ title: "Video updated successfully", color: "success" })
       onOpenChange(false)
       onEditComplete?.()
-
     } catch (error) {
       console.error('Error updating video:', error)
       addToast({ title: "Failed to update video. Please try again.", color: "danger" })
