@@ -152,7 +152,11 @@
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-[color:var(--border)] outline-ring/50;
+  }
+  /* Override Tailwind's base border styles */
+  *, ::after, ::before, ::backdrop, ::file-selector-button {
+    border-color: var(--border) !important;
   }
   body {
     @apply bg-background text-foreground text-[14px] font-normal;

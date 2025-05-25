@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { Edit, ExternalLink, MoreHorizontal, Package, Trash } from "lucide-react"
 import Link from "next/link"
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
-import { toast } from "react-hot-toast"
+import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 
 import { Badge } from "@/components/ui/badge"
@@ -29,7 +29,6 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Textarea } from "@/components/ui/textarea"
-import { Skeleton } from "@/components/ui/skeleton"
 
 interface StoreOrder {
   id: string
@@ -68,43 +67,104 @@ function getStatusBadge(status: string) {
   }
 }
 
-type StoreOrdersTableProps = {
-  initialOrders: StoreOrder[]
-}
-
-export default function StoreOrdersTable({ initialOrders }: StoreOrdersTableProps) {
-  const [orders, setOrders] = useState<StoreOrder[]>(initialOrders)
+export default function StoreOrdersTable() {
+  const [orders, setOrders] = useState<StoreOrder[]>([])
   const [userMap, setUserMap] = useState<Record<string, string>>({})
-  const [isLoading, setIsLoading] = useState(false)
-  const [mounted, setMounted] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   const [editingOrder, setEditingOrder] = useState<StoreOrder | null>(null)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const supabase = createClientComponentClient()
   const router = useRouter()
+
+  const fetchOrders = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('store_orders')
+        .select(`
+          id,
+          store_name,
+          client_name,
+          client_email,
+          order_date,
+          status,
+          price,
+          niche,
+          progress,
+          user_id
+        `)
+        .order('order_date', { ascending: false })
+
+      setOrders(data || [])
+
+      // Fetch user metadata for all unique user_ids from Supabase Auth
+      const userIds = Array.from(new Set((data || []).map((o: any) => o.user_id).filter(Boolean)))
+      const map: Record<string, string> = {}
+      await Promise.all(userIds.map(async (userId) => {
+        const { data: meta } = await supabase.rpc('get_user_metadata', { user_id: userId })
+        map[userId] = meta?.full_name || meta?.name || 'Okänd kund'
+      }))
+      setUserMap(map)
+    } catch (error) {
+      toast.error('Failed to load store orders')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    let mounted = true
+
+    const initialize = async () => {
+      try {
+        console.log('Initializing component...')
+        // Since we're in an admin route, we can assume we're authenticated
+        if (mounted) {
+          await fetchOrders()
+        }
+      } catch (error) {
+        console.error('Error initializing:', error)
+        if (mounted) {
+          setIsLoading(false)
+          toast.error('Failed to initialize')
+        }
+      }
+    }
+
+    // Initialize
+    initialize()
+
+    // Cleanup
+    return () => {
+      console.log('Cleaning up component...')
+      mounted = false
+    }
+  }, [])
 
   const handleEdit = (order: StoreOrder) => {
     setEditingOrder(order)
     setIsEditDialogOpen(true)
   }
 
-  const handleDeliver = async (orderId: string) => {
+  const handleDeliver = async (order: StoreOrder) => {
     try {
       const { error } = await supabase
         .from('store_orders')
-        .update({ status: 'Levererad' })
-        .eq('id', orderId)
+        .update({ status: 'Levererad', progress: 100 })
+        .eq('id', order.id)
 
       if (error) throw error
 
-      toast.success("Store marked as delivered")
-      setOrders(prev => prev.map(order => order.id === orderId ? { ...order, status: 'Levererad' } : order))
+      toast.success('Store marked as delivered')
+      fetchOrders()
     } catch (error) {
       console.error('Error delivering store:', error)
-      toast.error("Failed to update store status")
+      toast.error('Failed to update store status')
     }
   }
 
   const handleDelete = async (orderId: string) => {
+    if (!confirm('Are you sure you want to delete this order?')) return
+
     try {
       const { error } = await supabase
         .from('store_orders')
@@ -113,59 +173,50 @@ export default function StoreOrdersTable({ initialOrders }: StoreOrdersTableProp
 
       if (error) throw error
 
-      toast.success("Order deleted successfully")
-      setOrders(prev => prev.filter(order => order.id !== orderId))
+      toast.success('Order deleted successfully')
+      fetchOrders()
     } catch (error) {
       console.error('Error deleting order:', error)
-      toast.error("Failed to delete order")
+      toast.error('Failed to delete order')
     }
   }
 
-  const handleUpdate = async (orderId: string, updates: Partial<StoreOrder>) => {
+  const handleUpdateOrder = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editingOrder) return
+
     try {
       const { error } = await supabase
         .from('store_orders')
-        .update(updates)
-        .eq('id', orderId)
+        .update({
+          store_name: editingOrder.store_name,
+          client_name: editingOrder.client_name,
+          client_email: editingOrder.client_email,
+          status: editingOrder.status,
+          price: editingOrder.price,
+          niche: editingOrder.niche,
+          progress: editingOrder.progress,
+        })
+        .eq('id', editingOrder.id)
 
       if (error) throw error
 
-      toast.success("Order updated successfully")
+      toast.success('Order updated successfully')
       setIsEditDialogOpen(false)
-      setOrders(prev => prev.map(order => order.id === orderId ? { ...order, ...updates } : order))
+      fetchOrders()
     } catch (error) {
       console.error('Error updating order:', error)
-      toast.error("Failed to update order")
+      toast.error('Failed to update order')
     }
   }
 
   if (isLoading) {
     return (
-      <div className="space-y-4">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="px-2 py-2">Kund</TableHead>
-              <TableHead className="px-2 py-2">Orderdatum</TableHead>
-              <TableHead className="px-2 py-2">Status</TableHead>
-              <TableHead className="px-2 py-2">Pris</TableHead>
-              <TableHead className="px-2 py-2">Nisch</TableHead>
-              <TableHead className="px-2 py-2 text-right">Åtgärder</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {[...Array(6)].map((_, i) => (
-              <TableRow key={i}>
-                <TableCell><Skeleton className="h-6 w-32" /></TableCell>
-                <TableCell><Skeleton className="h-6 w-24" /></TableCell>
-                <TableCell><Skeleton className="h-6 w-20" /></TableCell>
-                <TableCell><Skeleton className="h-6 w-16" /></TableCell>
-                <TableCell><Skeleton className="h-6 w-20" /></TableCell>
-                <TableCell className="text-right"><Skeleton className="h-6 w-16 ml-auto" /></TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+      <div className="flex items-center justify-center p-8">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
+          <p className="mt-2 text-sm text-gray-600">Laddar beställningar...</p>
+        </div>
       </div>
     )
   }
@@ -249,7 +300,7 @@ export default function StoreOrdersTable({ initialOrders }: StoreOrdersTableProp
               Update the details of this store order.
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={() => handleUpdate(editingOrder?.id || '', editingOrder || {})} className="space-y-4">
+          <form onSubmit={handleUpdateOrder} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="store_name">Butiksnamn</Label>
               <Input

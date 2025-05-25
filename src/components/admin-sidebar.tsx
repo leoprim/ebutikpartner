@@ -68,12 +68,12 @@ export function AdminSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
   };
 
   return (
-    <Sidebar {...props}>
-      <SidebarHeader className="p-4 pt-8 pb-4">
-        <button onClick={() => handleNavigation("/admin")} className="hover:opacity-80 transition-opacity">
+    <Sidebar {...props} className="[&>div]:bg-primary [&>div]:text-white [&>div>div]:bg-primary [&>div]:group-hover:text-white/70">
+      <SidebarHeader className="p-7 pt-8 pb-4">
+        <button onClick={() => handleNavigation("/admin")} className="transition-opacity">
           <span className="sr-only">Admin Dashboard</span>
           <Image
-            src="/LogoNewRemake_DarkGreen.svg"
+            src="/LogoNewRemake_White.svg"
             width={140}
             height={40}
             alt="StorePartner Admin"
@@ -93,7 +93,7 @@ export function AdminSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
                     size="default"
                     isActive={pathname === item.href}
                     className={cn(
-                      "data-[active=true]:bg-primary/10 hover:bg-primary/5 active:bg-primary/10 py-5 pl-4 transition-all duration-200 ease-in-out",
+                      "data-[active=true]:bg-white/20 hover:bg-white/10 active:bg-white/20 py-5 pl-4 transition-all duration-200 ease-in-out",
                       isPending && "opacity-50 pointer-events-none"
                     )}
                   >
@@ -102,11 +102,11 @@ export function AdminSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
                       className="flex items-center gap-2 w-full group"
                     >
                       <div className={cn(
-                        pathname === item.href ? "text-primary" : "group-hover:text-primary transition-colors duration-200",
+                        pathname === item.href ? "text-white" : "text-white group-hover:text-white transition-colors duration-200",
                       )}>
                         <item.icon className="size-4.5" />
                       </div>
-                      <span className="group-hover:text-primary transition-colors duration-20 font-medium">{item.title}</span>
+                      <span className="text-white group-hover:text-white transition-colors duration-200 font-medium">{item.title}</span>
                     </button>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

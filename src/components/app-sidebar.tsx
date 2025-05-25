@@ -140,7 +140,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   return (
     <>
-      <Sidebar {...props}>
+      <Sidebar {...props} className="[&>div]:group-hover:text-foreground">
         <SidebarHeader className="p-4 pt-8 pb-4 pl-5">
           <a href="/">
             <span className="sr-only">Hem</span>
@@ -164,14 +164,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                       asChild
                       size="default"
                       isActive={pathname === item.href}
-                      className="data-[active=true]:bg-[#bbf49c] hover:bg-[#bbf49c]/30 active:bg-[#bbf49c] py-5 pl-4 transition-all duration-200 ease-in-out group focus-visible:ring-[#1e4841] focus-visible:ring-offset-0 font-medium"
+                      className="data-[active=true]:bg-[#bbf49c] hover:bg-[#bbf49c]/30 active:bg-[#bbf49c] py-5 pl-4 transition-all duration-200 ease-in-out focus-visible:ring-[#1e4841] focus-visible:ring-offset-0 font-medium"
                     >
                       <Link href={item.href} prefetch={true} className="flex items-center gap-2 font-medium w-full justify-between">
                         <div className="flex items-center gap-2">
-                          <div className="transition-colors duration-200 ease-in-out">
-                            <item.icon className={`size-4.5 ${pathname === item.href ? "text-[#1e4841]" : "text-foreground group-hover:text-[#1e4841]"}`} />
+                          <div>
+                            <item.icon className={`size-4.5 ${pathname === item.href ? "text-[#1e4841]" : "text-foreground"}`} />
                           </div>
-                          <span className="transition-colors duration-200 ease-in-out group-hover:text-[#1e4841] font-medium">{item.title}</span>
+                          <span className={`font-medium ${pathname === item.href ? "text-[#1e4841]" : "text-foreground"}`}>{item.title}</span>
                         </div>
                         {item.showNotification && (
                           <span className="relative flex h-3 w-3 mr-2">
@@ -196,17 +196,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                       asChild
                       size="default"
                       isActive={pathname === item.href}
-                      className="data-[active=true]:bg-[#bbf49c] hover:bg-[#bbf49c]/30 active:bg-[#bbf49c] py-5 pl-4 transition-all duration-200 ease-in-out group focus-visible:ring-[#1e4841] focus-visible:ring-offset-0"
+                      className="data-[active=true]:bg-[#bbf49c] hover:bg-[#bbf49c]/30 active:bg-[#bbf49c] py-5 pl-4 transition-all duration-200 ease-in-out focus-visible:ring-[#1e4841] focus-visible:ring-offset-0"
                     >
                       <div 
                         onClick={() => handlePremiumClick(item.href)}
                         className="flex items-center justify-between w-full cursor-pointer"
                       >
                         <div className="flex items-center gap-2">
-                          <div className="transition-colors duration-200 ease-in-out">
-                            <item.icon className={`size-4.5 ${pathname === item.href ? "text-[#1e4841]" : "text-foreground group-hover:text-[#1e4841]"}`} />
+                          <div>
+                            <item.icon className={`size-4.5 ${pathname === item.href ? "text-[#1e4841]" : "text-foreground"}`} />
                           </div>
-                          <span className="transition-colors duration-200 ease-in-out group-hover:text-[#1e4841] font-medium">{item.title}</span>
+                          <span className={`font-medium ${pathname === item.href ? "text-[#1e4841]" : "text-foreground"}`}>{item.title}</span>
                         </div>
                         {item.isPremium && !isPremium && (
                           <Lock className="size-3 text-muted-foreground" />

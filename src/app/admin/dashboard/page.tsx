@@ -13,6 +13,8 @@ import {
   Search,
   Settings,
   Users,
+  TrendingUp,
+  TrendingDown,
 } from "lucide-react"
 import Link from "next/link"
 import { useState, useMemo, useEffect } from "react"
@@ -25,7 +27,6 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import DataTable from "./data-table"
 import { columns } from "./columns"
-import RevenueChart from "./revenue-chart"
 import UserActivityChart from "./user-activity-chart"
 import { SubscriptionTiers } from "./subscription-tiers"
 import DatePicker, { DateRange } from "@/components/date-picker"
@@ -33,6 +34,13 @@ import { Skeleton } from "@/components/ui/skeleton"
 import CountUp from "react-countup"
 import { format } from "date-fns"
 import { sv } from "date-fns/locale"
+import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
+import {
+  ChartConfig,
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart"
 
 export default function DashboardPage() {
   const [selectedRange, setSelectedRange] = useState<DateRange | undefined>(undefined)
@@ -181,7 +189,47 @@ export default function DashboardPage() {
         return { day: dayStr, revenue: Number(revenue) || 0 };
       });
     }
+  } else {
+    // Default data for the last 7 days when no date range is selected
+    chartGranularity = 'day';
+    const today = new Date();
+    chartData = Array.from({ length: 7 }, (_, i) => {
+      const day = new Date(today);
+      day.setDate(today.getDate() - (6 - i));
+      const dayStr = day.toLocaleDateString('sv-SE', { month: 'short', day: 'numeric' });
+      const revenue = filteredOrders
+        .filter(order => {
+          const date = new Date(order.order_date);
+          return date.getFullYear() === day.getFullYear() && date.getMonth() === day.getMonth() && date.getDate() === day.getDate();
+        })
+        .reduce((sum, order) => sum + (order.price || 0), 0);
+      return { day: dayStr, revenue: Number(revenue) || 0 };
+    });
   }
+
+  console.log('Filtered Orders:', filteredOrders);
+  console.log('Chart Data:', chartData);
+  console.log('Chart Granularity:', chartGranularity);
+
+  const visitorChartData = [
+    { month: "January", desktop: 186, mobile: 80 },
+    { month: "February", desktop: 305, mobile: 200 },
+    { month: "March", desktop: 237, mobile: 120 },
+    { month: "April", desktop: 73, mobile: 190 },
+    { month: "May", desktop: 209, mobile: 130 },
+    { month: "June", desktop: 214, mobile: 140 },
+  ]
+
+  const visitorChartConfig = {
+    desktop: {
+      label: "Desktop",
+      color: "rgb(59 130 246)", // blue-500
+    },
+    mobile: {
+      label: "Mobile",
+      color: "rgb(16 185 129)", // emerald-500
+    },
+  } satisfies ChartConfig
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -374,14 +422,93 @@ export default function DashboardPage() {
               </CardFooter>
             </Card>
           </div>
-          {/* Revenue by hour/day chart card */}
-          <Card className="relative overflow-hidden">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative">
-              <CardTitle className="text-lg font-medium">Revenue Breakdown</CardTitle>
+          <Card className="col-span-7 border-border">
+            <CardHeader>
+              <CardTitle>Area Chart - Gradient</CardTitle>
+              <CardDescription>
+                Showing total visitors for the last 6 months
+              </CardDescription>
             </CardHeader>
-            <CardContent className="relative">
-              <RevenueChart data={chartData} granularity={chartGranularity} />
+            <CardContent className="h-[300px] px-0">
+              <ChartContainer config={visitorChartConfig} className="h-full w-full">
+                <AreaChart
+                  accessibilityLayer
+                  data={visitorChartData}
+                  height={300}
+                  width={undefined}
+                  margin={{
+                    left: 24,
+                    right: 24,
+                    top: 8,
+                    bottom: 8
+                  }}
+                >
+                  <CartesianGrid vertical={false} />
+                  <XAxis
+                    dataKey="month"
+                    tickLine={false}
+                    axisLine={false}
+                    tickMargin={8}
+                    tickFormatter={(value) => value.slice(0, 3)}
+                  />
+                  <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
+                  <defs>
+                    <linearGradient id="fillDesktop" x1="0" y1="0" x2="0" y2="1">
+                      <stop
+                        offset="5%"
+                        stopColor="rgb(59 130 246)"
+                        stopOpacity={0.8}
+                      />
+                      <stop
+                        offset="95%"
+                        stopColor="rgb(59 130 246)"
+                        stopOpacity={0.1}
+                      />
+                    </linearGradient>
+                    <linearGradient id="fillMobile" x1="0" y1="0" x2="0" y2="1">
+                      <stop
+                        offset="5%"
+                        stopColor="rgb(16 185 129)"
+                        stopOpacity={0.8}
+                      />
+                      <stop
+                        offset="95%"
+                        stopColor="rgb(16 185 129)"
+                        stopOpacity={0.1}
+                      />
+                    </linearGradient>
+                  </defs>
+                  <Area
+                    dataKey="mobile"
+                    type="natural"
+                    fill="url(#fillMobile)"
+                    fillOpacity={0.4}
+                    stroke="rgb(16 185 129)"
+                    stackId="a"
+                  />
+                  <Area
+                    dataKey="desktop"
+                    type="natural"
+                    fill="url(#fillDesktop)"
+                    fillOpacity={0.4}
+                    stroke="rgb(59 130 246)"
+                    stackId="a"
+                  />
+                </AreaChart>
+              </ChartContainer>
             </CardContent>
+            <CardFooter>
+              <div className="flex w-full items-start gap-2 text-sm">
+                <div className="grid gap-2">
+                  <div className="flex items-center gap-2 font-medium leading-none">
+                    Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
+                  </div>
+                  <div className="flex items-center gap-2 leading-none text-muted-foreground">
+                    January - June 2024
+                  </div>
+                </div>
+              </div>
+            </CardFooter>
           </Card>
         </div>
       </main>

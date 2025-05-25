@@ -1,7 +1,11 @@
 import supabaseAdmin from "@/lib/supabase/admin"
 import UsersTable from "./UsersTable"
 
-export default async function AdminUsersPage({ searchParams }: { searchParams?: Record<string, string | string[]> }) {
+export default async function AdminUsersPage({ 
+  searchParams 
+}: { 
+  searchParams: { [key: string]: string | string[] | undefined } 
+}) {
   // Fetch users from Supabase Auth admin API using service role
   const { data, error } = await supabaseAdmin.auth.admin.listUsers()
   const users = data?.users || []
@@ -11,7 +15,7 @@ export default async function AdminUsersPage({ searchParams }: { searchParams?: 
   const profiles = profilesData || []
 
   // Pass search query to client if needed
-  const search = typeof searchParams?.q === 'string' ? searchParams.q.toLowerCase() : ""
+  const search = (await searchParams)?.q ? String((await searchParams).q).toLowerCase() : ""
 
   return <UsersTable users={users} profiles={profiles} initialSearch={search} />
 } 
