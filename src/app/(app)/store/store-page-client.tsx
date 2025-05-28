@@ -117,7 +117,7 @@ export default function StorePageClient() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'Under utveckling':
-        return 'bg-blue-100 text-blue-800 hover:bg-blue-100'
+        return 'bg-secondary text-primary hover:bg-blue-100'
       case 'Granska':
         return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-100'
       case 'Levererad':
@@ -195,7 +195,7 @@ export default function StorePageClient() {
                       transition={{ duration: 0.3, delay: 0.2 }}
                     >
                       <Badge className={`px-3 py-1.5 text-sm font-medium ${
-                        storeOrder?.status === "Under utveckling" ? "bg-blue-100 text-blue-800" : 
+                        storeOrder?.status === "Under utveckling" ? "bg-secondary text-primary" : 
                         storeOrder?.status === "Granska" ? "bg-yellow-100 text-yellow-800" :
                         storeOrder?.status === "Levererad" ? "bg-green-100 text-green-800" :
                         "bg-gray-100 text-gray-800"

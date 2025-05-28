@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Bell, LayoutDashboard, Settings, Star, UsersRound, Lock, Store, LibraryBig, Crown, Rocket} from "lucide-react"
+import { Bell, LayoutDashboard, PackageSearch, Star, UsersRound, Lock, Store, LibraryBig, Crown, Rocket} from "lucide-react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import Image from 'next/image'
@@ -57,14 +57,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       showNotification: needsNicheSelection,
     },
     {
-      title: "Guidesbibliotek",
+      title: "Guider",
       icon: LibraryBig,
       href: "/guides-library",
-    },
-    {
-      title: "Tillväxt",
-      icon: Rocket,
-      href: "/growth",
     },
   ]
 
@@ -80,6 +75,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       title: "Gemenskap",
       icon: UsersRound,
       href: "/community",
+      isPremium: true,
+    },
+    {
+      title: "Produktbibliotek",
+      icon: PackageSearch,
+      href: "/product-library",
       isPremium: true,
     },
   ]

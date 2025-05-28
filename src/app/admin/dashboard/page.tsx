@@ -34,12 +34,13 @@ import { Skeleton } from "@/components/ui/skeleton"
 import CountUp from "react-countup"
 import { format } from "date-fns"
 import { sv } from "date-fns/locale"
-import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts"
 import {
   ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
+  ChartLegend,
 } from "@/components/ui/chart"
 
 export default function DashboardPage() {
@@ -153,6 +154,7 @@ export default function DashboardPage() {
   // Prepare revenue chart data based on selected range
   let chartData: any[] = [];
   let chartGranularity: 'hour' | 'day' = 'day';
+  const isSingleDay = selectedRange && selectedRange.from && (!selectedRange.to || selectedRange.from.toDateString() === selectedRange.to.toDateString());
   if (selectedRange && selectedRange.from) {
     const from = new Date(selectedRange.from);
     const to = selectedRange.to ? new Date(selectedRange.to) : new Date(selectedRange.from);
@@ -164,13 +166,13 @@ export default function DashboardPage() {
       chartGranularity = 'hour';
       const hours = Array.from({ length: 24 }, (_, i) => i);
       chartData = hours.map(hour => {
-        const revenue = filteredOrders
-          .filter(order => {
-            const date = new Date(order.order_date);
-            return date.getHours() === hour;
-          })
-          .reduce((sum, order) => sum + (order.price || 0), 0);
-        return { hour: hour.toString().padStart(2, '0'), revenue: Number(revenue) || 0 };
+        const ordersForHour = filteredOrders.filter(order => {
+          const date = new Date(order.order_date);
+          return date.getHours() === hour;
+        });
+        const revenue = ordersForHour.reduce((sum, order) => sum + (order.price || 0), 0);
+        const soldStores = ordersForHour.length;
+        return { hour: hour.toString().padStart(2, '0'), revenue: Number(revenue) || 0, soldStores };
       });
     } else {
       // Group by day
@@ -180,13 +182,13 @@ export default function DashboardPage() {
         const day = new Date(from);
         day.setDate(from.getDate() + i);
         const dayStr = day.toLocaleDateString('sv-SE', { month: 'short', day: 'numeric' });
-        const revenue = filteredOrders
-          .filter(order => {
-            const date = new Date(order.order_date);
-            return date.getFullYear() === day.getFullYear() && date.getMonth() === day.getMonth() && date.getDate() === day.getDate();
-          })
-          .reduce((sum, order) => sum + (order.price || 0), 0);
-        return { day: dayStr, revenue: Number(revenue) || 0 };
+        const ordersForDay = filteredOrders.filter(order => {
+          const date = new Date(order.order_date);
+          return date.getFullYear() === day.getFullYear() && date.getMonth() === day.getMonth() && date.getDate() === day.getDate();
+        });
+        const revenue = ordersForDay.reduce((sum, order) => sum + (order.price || 0), 0);
+        const soldStores = ordersForDay.length;
+        return { day: dayStr, revenue: Number(revenue) || 0, soldStores };
       });
     }
   } else {
@@ -197,13 +199,13 @@ export default function DashboardPage() {
       const day = new Date(today);
       day.setDate(today.getDate() - (6 - i));
       const dayStr = day.toLocaleDateString('sv-SE', { month: 'short', day: 'numeric' });
-      const revenue = filteredOrders
-        .filter(order => {
-          const date = new Date(order.order_date);
-          return date.getFullYear() === day.getFullYear() && date.getMonth() === day.getMonth() && date.getDate() === day.getDate();
-        })
-        .reduce((sum, order) => sum + (order.price || 0), 0);
-      return { day: dayStr, revenue: Number(revenue) || 0 };
+      const ordersForDay = filteredOrders.filter(order => {
+        const date = new Date(order.order_date);
+        return date.getFullYear() === day.getFullYear() && date.getMonth() === day.getMonth() && date.getDate() === day.getDate();
+      });
+      const revenue = ordersForDay.reduce((sum, order) => sum + (order.price || 0), 0);
+      const soldStores = ordersForDay.length;
+      return { day: dayStr, revenue: Number(revenue) || 0, soldStores };
     });
   }
 
@@ -236,73 +238,141 @@ export default function DashboardPage() {
       <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
         <DashboardHeader onRangeChange={setSelectedRange} />
         <div className="space-y-4">
+          {/* First row: Combined Revenue & Sold Stores, Area Chart */}
           <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-3">
+            {/* Combined Revenue & Sold Stores Card */}
             <Card className="relative overflow-hidden border-border">
               <div className="absolute inset-0 bg-secondary/10" />
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative">
-                <CardTitle className="text-lg font-medium">Revenue</CardTitle>
-                <div className="h-8 w-8 rounded-full bg-secondary flex items-center justify-center">
-                  <DollarSign className="h-4 w-4 text-primary" />
-                </div>
-              </CardHeader>
-              <CardContent className="relative">
-                <div className="text-2xl font-bold">
-                  {isLoading ? (
-                    <Skeleton className="h-8 w-24 rounded" />
-                  ) : (
-                    <CountUp end={filteredRevenue} duration={1} separator=" " decimals={2} decimal="," prefix="kr " />
-                  )}
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  <span className={`flex items-center ${revenueTrend >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
-                    {revenueTrend >= 0 ? <ArrowUp className="h-3 w-3 mr-1" /> : <ArrowDown className="h-3 w-3 mr-1" />} 
-                    {Math.abs(revenueTrend).toFixed(1)}%
-                  </span>{" "}
-                  jämfört med förra perioden
-                  {previousPeriod && (
-                    <span className="block text-xs text-muted-foreground mt-0.5">
-                      {selectedRange && selectedRange.from && (!selectedRange.to || selectedRange.from.toDateString() === selectedRange.to.toDateString())
-                        ? `(${format(previousPeriod.to, 'PPP', { locale: sv })})`
-                        : `(${formatDateRange(previousPeriod.from, previousPeriod.to)})`}
+              <CardContent className="relative flex flex-col gap-6">
+                {/* Revenue Section */}
+                <div>
+                  <div className="flex items-center justify-between">
+                    <span className="flex items-center gap-2">
+                      <div className="h-8 w-8 rounded-full bg-secondary flex items-center justify-center">
+                        <DollarSign className="h-4 w-4 text-primary" />
+                      </div>
+                      <span className="text-base font-medium">Försäljning</span>
                     </span>
-                  )}
-                </p>
+                    <span className="text-2xl font-bold">
+                      {isLoading ? (
+                        <Skeleton className="h-8 w-24 rounded" />
+                      ) : (
+                        <CountUp end={filteredRevenue} duration={1} separator=" " decimals={2} decimal="," prefix="kr " />
+                      )}
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1 pt-6">
+                    <span className={`flex items-center ${revenueTrend >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}> 
+                      {revenueTrend >= 0 ? <ArrowUp className="h-3 w-3 mr-1" /> : <ArrowDown className="h-3 w-3 mr-1" />} 
+                      {Math.abs(revenueTrend).toFixed(1)}%
+                    </span>{' '}
+                    jämfört med förra perioden
+                    {previousPeriod && (
+                      <span className="block text-xs text-muted-foreground mt-0.5">
+                        {selectedRange && selectedRange.from && (!selectedRange.to || selectedRange.from.toDateString() === selectedRange.to.toDateString())
+                          ? `(${format(previousPeriod.to, 'PPP', { locale: sv })})`
+                          : `(${formatDateRange(previousPeriod.from, previousPeriod.to)})`}
+                      </span>
+                    )}
+                  </p>
+                </div>
+                <div className="border-t border-border pt-4">
+                  <div className="flex items-center justify-between">
+                    <span className="flex items-center gap-2">
+                      <div className="h-8 w-8 rounded-full bg-secondary flex items-center justify-center">
+                        <LineChart className="h-4 w-4 text-primary" />
+                      </div>
+                      <span className="text-base font-medium">Sålda butiker</span>
+                    </span>
+                    <span className="text-2xl font-bold">
+                      {isLoading ? (
+                        <Skeleton className="h-8 w-24 rounded" />
+                      ) : (
+                        <CountUp end={filteredSoldStores} duration={1} />
+                      )}
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1 pt-6">
+                    <span className={`flex items-center ${soldStoresTrend >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}> 
+                      {soldStoresTrend >= 0 ? <ArrowUp className="h-3 w-3 mr-1" /> : <ArrowDown className="h-3 w-3 mr-1" />} 
+                      {Math.abs(soldStoresTrend).toFixed(1)}%
+                    </span>{' '}
+                    jämfört med förra perioden
+                    {previousPeriod && (
+                      <span className="block text-xs text-muted-foreground mt-0.5">
+                        {selectedRange && selectedRange.from && (!selectedRange.to || selectedRange.from.toDateString() === selectedRange.to.toDateString())
+                          ? `(${format(previousPeriod.to, 'PPP', { locale: sv })})`
+                          : `(${formatDateRange(previousPeriod.from, previousPeriod.to)})`}
+                      </span>
+                    )}
+                  </p>
+                </div>
               </CardContent>
             </Card>
-            <Card className="relative overflow-hidden border-border">
-              <div className="absolute inset-0 bg-secondary/10" />
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative">
-                <CardTitle className="text-lg font-medium">Sold Stores</CardTitle>
-                <div className="h-8 w-8 rounded-full bg-secondary flex items-center justify-center">
-                  <LineChart className="h-4 w-4 text-primary" />
-                </div>
-              </CardHeader>
-              <CardContent className="relative">
-                <div className="text-2xl font-bold">
-                  {isLoading ? (
-                    <Skeleton className="h-8 w-24 rounded" />
-                  ) : (
-                    <CountUp end={filteredSoldStores} duration={1} />
-                  )}
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  <span className={`flex items-center ${soldStoresTrend >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
-                    {soldStoresTrend >= 0 ? <ArrowUp className="h-3 w-3 mr-1" /> : <ArrowDown className="h-3 w-3 mr-1" />} 
-                    {Math.abs(soldStoresTrend).toFixed(1)}%
-                  </span>{" "}
-                  jämfört med förra perioden
-                  {previousPeriod && (
-                    <span className="block text-xs text-muted-foreground mt-0.5">
-                      {selectedRange && selectedRange.from && (!selectedRange.to || selectedRange.from.toDateString() === selectedRange.to.toDateString())
-                        ? `(${format(previousPeriod.to, 'PPP', { locale: sv })})`
-                        : `(${formatDateRange(previousPeriod.from, previousPeriod.to)})`}
-                    </span>
-                  )}
-                </p>
+            {/* Area Chart Card (now to the right) */}
+            <Card className="col-span-2 border-border">
+              <CardContent className="h-[280px] px-0">
+                <ChartContainer config={visitorChartConfig} className="h-full w-full">
+                  <AreaChart
+                    accessibilityLayer
+                    data={chartData.map(d => ({
+                      ...d,
+                      // Scale soldStores for visualization only
+                      soldStoresScaled: d.soldStores * 20
+                    }))}
+                    height={280}
+                    width={undefined}
+                    margin={{
+                      left: 24,
+                      right: 24,
+                      top: 8,
+                      bottom: 8
+                    }}
+                  >
+                    <CartesianGrid vertical={false} />
+                    <XAxis
+                      dataKey={isSingleDay ? 'hour' : 'day'}
+                      tickLine={false}
+                      axisLine={false}
+                      tickMargin={8}
+                      interval={isSingleDay ? 0 : undefined}
+                      tickFormatter={isSingleDay ? (value => value) : undefined}
+                      minTickGap={0}
+                      allowDecimals={false}
+                    />
+                    <YAxis domain={[0, 'auto']} />
+                    <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
+                    <defs>
+                      <linearGradient id="fillRevenue" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.8} />
+                        <stop offset="95%" stopColor="var(--primary)" stopOpacity={0.1} />
+                      </linearGradient>
+                      <linearGradient id="fillSoldStores" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="var(--secondary)" stopOpacity={0.8} />
+                        <stop offset="95%" stopColor="var(--secondary)" stopOpacity={0.1} />
+                      </linearGradient>
+                    </defs>
+                    <Area
+                      dataKey="revenue"
+                      type="bump"
+                      fill="url(#fillRevenue)"
+                      fillOpacity={0.4}
+                      stroke="var(--primary)"
+                      isAnimationActive={true}
+                      animationDuration={1200}
+                      animationEasing="ease"
+                      name="Revenue"
+                    />
+                    <ChartLegend verticalAlign="top" />
+                  </AreaChart>
+                </ChartContainer>
               </CardContent>
             </Card>
-            <Card className="relative overflow-hidden border-border">
-              <div className="absolute inset-0 bg-secondary/10" />
+          </div>
+          {/* Second row: Users & Subscriptions, Revenue Overview, User Activity */}
+          <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-7">
+            {/* Users & Subscriptions Card (moved down) */}
+            <Card className="relative overflow-hidden border-border col-span-2">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative">
                 <CardTitle className="text-lg font-medium">Users & Subscriptions</CardTitle>
                 <div className="h-8 w-8 rounded-full bg-secondary flex items-center justify-center">
@@ -332,9 +402,8 @@ export default function DashboardPage() {
                 </div>
               </CardContent>
             </Card>
-          </div>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-            <Card className="col-span-4 border-border">
+            {/* Revenue Overview Card */}
+            <Card className="col-span-3 border-border">
               <CardHeader>
                 <CardTitle className="text-lg font-medium">Revenue Overview</CardTitle>
                 <CardDescription>Monthly revenue breakdown by subscription tier</CardDescription>
@@ -343,7 +412,8 @@ export default function DashboardPage() {
                 {/* Removed <RevenueChart /> as it's replaced by AreaChart elsewhere */}
               </CardContent>
             </Card>
-            <Card className="col-span-3 border-border">
+            {/* User Activity Card */}
+            <Card className="col-span-2 border-border">
               <CardHeader>
                 <CardTitle className="text-lg font-medium">User Activity</CardTitle>
                 <CardDescription>Daily active users over the past 30 days</CardDescription>
@@ -353,7 +423,9 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
           </div>
+          {/* Third row: Recent Users, Subscription Tiers */}
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+            {/* Recent Users Card */}
             <Card className="col-span-4 border-border">
               <CardHeader>
                 <CardTitle className="text-lg font-medium">Recent Users</CardTitle>
@@ -407,6 +479,7 @@ export default function DashboardPage() {
                 />
               </CardContent>
             </Card>
+            {/* Subscription Tiers Card (moved down) */}
             <Card className="col-span-3 border-border">
               <CardHeader>
                 <CardTitle className="text-lg font-medium">Subscription Tiers</CardTitle>
@@ -422,94 +495,6 @@ export default function DashboardPage() {
               </CardFooter>
             </Card>
           </div>
-          <Card className="col-span-7 border-border">
-            <CardHeader>
-              <CardTitle>Area Chart - Gradient</CardTitle>
-              <CardDescription>
-                Showing total visitors for the last 6 months
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="h-[300px] px-0">
-              <ChartContainer config={visitorChartConfig} className="h-full w-full">
-                <AreaChart
-                  accessibilityLayer
-                  data={visitorChartData}
-                  height={300}
-                  width={undefined}
-                  margin={{
-                    left: 24,
-                    right: 24,
-                    top: 8,
-                    bottom: 8
-                  }}
-                >
-                  <CartesianGrid vertical={false} />
-                  <XAxis
-                    dataKey="month"
-                    tickLine={false}
-                    axisLine={false}
-                    tickMargin={8}
-                    tickFormatter={(value) => value.slice(0, 3)}
-                  />
-                  <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
-                  <defs>
-                    <linearGradient id="fillDesktop" x1="0" y1="0" x2="0" y2="1">
-                      <stop
-                        offset="5%"
-                        stopColor="rgb(59 130 246)"
-                        stopOpacity={0.8}
-                      />
-                      <stop
-                        offset="95%"
-                        stopColor="rgb(59 130 246)"
-                        stopOpacity={0.1}
-                      />
-                    </linearGradient>
-                    <linearGradient id="fillMobile" x1="0" y1="0" x2="0" y2="1">
-                      <stop
-                        offset="5%"
-                        stopColor="rgb(16 185 129)"
-                        stopOpacity={0.8}
-                      />
-                      <stop
-                        offset="95%"
-                        stopColor="rgb(16 185 129)"
-                        stopOpacity={0.1}
-                      />
-                    </linearGradient>
-                  </defs>
-                  <Area
-                    dataKey="mobile"
-                    type="natural"
-                    fill="url(#fillMobile)"
-                    fillOpacity={0.4}
-                    stroke="rgb(16 185 129)"
-                    stackId="a"
-                  />
-                  <Area
-                    dataKey="desktop"
-                    type="natural"
-                    fill="url(#fillDesktop)"
-                    fillOpacity={0.4}
-                    stroke="rgb(59 130 246)"
-                    stackId="a"
-                  />
-                </AreaChart>
-              </ChartContainer>
-            </CardContent>
-            <CardFooter>
-              <div className="flex w-full items-start gap-2 text-sm">
-                <div className="grid gap-2">
-                  <div className="flex items-center gap-2 font-medium leading-none">
-                    Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
-                  </div>
-                  <div className="flex items-center gap-2 leading-none text-muted-foreground">
-                    January - June 2024
-                  </div>
-                </div>
-              </div>
-            </CardFooter>
-          </Card>
         </div>
       </main>
     </div>
