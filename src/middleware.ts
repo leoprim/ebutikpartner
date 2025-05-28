@@ -54,7 +54,7 @@ export async function middleware(req: NextRequest) {
   
   try {
     // Get user session
-    const { data: { session } } = await supabase.auth.getSession()
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
     
     // Check if current path is public
     const isPublicPath = publicPaths.some(
@@ -62,19 +62,19 @@ export async function middleware(req: NextRequest) {
     )
     
     // If authenticated but missing full_name, force to /dashboard
-    if (session && session.user && !session.user.user_metadata?.full_name && pathname !== '/dashboard') {
+    if (user && !user.user_metadata?.full_name && pathname !== '/dashboard') {
       return NextResponse.redirect(new URL('/dashboard', req.url))
     }
     
     // Redirect unauthenticated users trying to access protected routes
-    if (!session && !isPublicPath) {
+    if (!user && !isPublicPath) {
       const redirectUrl = new URL('/auth', req.url)
       redirectUrl.searchParams.set('redirectedFrom', pathname)
       return NextResponse.redirect(redirectUrl)
     }
     
     // Redirect authenticated users trying to access auth pages
-    if (session && isPublicPath) {
+    if (user && isPublicPath) {
       return NextResponse.redirect(new URL('/dashboard', req.url))
     }
     

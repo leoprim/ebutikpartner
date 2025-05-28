@@ -33,16 +33,16 @@ export default async function AppLayout({
     }
   )
 
-  const { data: { session } } = await supabase.auth.getSession()
+  const { data: { user }, error: userError } = await supabase.auth.getUser()
 
-  if (!session) {
+  if (userError || !user) {
     redirect('/auth')
   }
 
   return (
     <SupabaseProvider>
       <SidebarProvider>
-        <NicheProvider session={session}>
+        <NicheProvider session={{ user }}>
           <div className="flex h-screen w-full">
             <AppSidebar />
             <div className="flex-1 flex flex-col w-full">

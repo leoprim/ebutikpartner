@@ -9,15 +9,27 @@ export async function GET(req: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
 
-  // 2. Get store credentials from store_orders
+  // 2. Get store credentials and status from store_orders
   const { data: storeOrder, error } = await supabase
     .from("store_orders")
-    .select("shopify_domain, shopify_access_token")
+    .select("shopify_domain, shopify_access_token, status")
     .eq("user_id", user.id)
     .single();
 
   if (error || !storeOrder) {
     return NextResponse.json({ error: "No connected Shopify store found" }, { status: 404 });
+  }
+
+  // If store is not delivered, return default values
+  if (storeOrder.status !== "Levererad") {
+    return NextResponse.json({
+      omsattning: 0,
+      prevOmsattning: 0,
+      ordrar: 0,
+      prevOrdrar: 0,
+      kunder: 0,
+      produkter: 0,
+    });
   }
 
   const { shopify_domain, shopify_access_token } = storeOrder;

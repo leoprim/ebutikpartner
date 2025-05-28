@@ -9,7 +9,7 @@ import { createBrowserClient } from "@supabase/ssr"
 import { ArrowRight, ChromeIcon as Google, ChevronLeft, ChevronRight } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import Image from "next/image"
-import toast from "react-hot-toast"
+import { toast } from "sonner"
 
 import { Checkbox } from "@/components/ui/checkbox"
 import { ForgotPasswordModal } from "@/components/forgot-password-modal"
@@ -83,15 +83,21 @@ export default function AuthPage() {
 
       if (error) {
         if (error.message.includes("rate limit")) {
-          toast.error("För många inloggningsförsök. Vänta några minuter innan du försöker igen.")
+          toast.error("För många inloggningsförsök", {
+            description: "Vänta några minuter innan du försöker igen."
+          })
         } else {
-          toast.error(error.message)
+          toast.error("Inloggning misslyckades", {
+            description: error.message
+          })
         }
         return
       }
 
       if (data.user) {
-        toast.success("Inloggningen lyckades. Välkomen tillbaka!")
+        toast.success("Inloggning lyckades", {
+          description: "Välkommen tillbaka till EbutikPartner!"
+        })
         setIsRedirecting(true)
         setTimeout(() => {
           const redirectPath = redirectedFrom || "/dashboard"
@@ -102,9 +108,13 @@ export default function AuthPage() {
       }
     } catch (error) {
       if (error instanceof Error && error.message.includes("rate limit")) {
-        toast.error("För många inloggningsförsök. Vänta några minuter innan du försöker igen.")
+        toast.error("För många inloggningsförsök", {
+          description: "Vänta några minuter innan du försöker igen."
+        })
       } else {
-        toast.error("Ett fel uppstod vid inloggning")
+        toast.error("Inloggning misslyckades", {
+          description: "Ett fel uppstod vid inloggning"
+        })
       }
     } finally {
       setIsLoading(false)
@@ -115,32 +125,44 @@ export default function AuthPage() {
     e.preventDefault()
 
     if (!fullName) {
-      toast.error("Vänligen ange ditt fullständiga namn")
+      toast.error("Registrering misslyckades", {
+        description: "Vänligen ange ditt fullständiga namn"
+      })
       return
     }
 
     if (!email) {
-      toast.error("Vänligen ange din e-postadress")
+      toast.error("Registrering misslyckades", {
+        description: "Vänligen ange din e-postadress"
+      })
       return
     }
 
     if (!email.includes("@")) {
-      toast.error("Vänligen ange en giltig e-postadress")
+      toast.error("Registrering misslyckades", {
+        description: "Vänligen ange en giltig e-postadress"
+      })
       return
     }
 
     if (!password) {
-      toast.error("Vänligen ange ett lösenord")
+      toast.error("Registrering misslyckades", {
+        description: "Vänligen ange ett lösenord"
+      })
       return
     }
 
     if (password.length < 6) {
-      toast.error("Lösenordet måste vara minst 6 tecken långt")
+      toast.error("Registrering misslyckades", {
+        description: "Lösenordet måste vara minst 6 tecken långt"
+      })
       return
     }
 
     if (password !== confirmPassword) {
-      toast.error("Lösenorden matchar inte")
+      toast.error("Registrering misslyckades", {
+        description: "Lösenorden matchar inte"
+      })
       return
     }
 
@@ -157,12 +179,16 @@ export default function AuthPage() {
       })
 
       if (error) {
-        toast.error(error.message)
+        toast.error("Registrering misslyckades", {
+          description: error.message
+        })
         return
       }
 
       if (data.user) {
-        toast.success("Registreringen lyckades! Kontrollera din e-post för att bekräfta ditt konto.")
+        toast.success("Registrering lyckades", {
+          description: "Kontrollera din e-post för att bekräfta ditt konto."
+        })
         setIsSignIn(true)
         setEmail("")
         setPassword("")
@@ -170,7 +196,9 @@ export default function AuthPage() {
         setConfirmPassword("")
       }
     } catch (error) {
-      toast.error("Ett fel uppstod vid registreringen")
+      toast.error("Registrering misslyckades", {
+        description: "Ett fel uppstod vid registreringen"
+      })
     }
   }
 
@@ -184,10 +212,14 @@ export default function AuthPage() {
       })
 
       if (error) {
-        toast.error(error.message)
+        toast.error("Google-inloggning misslyckades", {
+          description: error.message
+        })
       }
     } catch (error) {
-      toast.error("Ett fel uppstod vid inloggning med Google")
+      toast.error("Google-inloggning misslyckades", {
+        description: "Ett fel uppstod vid inloggning med Google"
+      })
     }
   }
 

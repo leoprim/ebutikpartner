@@ -20,7 +20,7 @@ import SettingsModal from "@/components/settings-modal"
 import { Badge } from "@/components/ui/badge"
 import { notificationService, Notification } from "@/services/notification"
 import { useSidebar } from "@/components/ui/sidebar"
-import { toast } from "react-hot-toast"
+import { toast } from "sonner"
 
 export function TopBar() {
   const [user, setUser] = useState<SupabaseUser | null | undefined>(undefined)
@@ -97,7 +97,9 @@ export function TopBar() {
   const avatarUrl = (user?.user_metadata?.avatar_url as string | undefined) || undefined
 
   const handleSignOut = async () => {
-    toast.success("Du har loggats ut");
+    toast.success("Utloggning lyckades", {
+      description: "Du har loggats ut från ditt konto"
+    })
     await supabase.auth.signOut()
     router.push("/auth")
     router.refresh()
@@ -229,21 +231,14 @@ export function TopBar() {
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <div className="hidden md:flex md:items-center md:gap-2">
-          {isLoading ? (
-            <>
-              <Skeleton className="h-4 w-20 rounded" />
-              <Skeleton className="h-3 w-32 rounded" />
-            </>
-          ) : (
-            <div className="flex flex-col items-end">
-              
-            </div>
-          )}
-        </div>
+        
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="rounded-full">
+            <Button variant="ghost" className="flex items-center gap-3 px-2 py-1.5 h-auto">            
+              <div className="flex flex-col items-start">
+                <span className="text-sm font-medium">{name}</span>
+                <span className="text-xs text-muted-foreground">{email}</span>
+              </div>
               <div className="relative h-8 w-8 overflow-hidden rounded-full">
                 <Avatar className="h-full w-full">
                   {isLoading ? (

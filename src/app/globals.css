@@ -4,6 +4,31 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Sonner Toast Styles */
+[data-sonner-toast][data-type="success"] {
+  background: #f0fdf4 !important;
+  color: #166534 !important;
+  border: 1px solid #bbf7d0 !important;
+}
+
+[data-sonner-toast][data-type="error"] {
+  background: #fef2f2 !important;
+  color: #991b1b !important;
+  border: 1px solid #fecaca !important;
+}
+
+[data-sonner-toast] {
+  font-family: inherit !important;
+}
+
+[data-sonner-toast] [data-title] {
+  font-weight: 600 !important;
+}
+
+[data-sonner-toast] [data-description] {
+  color: inherit !important;
+  opacity: 0.8 !important;
+}
 
 @custom-variant dark (&:is(.dark *));
 

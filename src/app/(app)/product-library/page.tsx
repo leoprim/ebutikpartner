@@ -7,15 +7,12 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   ArrowUpIcon,
   ArrowDownIcon,
   TrendingUpIcon,
   SearchIcon,
   FilterIcon,
-  ExternalLinkIcon,
   ShoppingBag,
   TrendingUp,
   Star,
@@ -133,7 +130,6 @@ export default function Component() {
   const [searchTerm, setSearchTerm] = useState("")
   const [sortBy, setSortBy] = useState("opportunityScore")
   const [filterNiche, setFilterNiche] = useState("all")
-  const [viewMode, setViewMode] = useState("cards")
 
   const filteredProducts = trendingProducts
     .filter((product) => {
@@ -199,7 +195,7 @@ export default function Component() {
   const niches = Array.from(new Set(trendingProducts.map((p) => p.niche)))
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="mx-auto p-6 space-y-6 w-full">
       <div className="flex flex-col space-y-4">
         <div className="flex items-center justify-between">
           <div>
@@ -254,163 +250,84 @@ export default function Component() {
         </div>
       </div>
 
-      <Tabs value={viewMode} onValueChange={setViewMode} className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="cards">Kortvy</TabsTrigger>
-          <TabsTrigger value="table">Tabellvy</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="cards" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {filteredProducts.map((product) => {
-              const label = getProductLabel(product)
-              return (
-                <Card
-                  key={product.id}
-                  className="hover:shadow-lg transition-shadow min-h-[360px] flex flex-col rounded-2xl overflow-hidden p-0"
-                >
-                  <div className="w-full relative aspect-square">
-                    <Image
-                      src={product.image || "/placeholder.svg"}
-                      alt={product.name}
-                      fill
-                      className="object-cover object-top w-full h-full"
-                      style={{ display: 'block' }}
-                    />
-                    {label && (
-                      <div
-                        className={`absolute top-3 right-3 ${label.color} text-white px-3 py-1.5 rounded-2xl flex items-center space-x-1 text-sm font-medium`}
-                      >
-                        <label.icon className="h-4 w-4" />
-                        <span>{label.text}</span>
-                      </div>
-                    )}
-                    <div className="absolute bottom-0 left-0 right-0 bg-white/80 backdrop-blur-md p-3">
-                      <h3 className="text-base font-medium leading-tight line-clamp-2 text-center text-gray-900">
-                        {product.name}
-                      </h3>
-                    </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {filteredProducts.map((product) => {
+          const label = getProductLabel(product)
+          return (
+            <Card
+              key={product.id}
+              className="hover:shadow-lg transition-shadow min-h-[360px] flex flex-col rounded-2xl overflow-hidden p-0"
+            >
+              <div className="w-full relative aspect-square">
+                <Image
+                  src={product.image || "/placeholder.svg"}
+                  alt={product.name}
+                  fill
+                  className="object-cover object-top w-full h-full"
+                  style={{ display: 'block' }}
+                />
+                {label && (
+                  <div
+                    className={`absolute top-3 right-3 ${label.color} text-white px-3 py-1.5 rounded-2xl flex items-center space-x-1 text-sm font-medium`}
+                  >
+                    <label.icon className="h-4 w-4" />
+                    <span>{label.text}</span>
                   </div>
-                  <CardContent className="pt-4 flex-1 flex flex-col justify-end pb-4">
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-3 gap-3">
-                        <div className="space-y-1">
-                          <p className="text-sm text-muted-foreground text-center">Sökvolym</p>
-                          <p className="text-sm font-semibold text-center">
-                            {(product.searchVolume / 1000).toFixed(0)}k
-                          </p>
-                        </div>
-                        <div className="space-y-1">
-                          <p className="text-sm text-muted-foreground text-center">Trend</p>
-                          <div className="flex items-center justify-center space-x-1">
-                            {getTrendIcon(product.trend)}
-                            <span
-                              className={`text-sm font-semibold ${product.trend > 0 ? "text-green-600" : "text-red-600"}`}
-                            >
-                              {product.trend > 0 ? "+" : ""}
-                              {product.trend}%
-                            </span>
-                          </div>
-                        </div>
-                        <div className="space-y-1">
-                          <p className="text-sm text-muted-foreground text-center">CPC</p>
-                          <p className="text-sm font-semibold text-center">${product.cpc}</p>
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <p className="text-sm text-muted-foreground">Möjlighet</p>
-                          <span className="text-sm font-bold">{product.opportunityScore}/100</span>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div
-                            className={`h-2 rounded-full ${getOpportunityColor(product.opportunityScore)}`}
-                            style={{ width: `${product.opportunityScore}%` }}
-                          />
-                        </div>
-                      </div>
-                      <Button className="w-full rounded-xl">
-                        <ShoppingBag className="h-4 w-4 mr-2" />
-                        Lägg till i butik
-                      </Button>
+                )}
+                <div className="absolute bottom-0 left-0 right-0 bg-white/80 backdrop-blur-md p-3">
+                  <h3 className="text-base font-medium leading-tight line-clamp-2 text-center text-gray-900">
+                    {product.name}
+                  </h3>
+                </div>
+              </div>
+              <CardContent className="pt-4 flex-1 flex flex-col justify-end pb-4">
+                <div className="space-y-4">
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="space-y-1">
+                      <p className="text-sm text-muted-foreground text-center">Sökvolym</p>
+                      <p className="text-sm font-semibold text-center">
+                        {(product.searchVolume / 1000).toFixed(0)}k
+                      </p>
                     </div>
-                  </CardContent>
-                </Card>
-              )
-            })}
-          </div>
-        </TabsContent>
-
-        <TabsContent value="table">
-          <Card className="rounded-2xl">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Produkt</TableHead>
-                  <TableHead>Nisch</TableHead>
-                  <TableHead className="text-right">Sökvolym</TableHead>
-                  <TableHead className="text-right">Trend</TableHead>
-                  <TableHead className="text-right">Möjlighet</TableHead>
-                  <TableHead className="text-right">CPC</TableHead>
-                  <TableHead className="text-right">Genomsnittspris</TableHead>
-                  <TableHead></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredProducts.map((product) => (
-                  <TableRow key={product.id}>
-                    <TableCell>
-                      <div className="flex items-center space-x-3">
-                        <Image
-                          src={product.image || "/placeholder.svg"}
-                          alt={product.name}
-                          width={60}
-                          height={60}
-                          className="rounded-xl object-cover"
-                        />
-                        <div className="min-w-0 flex-1">
-                          <p className="text-sm font-medium leading-tight line-clamp-1">{product.name}</p>
-                          <p className="text-xs text-muted-foreground">{product.category}</p>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className="text-xs rounded-xl">
-                        {product.niche}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right font-medium">{product.searchVolume.toLocaleString()}</TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end space-x-1">
+                    <div className="space-y-1">
+                      <p className="text-sm text-muted-foreground text-center">Trend</p>
+                      <div className="flex items-center justify-center space-x-1">
                         {getTrendIcon(product.trend)}
                         <span
-                          className={`text-sm font-medium ${product.trend > 0 ? "text-green-600" : "text-red-600"}`}
+                          className={`text-sm font-semibold ${product.trend > 0 ? "text-green-600" : "text-red-600"}`}
                         >
                           {product.trend > 0 ? "+" : ""}
                           {product.trend}%
                         </span>
                       </div>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end space-x-2">
-                        <div className={`w-2 h-2 rounded-full ${getOpportunityColor(product.opportunityScore)}`} />
-                        <span className="font-medium">{product.opportunityScore}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right font-medium">${product.cpc}</TableCell>
-                    <TableCell className="text-right font-medium">${product.avgPrice}</TableCell>
-                    <TableCell>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl">
-                        <ExternalLinkIcon className="h-4 w-4" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </Card>
-        </TabsContent>
-      </Tabs>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-sm text-muted-foreground text-center">CPC</p>
+                      <p className="text-sm font-semibold text-center">${product.cpc}</p>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm text-muted-foreground">Möjlighet</p>
+                      <span className="text-sm font-bold">{product.opportunityScore}/100</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div
+                        className={`h-2 rounded-full ${getOpportunityColor(product.opportunityScore)}`}
+                        style={{ width: `${product.opportunityScore}%` }}
+                      />
+                    </div>
+                  </div>
+                  <Button className="w-full rounded-xl">
+                    <ShoppingBag className="h-4 w-4 mr-2" />
+                    Lägg till i butik
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )
+        })}
+      </div>
     </div>
   )
 } 

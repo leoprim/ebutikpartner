@@ -1,9 +1,9 @@
 import "./globals.css"
-import { ToastProvider } from "@heroui/react"
 import { Inter } from "next/font/google"
 import Script from "next/script"
 import { ToastHandler } from "@/components/toast-handler"
 import { HeroUIProvider } from "@heroui/react"
+import { Toaster } from "sonner"
 
 const inter = Inter({ subsets: ["latin"], weight: ["400", "500", "700"] })
 
@@ -21,7 +21,22 @@ export default function RootLayout({
     <html lang="sv" className={inter.className}>
       <body className="font-sans font-medium bg-background text-foreground" suppressHydrationWarning>
         <HeroUIProvider>
-          <ToastProvider />
+          <Toaster 
+            position="bottom-right"
+            theme="light"
+            className="toaster"
+            toastOptions={{
+              classNames: {
+                toast: "group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg",
+                success: "group-[.toast]:bg-green-50 group-[.toast]:text-green-800 group-[.toast]:border-green-200",
+                error: "group-[.toast]:bg-red-50 group-[.toast]:text-red-800 group-[.toast]:border-red-200",
+                title: "group-[.toast]:font-semibold",
+                description: "group-[.toast]:text-muted-foreground",
+                actionButton: "group-[.toast]:bg-primary group-[.toast]:text-primary-foreground",
+                cancelButton: "group-[.toast]:bg-muted group-[.toast]:text-muted-foreground",
+              },
+            }}
+          />
           <ToastHandler />
           {children}
         </HeroUIProvider>

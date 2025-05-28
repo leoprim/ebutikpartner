@@ -91,7 +91,7 @@ export default function VideoPlayer({ src, onProgressUpdate, initialProgress, vi
     if (typeof window !== 'undefined') {
       const initAuth = async () => {
         try {
-          await supabase.auth.getSession()
+          await supabase.auth.getUser()
         } catch (error) {
           console.error('Error initializing auth:', error)
         }
@@ -346,13 +346,13 @@ export default function VideoPlayer({ src, onProgressUpdate, initialProgress, vi
           // Check if progress is set but currentTime is still 0
           (async () => {
             try {
-              const { data } = await supabase.auth.getSession();
+              const { data } = await supabase.auth.getUser();
               // Only proceed if we're authenticated
-              if (data.session && videoRef.current && isMountedRef.current && videoId) {
+              if (data.user && videoRef.current && isMountedRef.current && videoId) {
                 const { data: progressData, error } = await supabase
                   .from('video_progress')
                   .select('timestamp')
-                  .eq('user_id', data.session.user.id)
+                  .eq('user_id', data.user.id)
                   .eq('video_id', videoId)
                   .maybeSingle();
                   
@@ -367,7 +367,7 @@ export default function VideoPlayer({ src, onProgressUpdate, initialProgress, vi
                 }
               }
             } catch (error) {
-              console.error('Error in handleLoadedMetadata:', error);
+              console.error('Error checking authentication:', error);
             }
           })();
         }

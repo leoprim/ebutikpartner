@@ -46,11 +46,11 @@ export default function SettingsModal({ open, onOpenChange }: SettingsModalProps
 
   useEffect(() => {
     const fetchUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (session?.user) {
-        setUser(session.user)
-        setEmail(session.user.email || "")
-        setAvatar(session.user.user_metadata?.avatar_url || null)
+      const { data: { user }, error } = await supabase.auth.getUser()
+      if (user) {
+        setUser(user)
+        setEmail(user.email || "")
+        setAvatar(user.user_metadata?.avatar_url || null)
       }
     }
     if (open) {
@@ -72,12 +72,12 @@ export default function SettingsModal({ open, onOpenChange }: SettingsModalProps
     if (!selectedFile) return null
 
     try {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session?.user) throw new Error("No user found")
+      const { data: { user }, error } = await supabase.auth.getUser()
+      if (!user) throw new Error("No user found")
 
       // Upload avatar to Supabase Storage
       const fileExt = selectedFile.name.split('.').pop()
-      const fileName = `${session.user.id}-${Math.random()}.${fileExt}`
+      const fileName = `${user.id}-${Math.random()}.${fileExt}`
       const { error: uploadError } = await supabase.storage
         .from('avatars')
         .upload(fileName, selectedFile)
@@ -99,11 +99,11 @@ export default function SettingsModal({ open, onOpenChange }: SettingsModalProps
   const handleSaveChanges = async () => {
     try {
       setIsLoading(true)
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session?.user) throw new Error("Ingen användare hittad")
+      const { data: { user }, error } = await supabase.auth.getUser()
+      if (!user) throw new Error("Ingen användare hittad")
 
       // Handle email change separately
-      if (email !== session.user.email) {
+      if (email !== user.email) {
         const { data, error: emailError } = await supabase.auth.updateUser({
           email: email
         })
@@ -147,7 +147,7 @@ export default function SettingsModal({ open, onOpenChange }: SettingsModalProps
       if (newAvatarUrl) {
         const { error: updateError } = await supabase.auth.updateUser({
           data: {
-            ...session.user.user_metadata,
+            ...user.user_metadata,
             avatar_url: newAvatarUrl
           }
         })
@@ -157,10 +157,10 @@ export default function SettingsModal({ open, onOpenChange }: SettingsModalProps
       // Only show success and close if we made other changes
       if (hasChanges) {
         // Refresh the session to get the updated metadata
-        const { data: { session: newSession } } = await supabase.auth.getSession()
-        if (newSession?.user) {
-          setUser(newSession.user)
-          setAvatar(newSession.user.user_metadata?.avatar_url || null)
+        const { data: { user: newUser } } = await supabase.auth.getUser()
+        if (newUser) {
+          setUser(newUser)
+          setAvatar(newUser.user_metadata?.avatar_url || null)
         }
         setPreviewUrl(null)
         setSelectedFile(null)

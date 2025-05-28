@@ -218,9 +218,9 @@ export default function Component() {
       />
       <div className="min-h-screen bg-gray-50 p-4 md:p-6">
         <SubscriptionModal open={showSubscriptionModal} onOpenChange={setShowSubscriptionModal} />
-        <div className="max-w-7xl mx-auto space-y-6">
+        <div className="w-full mx-auto space-y-6">
           {/* Header */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full">
             <div>
               <h1 className="text-3xl font-medium text-gray-900">Instrumentpanel</h1>
               <p className="text-gray-600 mt-1">Välkommen tillbaka! Här är det senaste som händer i din butik.</p>
@@ -333,9 +333,7 @@ export default function Component() {
         Your browser does not support the video tag.
       </video>
     </div>
-                  <p className="text-sm text-gray-600 mt-3">
-                    Se videon ovan.
-                  </p>
+
                 </CardContent>
               </Card>
             </motion.div>
@@ -446,7 +444,7 @@ export default function Component() {
                       )}
                     </div>
                     <button
-                      className="ml-2 rounded-full bg-primary text-white w-8 h-8 flex items-center justify-center hover:bg-primary/90 transition text-lg"
+                      className="group relative ml-2 rounded-full bg-primary text-white w-8 h-8 flex items-center justify-center hover:bg-primary/90 transition-all duration-300 ease-in-out hover:w-[160px] overflow-hidden"
                       onClick={() => {
                         if (isPremium) {
                           router.push("/product-library")
@@ -457,7 +455,10 @@ export default function Component() {
                       disabled={isPremium === null}
                       aria-label="Lägg till produkt"
                     >
-                      <Plus className="w-5 h-5" />
+                      <Plus className="w-5 h-5 transition-all duration-300 ease-in-out group-hover:opacity-0" />
+                      <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-all duration-300 ease-in-out whitespace-nowrap text-sm flex items-center justify-center">
+                        Lägg till produkter
+                      </span>
                     </button>
                   </div>
                 </CardContent>

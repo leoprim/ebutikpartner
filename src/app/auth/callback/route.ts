@@ -11,37 +11,46 @@ export async function GET(request: Request) {
   console.log("Auth callback - Redirect to:", redirectTo)
 
   if (code) {
-    const cookieStore = cookies()
+    const cookieStore = await cookies()
     
-    // Use the createServerClient with Next.js cookies
+    // Create Supabase server client with proper cookie handling
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       {
         cookies: {
           get(name: string) {
-            // Use type assertion to avoid TypeScript error
-            const cookieValue = (cookieStore as any).get(name)?.value
-            return cookieValue
+            return cookieStore.get(name)?.value
           },
           set(name: string, value: string, options: any) {
-            // Use type assertion to avoid TypeScript error
-            (cookieStore as any).set({ name, value, ...options })
+            cookieStore.set({ name, value, ...options })
           },
           remove(name: string, options: any) {
-            // Use type assertion to avoid TypeScript error
-            (cookieStore as any).delete({ name, ...options })
+            cookieStore.delete({ name, ...options })
           },
         },
       }
     )
     
     try {
-      const { error } = await supabase.auth.exchangeCodeForSession(code)
+      const { data: { user }, error } = await supabase.auth.exchangeCodeForSession(code)
       
       if (error) {
         console.error("Auth callback - Error exchanging code:", error)
         return NextResponse.redirect(`${requestUrl.origin}/auth?error=${error.message}`)
+      }
+
+      if (user) {
+        // Find and update any store orders with matching email but no user_id
+        const { error: updateError } = await supabase
+          .from('store_orders')
+          .update({ user_id: user.id })
+          .eq('client_email', user.email)
+          .is('user_id', null)
+
+        if (updateError) {
+          console.error("Auth callback - Error updating store order:", updateError)
+        }
       }
       
       // Redirect on successful login
