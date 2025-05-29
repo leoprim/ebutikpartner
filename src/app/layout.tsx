@@ -8,8 +8,8 @@ import { Toaster } from "sonner"
 const inter = Inter({ subsets: ["latin"], weight: ["400", "500", "700"] })
 
 export const metadata = {
-  title: "StorePartner - Din butikspartner",
-  description: "Hantera din förbyggda butik och öka din försäljning med AI-verktyg och marknadsföringsmallar",
+  title: "EbutikPartner - Din butikspartner",
+  description: "Hantera din färdigbyggda butik, få tillgång till AI-verktyg och ett stort community",
 }
 
 export default function RootLayout({

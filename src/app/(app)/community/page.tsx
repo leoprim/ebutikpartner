@@ -22,10 +22,13 @@ import {
   MoreHorizontal,
   Bookmark,
   Award,
+  Image as ImageIcon,
+  X as XIcon,
 } from "lucide-react"
 
 export default function Component() {
   const [activeTab, setActiveTab] = useState("all")
+  const [selectedImage, setSelectedImage] = useState<string | null>(null)
 
   const posts = [
     {
@@ -94,41 +97,19 @@ export default function Component() {
     },
   ]
 
-  const communityStats = [
-    { label: "Premium Members", value: "2,847", icon: Crown },
-    { label: "Success Stories", value: "1,234", icon: Award },
-    { label: "Tips Shared", value: "5,678", icon: TrendingUp },
-    { label: "Active Today", value: "892", icon: Users },
-  ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 w-full">
+    <div className="min-h-screen bg-background w-full">
       <div className="mx-auto p-6">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-4">
-            <div className="p-3 bg-black rounded-xl">
-              <Crown className="h-6 w-6 text-white" />
-            </div>
             <div>
-              <h1 className="text-3xl font-medium text-black">
-                Premium Gemenska
+              <h1 className="text-3xl font-medium text-gray-900">
+                Gemenskap
               </h1>
-              <p className="text-muted-foreground">Här delar vi våra erfarenheter, framgångar och motgångar</p>
+              <p className="text-gray-600">Här delar vi våra erfarenheter, framgångar och motgångar</p>
             </div>
-          </div>
-
-          {/* Community Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-            {communityStats.map((stat, index) => (
-              <Card key={index} className="border-0 bg-white/60 backdrop-blur-sm">
-                <CardContent className="p-4 text-center">
-                  <stat.icon className="h-5 w-5 mx-auto mb-2 text-purple-600" />
-                  <div className="text-2xl font-bold text-gray-900">{stat.value}</div>
-                  <div className="text-sm text-muted-foreground">{stat.label}</div>
-                </CardContent>
-              </Card>
-            ))}
           </div>
         </div>
 
@@ -136,35 +117,65 @@ export default function Component() {
           {/* Main Content */}
           <div className="lg:col-span-3 space-y-6">
             {/* Post Creation */}
-            <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-lg">
+            <Card>
               <CardHeader className="pb-4">
-                <div className="flex items-center gap-3">
-                  <Avatar>
-                    <AvatarImage src="/placeholder.svg?height=40&width=40" />
-                    <AvatarFallback>YU</AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <Textarea
-                      placeholder="Share your success story or valuable tip with the community..."
-                      className="min-h-[80px] border-0 bg-gray-50 resize-none"
-                    />
-                  </div>
+                <div className="mb-2">
+                  <span className="text-sm font-medium text-muted-foreground">Skapa ett inlägg</span>
                 </div>
-                <div className="flex items-center justify-between pt-3">
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="text-purple-600 border-purple-200">
-                      <Award className="h-3 w-3 mr-1" />
-                      Success Story
-                    </Badge>
-                    <Badge variant="outline" className="text-blue-600 border-blue-200">
-                      <TrendingUp className="h-3 w-3 mr-1" />
-                      Tips & Tricks
-                    </Badge>
+                <div className="flex items-center gap-3">
+                  {/* Title input and textarea grouped with a divider */}
+                  <div className="flex-1 relative group bg-muted border border-border rounded-xl shadow-md overflow-hidden transition-all duration-200 focus-within:ring-2 focus-within:ring-primary/30">
+                    <Input
+                      placeholder="Titel på inlägg"
+                      className="border-0 rounded-none shadow-none bg-transparent focus-visible:ring-0 focus-visible:border-0"
+                    />
+                    <Separator className="my-0" />
+                    <Textarea
+                      placeholder="Dela din erfarenhet eller tips med communityt"
+                      className="min-h-[80px] border-0 rounded-none resize-none shadow-none bg-transparent focus-visible:ring-0 focus-visible:border-0 pr-32 pb-12"
+                    />
+                    {/* Image preview (if any) */}
+                    {selectedImage && (
+                      <div className="relative ml-2 mt-2 inline-block">
+                        <img src={selectedImage} alt="Preview" className="h-12 w-12 object-cover rounded shadow border" />
+                        <button
+                          type="button"
+                          className="absolute -top-2 -right-2 bg-white rounded-full p-0.5 shadow border hover:bg-muted"
+                          onClick={() => setSelectedImage(null)}
+                          aria-label="Ta bort bild"
+                        >
+                          <XIcon className="h-3 w-3 text-gray-500" />
+                        </button>
+                      </div>
+                    )}
+                    {/* Buttons inside input area */}
+                    <div className="absolute bottom-3 right-3 flex gap-2 z-10">
+                      <label>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={e => {
+                            const file = e.target.files?.[0]
+                            if (file) {
+                              const reader = new FileReader()
+                              reader.onload = ev => {
+                                setSelectedImage(ev.target?.result as string)
+                              }
+                              reader.readAsDataURL(file)
+                            }
+                          }}
+                        />
+                        <span className="inline-flex items-center justify-center rounded-full border border-muted-foreground bg-background p-2 hover:bg-muted transition-colors cursor-pointer shadow-sm">
+                          <ImageIcon className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                        </span>
+                      </label>
+                      <Button size="sm" className="h-10 px-4">
+                        <Plus className="h-4 w-4 mr-2" />
+                        Dela
+                      </Button>
+                    </div>
                   </div>
-                  <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Share
-                  </Button>
                 </div>
               </CardHeader>
             </Card>
@@ -172,7 +183,7 @@ export default function Component() {
             {/* Filters and Search */}
             <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full sm:w-auto">
-                <TabsList className="grid w-full grid-cols-3 sm:w-auto bg-white/80 backdrop-blur-sm">
+                <TabsList className="grid w-full grid-cols-3 sm:w-auto bg-card">
                   <TabsTrigger value="all">All Posts</TabsTrigger>
                   <TabsTrigger value="success">Success Stories</TabsTrigger>
                   <TabsTrigger value="tips">Tips & Tricks</TabsTrigger>
@@ -182,9 +193,9 @@ export default function Component() {
               <div className="flex gap-2 w-full sm:w-auto">
                 <div className="relative flex-1 sm:w-64">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input placeholder="Search posts..." className="pl-10 bg-white/80 backdrop-blur-sm border-0" />
+                  <Input placeholder="Search posts..." className="pl-10 bg-card border-0" />
                 </div>
-                <Button variant="outline" size="icon" className="bg-white/80 backdrop-blur-sm border-0">
+                <Button variant="outline" size="icon" className="bg-card border-0">
                   <Filter className="h-4 w-4" />
                 </Button>
               </div>
@@ -197,7 +208,7 @@ export default function Component() {
                 .map((post) => (
                   <Card
                     key={post.id}
-                    className="border-0 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-shadow"
+                    className="hover:shadow-lg transition-shadow"
                   >
                     <CardHeader className="pb-4">
                       <div className="flex items-start justify-between">
@@ -213,9 +224,9 @@ export default function Component() {
                           </Avatar>
                           <div>
                             <div className="flex items-center gap-2">
-                              <span className="font-semibold">{post.author}</span>
+                              <span className="font-semibold text-gray-900">{post.author}</span>
                               {post.isPremium && (
-                                <Badge className="bg-gradient-to-r from-purple-600 to-blue-600 text-white border-0 text-xs">
+                                <Badge variant="secondary" className="text-xs">
                                   <Crown className="h-3 w-3 mr-1" />
                                   Premium
                                 </Badge>
@@ -236,13 +247,13 @@ export default function Component() {
 
                     <CardContent className="space-y-4">
                       <div>
-                        <h3 className="text-lg font-semibold mb-2">{post.title}</h3>
+                        <h3 className="text-lg font-semibold mb-2 text-gray-900">{post.title}</h3>
                         <p className="text-gray-700 leading-relaxed">{post.content}</p>
                       </div>
 
                       <div className="flex flex-wrap gap-2">
                         {post.tags.map((tag, index) => (
-                          <Badge key={index} variant="secondary" className="text-xs bg-gray-100 text-gray-700">
+                          <Badge key={index} variant="secondary" className="text-xs">
                             #{tag}
                           </Badge>
                         ))}
@@ -278,9 +289,9 @@ export default function Component() {
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Community Guidelines */}
-            <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-lg">
+            <Card>
               <CardHeader>
-                <h3 className="font-semibold flex items-center gap-2">
+                <h3 className="font-semibold flex items-center gap-2 text-gray-900">
                   <Award className="h-5 w-5 text-purple-600" />
                   Community Guidelines
                 </h3>
@@ -306,9 +317,9 @@ export default function Component() {
             </Card>
 
             {/* Trending Topics */}
-            <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-lg">
+            <Card>
               <CardHeader>
-                <h3 className="font-semibold flex items-center gap-2">
+                <h3 className="font-semibold flex items-center gap-2 text-gray-900">
                   <TrendingUp className="h-5 w-5 text-blue-600" />
                   Trending Topics
                 </h3>
@@ -323,7 +334,7 @@ export default function Component() {
                 ].map((topic, index) => (
                   <div
                     key={index}
-                    className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 cursor-pointer"
+                    className="flex items-center justify-between p-2 rounded-lg hover:bg-muted cursor-pointer"
                   >
                     <span className="text-sm font-medium">#{topic.tag}</span>
                     <Badge variant="secondary" className="text-xs">
@@ -335,9 +346,9 @@ export default function Component() {
             </Card>
 
             {/* Top Contributors */}
-            <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-lg">
+            <Card>
               <CardHeader>
-                <h3 className="font-semibold flex items-center gap-2">
+                <h3 className="font-semibold flex items-center gap-2 text-gray-900">
                   <Users className="h-5 w-5 text-green-600" />
                   Top Contributors
                 </h3>
@@ -359,7 +370,7 @@ export default function Component() {
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium truncate">{contributor.name}</div>
+                      <div className="text-sm font-medium truncate text-gray-900">{contributor.name}</div>
                       <div className="text-xs text-muted-foreground">{contributor.posts} posts</div>
                     </div>
                     <Crown className="h-4 w-4 text-purple-600" />

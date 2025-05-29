@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Bell, LayoutDashboard, PackageSearch, Star, UsersRound, Lock, Store, LibraryBig, Crown, Rocket} from "lucide-react"
+import { Bell, LayoutDashboard, PackageSearch, Star, UsersRound, Lock, Store, LibraryBig, Crown, Rocket, Check} from "lucide-react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import Image from 'next/image'
@@ -208,32 +208,31 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarFooter>
           <div className="p-2">
             {!isPremium && (
-              <Card className="bg-[url(/3149495.jpg)] bg-cover bg-center relative overflow-hidden group border-none shadow-none flex flex-col mt-4 pb-0 animate-in fade-in duration-300">
+              <Card className="bg-[url(/premiumnoise.jpeg)] bg-cover bg-center relative overflow-hidden group border-none shadow-none flex flex-col mt-4 pb-0 animate-in fade-in duration-300">
                 <div className="absolute inset-0 opacity-0 transition-all duration-300">
                   <div className="absolute inset-0 rounded-lg" />
                 </div>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-[15px] font-medium">Uppgradera till Premium</CardTitle>
-                  <CardDescription className="text-xs font-normal text-primary/70">Lås upp alla funktioner och fördelar</CardDescription>
+                <CardHeader>
+                  <CardTitle className="text-[17px] font-medium text-white">EbutikPartner Premium</CardTitle>
                 </CardHeader>
-                <CardContent className="pb-2 text-xs">
+                <CardContent className="pb-1 text-xs text-white">
                   <ul className="space-y-1">
                     <li className="flex items-center gap-1">
-                      <Crown className="size-3 text-primary" />
-                      <span>Tillgång till AI-verktyg</span>
+                      <Check className="size-3 text-white" />
+                      <span>Skräddarsydda AI-verktyg</span>
                     </li>
                     <li className="flex items-center gap-1">
-                      <Crown className="size-3 text-primary" />
-                      <span>Prioriterad support</span>
+                      <Check className="size-3 text-white" />
+                      <span>Tillgång till Produktbibliotek</span>
                     </li>
                     <li className="flex items-center gap-1">
-                      <Crown className="size-3 text-primary" />
-                      <span>Tillgång till gemenskap</span>
+                      <Check className="size-3 text-white" />
+                      <span>Medlemskap i Community</span>
                     </li>
                   </ul>
                 </CardContent>
                 <CardFooter className="relative flex items-center justify-center p-4 m-0 mt-auto">
-                  <div className="absolute inset-0 bg-white/30 backdrop-blur-sm" />
+                  <div className="absolute inset-0 bg-white/20 backdrop-blur-sm" />
                   <Button 
                     color="primary"
                     size="lg" 

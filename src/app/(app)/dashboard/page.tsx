@@ -73,6 +73,9 @@ export default function Component() {
   const [user, setUser] = useState<any>(null)
   const [showOnboarding, setShowOnboarding] = useState(false)
 
+  // Animated progress state for smooth progress bar
+  const [animatedProgress, setAnimatedProgress] = useState(0);
+
   // Helper to calculate trend
   function getTrend(current?: number, prev?: number) {
     if (typeof current !== "number" || typeof prev !== "number") return null
@@ -200,6 +203,15 @@ export default function Component() {
   const totalSteps = stepsToRender.length
   const onboardingProgress = Math.round((completedSteps / totalSteps) * 100)
 
+  useEffect(() => {
+    if (hasNiche !== null && hasWatchedGuide !== null) {
+      // Animate after a short delay for smoothness
+      setTimeout(() => setAnimatedProgress(onboardingProgress), 200);
+    } else {
+      setAnimatedProgress(0);
+    }
+  }, [hasNiche, hasWatchedGuide, onboardingProgress]);
+
   return (
     <>
       <OnboardingModal
@@ -225,22 +237,19 @@ export default function Component() {
               <h1 className="text-3xl font-medium text-gray-900">Instrumentpanel</h1>
               <p className="text-gray-600 mt-1">Välkommen tillbaka! Här är det senaste som händer i din butik.</p>
             </div>
-            <Button className="w-fit">
-              <ExternalLink className="w-4 h-4 mr-2" />
-              Visa butik
-            </Button>
+
           </div>
 
           {/* Onboarding Section */}
-          <div className="grid lg:grid-cols-3 gap-6">
+          <div className="grid lg:grid-cols-3 gap-6 items-stretch">
             <motion.div
-              className="lg:col-span-2"
+              className="lg:col-span-2 h-full"
               custom={0}
               initial="hidden"
               animate="visible"
               variants={cardVariants}
             >
-              <Card className="border-blue-200 bg-white">
+              <Card className="border-blue-200 bg-white h-full">
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <div>
@@ -258,31 +267,34 @@ export default function Component() {
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, ease: "easeOut" }}
+                    transition={{ duration: 1.5, ease: "easeOut" }}
                   >
-                    <Progress value={onboardingProgress} className="h-2" />
+                    <Progress value={animatedProgress} className="h-2 transition-all duration-1500 ease-in-out" />
                   </motion.div>
-                  <motion.div
-                    className="space-y-3"
-                    variants={stepsContainerVariants}
-                    initial="hidden"
-                    animate="visible"
-                    key={stepsToRender.map(s => s.key).join('-')}
-                  >
-                    {stepsToRender.map(step => {
-                      return (
-                        <motion.div
-                          key={step.key}
-                          className="flex items-center gap-3"
-                          variants={stepItemVariants}
-                        >
-                          {step.icon}
-                          <span className={`text-sm ${step.textClass}`}>{step.text}</span>
-                        </motion.div>
-                      )
-                    })}
-                  </motion.div>
-                  {(!hasNiche || (!hasWatchedGuide && hasNiche)) && (
+                  {hasNiche !== null && hasWatchedGuide !== null && (
+                    <motion.div
+                      className="space-y-3"
+                      variants={stepsContainerVariants}
+                      initial="hidden"
+                      animate="visible"
+                      key={stepsToRender.map(s => s.key).join('-')}
+                    >
+                      {stepsToRender.map(step => {
+                        return (
+                          <motion.div
+                            key={step.key}
+                            className="flex items-center gap-3"
+                            variants={stepItemVariants}
+                          >
+                            {step.icon}
+                            <span className={`text-sm ${step.textClass}`}>{step.text}</span>
+                          </motion.div>
+                        )
+                      })}
+                    </motion.div>
+                  )}
+                  {hasNiche !== null && hasWatchedGuide !== null &&
+                    (!hasNiche || (!hasWatchedGuide && hasNiche)) && (
                     <Button
                       className="w-full mt-4"
                       onClick={() => {
@@ -312,12 +324,13 @@ export default function Component() {
 
             {/* Video Card */}
             <motion.div
+              className="h-full"
               custom={1}
               initial="hidden"
               animate="visible"
               variants={cardVariants}
             >
-              <Card>
+              <Card className="h-full">
                 <CardHeader>
                   <CardTitle className="text-lg font-medium">Introduktion</CardTitle>
                   <CardDescription>Vi rekommenderar att du kollar på videon för att få ut det mesta av din butik</CardDescription>
